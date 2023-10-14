@@ -673,7 +673,8 @@ class Consolidation
     }
 
     /**
-     * Convert number of unit
+     * Convert number of unit just for Ki(not kilo) metric based on 1024 (binary unit)
+     *
      * @param string $size number with unit name 10M or 10MB
      * @return int
      */
