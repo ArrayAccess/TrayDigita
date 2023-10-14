@@ -313,22 +313,76 @@ trait HttpKernelServiceTrait
         }
     }
 
+    /**
+     * @param array $loadedFiles
+     * @param HttpKernelInterface $kernel
+     * @param ManagerInterface|null $manager
+     * @return void
+     * @throws Throwable
+     */
     private function internalLoadDatabaseEvent(
         array $loadedFiles,
-        HttpKernelInterface $kernel
+        HttpKernelInterface $kernel,
+        ?ManagerInterface $manager
     ): void {
-        $container = $kernel->getContainer();
-        $eventCollector = $container?->has(DatabaseEventsCollector::class)
-            ? $container->get(DatabaseEventsCollector::class)
-            : null;
+        $eventCollector = ContainerHelper::getNull(
+            DatabaseEventsCollector::class,
+            $kernel->getContainer()
+        );
         if (!$eventCollector instanceof DatabaseEventsCollector) {
             return;
         }
-        foreach ($loadedFiles as $className) {
-            $event = $eventCollector->createFromClassName($className);
-            if ($event) {
-                $eventCollector->add($event);
+        try {
+            $manager?->dispatch(
+                'kernel.beforeRegisterDatabaseEvents',
+                $eventCollector,
+                $kernel,
+                $this
+            );
+            foreach ($loadedFiles as $className) {
+                $event = $eventCollector->createFromClassName($className);
+                if (!$event) {
+                    continue;
+                }
+                $manager?->dispatch(
+                    'kernel.beforeRegisterDatabaseEvent',
+                    $event,
+                    $eventCollector,
+                    $kernel,
+                    $this
+                );
+                try {
+                    $eventCollector->add($event);
+                    $manager?->dispatch(
+                        'kernel.registerDatabaseEvent',
+                        $event,
+                        $eventCollector,
+                        $kernel,
+                        $this
+                    );
+                } finally {
+                    $manager?->dispatch(
+                        'kernel.afterRegisterDatabaseEvent',
+                        $event,
+                        $eventCollector,
+                        $kernel,
+                        $this
+                    );
+                }
             }
+            $manager?->dispatch(
+                'kernel.registerDatabaseEvents',
+                $eventCollector,
+                $kernel,
+                $this
+            );
+        } finally {
+            $manager?->dispatch(
+                'kernel.afterRegisterDatabaseEvents',
+                $eventCollector,
+                $kernel,
+                $this
+            );
         }
     }
 
@@ -339,79 +393,182 @@ trait HttpKernelServiceTrait
     ): void {
         $container = $kernel->getContainer();
         $router = $kernel->getRouter();
-        foreach ($loadedFiles as $className) {
-            try {
-                $manager?->dispatch(
-                    'kernel.beforeRegisterController',
-                    $className,
-                    $kernel
-                );
-                $route = $router->addRouteController($className);
-                $manager?->dispatch(
-                    'kernel.registerController',
-                    $className,
-                    $kernel,
-                    $route
-                );
-            } catch (Throwable $e) {
-                $logger ??= ContainerHelper::getNull(LoggerInterface::class, $container)?:false;
-                if ($logger instanceof LoggerInterface) {
-                    $logger->debug($e, ['context' => 'middleware']);
+        try {
+            $manager?->dispatch(
+                'kernel.beforeRegisterControllers',
+                $kernel,
+                $this,
+                $router
+            );
+            foreach ($loadedFiles as $className) {
+                try {
+                    $manager?->dispatch(
+                        'kernel.beforeRegisterController',
+                        $className,
+                        $kernel,
+                        $this,
+                        $router
+                    );
+                    $route = $router->addRouteController($className);
+                    $manager?->dispatch(
+                        'kernel.registerController',
+                        $className,
+                        $kernel,
+                        $router,
+                        $route
+                    );
+                } catch (Throwable $e) {
+                    $logger ??= ContainerHelper::getNull(LoggerInterface::class, $container) ?: false;
+                    if ($logger instanceof LoggerInterface) {
+                        $logger->debug($e, ['context' => 'middleware']);
+                    }
+                } finally {
+                    $manager->dispatch(
+                        'kernel.afterRegisterController',
+                        $className,
+                        $kernel,
+                        $this,
+                        $router,
+                            $route ?? null
+                    );
                 }
-            } finally {
-                $manager->dispatch('kernel.afterRegisterController', $className, $kernel, $route??null);
             }
+            $manager?->dispatch(
+                'kernel.registerControllers',
+                $kernel,
+                $this,
+                $router
+            );
+        } finally {
+            $manager?->dispatch(
+                'kernel.afterRegisterControllers',
+                $kernel,
+                $this,
+                $router
+            );
         }
     }
 
+    /**
+     * Load middlewares
+     *
+     * @param array $loadedFiles
+     * @param HttpKernelInterface $kernel
+     * @param ManagerInterface|null $manager
+     * @return void
+     */
     private function internalLoadMiddleware(
         array $loadedFiles,
         HttpKernelInterface $kernel,
         ?ManagerInterface $manager
     ): void {
-        $middlewares = [];
-        $container = $kernel->getContainer()??Decorator::container();
-        foreach ($loadedFiles as $className) {
-            try {
-                $manager?->dispatch(
-                    'kernel.beforeResolveMiddleware',
-                    $className,
-                    $kernel
-                );
-                $middleware = ContainerHelper::resolveCallable(
-                    $className,
-                    $container
-                );
-                $priority = AbstractMiddleware::DEFAULT_PRIORITY;
-                if ($middleware instanceof AbstractMiddleware) {
-                    $priority = $middleware->getPriority();
+
+        try {
+            $manager?->dispatch(
+                'kernel.beforeResolveMiddlewares',
+                $kernel,
+                $this
+            );
+            $middlewares = [];
+            $container = $kernel->getContainer() ?? Decorator::container();
+            foreach ($loadedFiles as $className) {
+                try {
+                    $manager?->dispatch(
+                        'kernel.beforeResolveMiddleware',
+                        $className,
+                        $kernel,
+                        $this
+                    );
+                    $middleware = ContainerHelper::resolveCallable(
+                        $className,
+                        $container
+                    );
+                    $priority = AbstractMiddleware::DEFAULT_PRIORITY;
+                    if ($middleware instanceof AbstractMiddleware) {
+                        $priority = $middleware->getPriority();
+                    }
+                    $middlewares[$priority][] = $middleware;
+                    $manager?->dispatch(
+                        'kernel.resolveMiddleware',
+                        $className,
+                        $kernel,
+                        $this,
+                        $middleware
+                    );
+                } catch (Throwable $e) {
+                    $logger ??= ContainerHelper::getNull(LoggerInterface::class, $container) ?: false;
+                    if ($logger instanceof LoggerInterface) {
+                        $logger->debug($e, ['context' => 'middleware']);
+                    }
+                } finally {
+                    $manager?->dispatch(
+                        'kernel.afterResolveMiddleware',
+                        $className,
+                        $kernel,
+                        $this,
+                        $middleware ?? null
+                    );
                 }
-                $middlewares[$priority][] = $middleware;
-                $manager?->dispatch(
-                    'kernel.resolveMiddleware',
-                    $className,
-                    $kernel,
-                    $middleware
-                );
-            } catch (Throwable $e) {
-                $logger ??= ContainerHelper::getNull(LoggerInterface::class, $container)?:false;
-                if ($logger instanceof LoggerInterface) {
-                    $logger->debug($e, ['context' => 'middleware']);
-                }
-            } finally {
-                $manager?->dispatch(
-                    'kernel.afterResolveMiddleware',
-                    $className,
-                    $kernel,
-                    $middleware??null
-                );
             }
+            ksort($middlewares);
+            $manager?->dispatch(
+                'kernel.resolveMiddlewares',
+                $kernel,
+                $this
+            );
+
+        } finally {
+            $manager?->dispatch(
+                'kernel.afterResolveMiddlewares',
+                $kernel,
+                $this
+            );
         }
-        ksort($middlewares);
-        foreach ($middlewares as $middlewareList) {
-            foreach ($middlewareList as $middleware) {
-                $kernel->addMiddleware($middleware);
+
+        try {
+            $manager?->dispatch(
+                'kernel.beforeRegisterMiddlewares',
+                $kernel,
+                $this
+            );
+
+            foreach ($middlewares as $middlewareList) {
+                foreach ($middlewareList as $middleware) {
+                    try {
+                        $manager?->dispatch(
+                            'kernel.beforeRegisterMiddleware',
+                            $middleware,
+                            $kernel,
+                            $this
+                        );
+                        $kernel->addMiddleware($middleware);
+                        $manager?->dispatch(
+                            'kernel.registerMiddleware',
+                            $middleware,
+                            $kernel,
+                            $this
+                        );
+                    } finally {
+                        $manager?->dispatch(
+                            'kernel.afterRegisterMiddleware',
+                            $middleware,
+                            $kernel,
+                            $this
+                        );
+                    }
+                }
             }
+            $manager?->dispatch(
+                'kernel.registerMiddlewares',
+                $kernel,
+                $this
+            );
+        } finally {
+            $manager?->dispatch(
+                'kernel.afterRegisterMiddlewares',
+                $kernel,
+                $this
+            );
         }
     }
 }
