@@ -82,25 +82,29 @@ final class Bin
 
         $cwd = getcwd();
         $classLoaderExists = false;
+        $vendor = null;
         if (!class_exists(ClassLoader::class)
-            && file_exists(dirname(__DIR__, 2).'/autoload.php')
-            && is_dir(dirname(__DIR__, 2).'/composer')
+            && file_exists(dirname(__DIR__, 3) . '/autoload.php')
+            && file_exists(dirname(__DIR__, 3) . '/composer/ClassLoader.php')
         ) {
+            $vendor = dirname(__DIR__, 3);
             /** @noinspection PhpIncludeInspection */
-            require dirname(__DIR__). '/autoload.php';
+            require $vendor . '/autoload.php';
         }
 
         if (class_exists(ClassLoader::class)) {
             $classLoaderExists = true;
-            $ref = new ReflectionClass(ClassLoader::class);
-            $vendor = dirname($ref->getFileName(), 2);
-            $v = $vendor;
-            $c = 3;
-            do {
-                $v = dirname($v);
-            } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-            $root = ($exists ?? false) ? $v : dirname($vendor);
-            $vendor = substr($vendor, strlen($root) + 1);
+            if (!$vendor) {
+                $ref = new ReflectionClass(ClassLoader::class);
+                $vendor = dirname($ref->getFileName(), 2);
+                $v = $vendor;
+                $c = 3;
+                do {
+                    $v = dirname($v);
+                } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
+                $root = ($exists ?? false) ? $v : dirname($vendor);
+                $vendor = substr($vendor, strlen($root) + 1);
+            }
         } else {
             $root = dirname(__DIR__);
             $vendor = 'vendor';
