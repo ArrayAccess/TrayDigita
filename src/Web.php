@@ -110,17 +110,15 @@ final class Web
 
             if (class_exists(ClassLoader::class)) {
                 $classLoaderExists = true;
-                if (!$vendor) {
-                    $ref = new ReflectionClass(ClassLoader::class);
-                    $vendor = dirname($ref->getFileName(), 2);
-                    $v = $vendor;
-                    $c = 3;
-                    do {
-                        $v = dirname($v);
-                    } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-                    $root = ($exists ?? false) ? $v : dirname($vendor);
-                    $vendor = substr($vendor, strlen($root) + 1);
-                }
+                $ref = new ReflectionClass(ClassLoader::class);
+                $vendor ??= dirname($ref->getFileName(), 2);
+                $v = $vendor;
+                $c = 3;
+                do {
+                    $v = dirname($v);
+                } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
+                $root = ($exists ?? false) ? $v : dirname($vendor);
+                $vendor = substr($vendor, strlen($root) + 1);
             } else {
                 $root = dirname(__DIR__);
                 $vendor = 'vendor';
