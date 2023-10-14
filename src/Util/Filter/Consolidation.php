@@ -632,15 +632,15 @@ class Consolidation
     ): string {
         $quanta = [
             // ========================= Origin ====
-            'YB' => 1208925819614629174706176,  // pow( 1024, 8)
-            'ZB' => 1180591620717411303424,  // pow( 1024, 7)
+            // 'YB' => 1208925819614629174706176,  // pow( 1024, 8)
+            // 'ZB' => 1180591620717411303424,  // pow( 1024, 7) << bigger than PHP_INT_MAX is 9223372036854775807
             'EB' => 1152921504606846976,  // pow( 1024, 6)
             'PB' => 1125899906842624,  // pow( 1024, 5)
             'TB' => 1099511627776,  // pow( 1024, 4)
             'GB' => 1073741824,     // pow( 1024, 3)
             'MB' => 1048576,        // pow( 1024, 2)
             'KB' => 1024,           // pow( 1024, 1)
-            'B'  => 1,              // pow( 1024, 0)
+            'B'  => 1,              // 1
         ];
 
         /**
@@ -683,11 +683,17 @@ class Consolidation
         if (!$size) {
             return 0;
         }
-
-        $last = strtolower(substr($size, -1));
-        return intval($size) * (match ($last) {
+        // get size unit (MB = MiB = MIB = mib) case-insensitive
+        // invalid format will return exponent of 1
+        preg_match(
+            '~[0-9]\s*([yzeptgmk]i?b|[yzeptgmkb])$~',
+            strtolower($size),
+            $match
+        );
+        // patch tolerant
+        return intval($size) * (match ($match[1]??null) {
                 'y', 'yb' => 1208925819614629174706176, // yottabyte
-                'z', 'zb' => 1180591620717411303424, // zettabyte
+                'z', 'zb' => 1180591620717411303424, // zettabyte << bigger than PHP_INT_MAX is 9223372036854775807
                 'e', 'eb' => 1152921504606846976, // exabyte
                 'p', 'pb' => 1125899906842624, // petabyte
                 't', 'tb' => 1099511627776, // terabyte
