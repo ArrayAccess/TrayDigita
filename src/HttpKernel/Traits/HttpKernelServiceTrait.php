@@ -429,7 +429,7 @@ trait HttpKernelServiceTrait
                         $kernel,
                         $this,
                         $router,
-                            $route ?? null
+                        $route ?? null
                     );
                 }
             }
@@ -516,7 +516,6 @@ trait HttpKernelServiceTrait
                 $kernel,
                 $this
             );
-
         } finally {
             $manager?->dispatch(
                 'kernel.afterResolveMiddlewares',

@@ -14,6 +14,7 @@ use Exception;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use ReflectionClass;
+use Throwable;
 use function chdir;
 use function class_exists;
 use function define;
@@ -35,10 +36,11 @@ use function printf;
 use function realpath;
 use function strlen;
 use function substr;
-use function var_dump;
 use const DIRECTORY_SEPARATOR;
 use const PHP_SAPI;
 use const PHP_VERSION;
+use const PHP_VERSION_ID;
+use const TD_APP_DIRECTORY;
 use const TD_ROOT_COMPOSER_DIR;
 
 final class Bin
@@ -48,7 +50,12 @@ final class Bin
     {
     }
 
-    /** @noinspection PhpMissingReturnTypeInspection */
+    /**
+     * @noinspection PhpMissingReturnTypeInspection
+     * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
+     * @noinspection DuplicatedCode
+     * @throws Throwable
+     */
     final public static function run()
     {
         static $run = false;
@@ -66,7 +73,7 @@ final class Bin
             exit(255);
         }
 
-        if (\PHP_VERSION_ID < 80200) {
+        if (PHP_VERSION_ID < 80200) {
             echo "\n\033[0;31mPhp version is not meet requirements.\033[0m\n";
             printf(
                 "\033[0;34mMinimum required php version is:\033[0m \033[0;33m%s\033[0m\n",
@@ -94,14 +101,15 @@ final class Bin
 
         if (class_exists(ClassLoader::class)) {
             $classLoaderExists = true;
+            $exists = false;
             $ref = new ReflectionClass(ClassLoader::class);
-            $vendor ??= dirname($ref->getFileName(), 2);
+            $vendor = $vendor?:dirname($ref->getFileName(), 2);
             $v = $vendor;
             $c = 3;
             do {
                 $v = dirname($v);
             } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-            $root = ($exists ?? false) ? $v : dirname($vendor);
+            $root = $exists ? $v : dirname($vendor);
             $vendor = substr($vendor, strlen($root) + 1);
         } else {
             $root = dirname(__DIR__);
@@ -110,8 +118,8 @@ final class Bin
                 if (is_file($root . '/composer.json')) {
                     $config = json_decode(file_get_contents($root . '/composer.json'), true);
                     $config = is_array($config) ? $config : [];
-                    $config = $config['config'] ?? [];
-                    $vendorDir = $config['vendor-dir'] ?? null;
+                    $config = isset($config['config']) ? $config['config'] : [];
+                    $vendorDir = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
                     if ($vendorDir && is_dir("$root/$vendorDir")) {
                         $vendor = $vendorDir;
                     }
@@ -153,14 +161,14 @@ final class Bin
                 );
             }
 
-            $appDir = $appDir ?? TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . 'app';
+            $appDir = isset($appDir) ? $appDir : TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . 'app';
             /*if (!is_dir($appDir)) {
                 echo "\n\033[0;31mCould not detect application directory\033[0m\n";
                 echo "\n";
                 exit(255);
             }*/
             define('TD_APP_DIRECTORY', $appDir);
-        } elseif (!is_string(\TD_APP_DIRECTORY)) {
+        } elseif (!is_string(TD_APP_DIRECTORY)) {
             echo "\n\033[0;31mConstant \033[0;0m`TD_APP_DIRECTORY`\033[0;31m is invalid\033[0m\n";
             echo "\n";
             exit(255);

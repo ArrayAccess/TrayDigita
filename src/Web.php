@@ -48,6 +48,7 @@ use function strlen;
 use function substr;
 use const DIRECTORY_SEPARATOR;
 use const PHP_SAPI;
+use const PHP_VERSION_ID;
 use const TD_INDEX_FILE;
 
 // phpcs:disable PSR1.Files.SideEffects
@@ -68,6 +69,8 @@ final class Web
     /**
      * @return ResponseInterface|false
      * @noinspection PhpMissingReturnTypeInspection
+     * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
+     * @noinspection DuplicatedCode
      */
     final public static function serve()
     {
@@ -90,7 +93,7 @@ final class Web
         //  START INIT EXCEPTION LISTENER
         try {
             // PHP VERSION MUST BE 8.2 OR LATER
-            if (\PHP_VERSION_ID < 80200) {
+            if (PHP_VERSION_ID < 80200) {
                 throw new RuntimeException(
                     "Php version is not meet requirement. Minimum required php version is: 8.2"
                 );
@@ -110,14 +113,15 @@ final class Web
 
             if (class_exists(ClassLoader::class)) {
                 $classLoaderExists = true;
+                $exists = false;
                 $ref = new ReflectionClass(ClassLoader::class);
-                $vendor ??= dirname($ref->getFileName(), 2);
+                $vendor = $vendor?:dirname($ref->getFileName(), 2);
                 $v = $vendor;
                 $c = 3;
                 do {
                     $v = dirname($v);
                 } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-                $root = ($exists ?? false) ? $v : dirname($vendor);
+                $root = $exists ? $v : dirname($vendor);
                 $vendor = substr($vendor, strlen($root) + 1);
             } else {
                 $root = dirname(__DIR__);
@@ -126,8 +130,8 @@ final class Web
                     if (is_file($root . '/composer.json')) {
                         $config = json_decode(file_get_contents($root . '/composer.json'), true);
                         $config = is_array($config) ? $config : [];
-                        $config = $config['config'] ?? [];
-                        $vendorDir = $config['vendor-dir'] ?? null;
+                        $config = isset($config['config']) ? $config['config'] : [];
+                        $vendorDir = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
                         if ($vendorDir && is_dir("$root/$vendorDir")) {
                             $vendor = $vendorDir;
                         }
@@ -142,8 +146,8 @@ final class Web
                 );
             }
 
+            $publicFile = null;
             if (!defined('TD_INDEX_FILE')) {
-                $publicFile = null;
                 if (isset($_SERVER['SCRIPT_FILENAME'])) {
                     $publicFile = realpath($_SERVER['SCRIPT_FILENAME']);
                 }
@@ -164,7 +168,7 @@ final class Web
                     'Public file does not exists!'
                 );
             }
-            $publicFile ??= realpath(TD_INDEX_FILE);
+            $publicFile = $publicFile ?: realpath(TD_INDEX_FILE);
             $publicDir = dirname($publicFile);
             // HANDLE CLI-SERVER
             if (php_sapi_name() === 'cli-server') {
