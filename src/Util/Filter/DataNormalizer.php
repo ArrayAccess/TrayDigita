@@ -134,11 +134,17 @@ final class DataNormalizer
             '-',
             $string
         );
+
         if (!$allowSpace) {
-            $string = str_replace(' ', '-', $string);
+            $string = preg_replace(
+                '~-+~',
+                '-',
+                str_replace(' ', '-', $string)
+            );
         }
+
         return preg_replace(
-            '~([\-_()@\~.\s])+~',
+            '~([\-_()@\~.\s])\1+~',
             '$1',
             $string
         );
