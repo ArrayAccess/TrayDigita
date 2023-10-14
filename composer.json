@@ -1,0 +1,83 @@
+{
+    "name": "arrayaccess/traydigita",
+    "description": "Tray Digita System",
+    "version": "1.0.0",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ArrayIterator",
+            "email": "arrayiterator@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2|^8.3",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-pdo": "*",
+        "ext-openssl": "*",
+        "ext-pdo_mysql": "*",
+        "ext-fileinfo": "*",
+        "doctrine/orm": "~2",
+        "doctrine/sql-formatter": "^1.1",
+        "dragonmantank/cron-expression": "^3.3",
+        "endroid/qr-code": "^4.8",
+        "league/iso3166": "^4.3",
+        "league/oauth2-server": "^8.4",
+        "monolog/monolog": "^3.4.0",
+        "nelexa/zip": "^4.0",
+        "nikic/php-parser": "^4.17",
+        "predis/predis": "^2",
+        "psr/http-message": "^1",
+        "psr/http-factory": "^1",
+        "psr/http-server-middleware": "^1",
+        "psr/container": "^2",
+        "psr/log": "^3",
+        "psr/http-client": "^1",
+        "psr/simple-cache": "^3",
+        "symfony/cache": "^6",
+        "symfony/console": "^6",
+        "symfony/filesystem": "^6",
+        "symfony/finder": "^6",
+        "symfony/polyfill-intl-idn": "^1",
+        "symfony/yaml": "^v6",
+        "symfony/http-client": "^6",
+        "symfony/mailer": "^6.3",
+        "twig/twig": "^3.7.1",
+        "whichbrowser/parser": "^2.1"
+    },
+    "suggest": {
+        "ext-memcached": "To make application support memcached cache",
+        "ext-redis": "To make application support redis cache",
+        "ext-couchbase_v2": "To make application support couchbase v2 cache",
+        "ext-mbstring": "Need to support Multibyte String",
+        "ext-imagick": "For more advance image generation & editing",
+        "ext-gd": "To support image generation & manipulation",
+        "doctrine/migrations": "Allows you to easily update your production databases through a nice programmatic interface"
+    },
+    "conflict": {
+        "doctrine/migrations" : "< 3"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "3.7.2",
+        "slevomat/coding-standard": "^8.13"
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "ArrayAccess\\TrayDigita\\ComposerCreateProject::composerDoCreateProject"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "bin": ["bin/tray-digita"],
+    "autoload": {
+        "psr-4": {
+            "ArrayAccess\\TrayDigita\\": "src/"
+        }
+    }
+}

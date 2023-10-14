@@ -1,0 +1,20 @@
+# .htaccess place in document root (public/)
+# Disable directory browsing
+Options -Indexes
+# Handle 403
+ErrorDocument 403 /index.php
+
+# Deny access to dot files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^index\.php$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.php [L]
+</IfModule>

@@ -1,0 +1,56 @@
+# Example nginx config host configuration
+server {
+    # listen http
+    listen 80;
+    # listen https
+    listen 443 ssl http2;
+
+    server_name exaple.com www.example.com;
+
+    # ssl ceritificate
+    ssl_certificate /path/to/fullchain.pem;
+    ssl_certificate_key /path/to/privkey.pem;
+
+    # allow send body into 32MB or increase this values
+    client_max_body_size 32M;
+
+    # logging
+    error_log /var/log/nginx/example.error.log warn;
+    access_log /var/log/nginx/example.access.log;
+
+    # index
+    index index.php;
+
+    # Handle error 404 & 403
+    error_page 404 /index.php;
+    error_page 403 =404 /index.php;
+
+    # document root
+    root /path/to/app/public;
+
+    location / {
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+
+    # disable access hidden files & allow acme validation
+    location ~ /\.(?!well-known).* {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # php block
+    location ~ \.php(/.*)$ {
+        try_files $uri $uri/ /index.php$is_args$args;
+
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_index index.php;
+        include fastcgi.conf;
+        # listening using port
+        fastcgi_pass 127.0.0.1:9000;
+        # listening using socket
+        # fastcgi_pass unix:/var/run/php8.2-fpm.sock;
+        fastcgi_buffers 16 16k;
+        fastcgi_buffer_size 32k;
+    }
+}

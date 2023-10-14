@@ -1,0 +1,111 @@
+<?php
+declare(strict_types=1);
+
+namespace ArrayAccess\TrayDigita\View\Twig\TwigExtensions;
+
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
+use Stringable;
+use Twig\TwigFilter;
+use Twig\TwigFunction;
+use Twig\TwigTest;
+use function is_iterable;
+use function is_scalar;
+use function is_string;
+use function preg_quote;
+use function preg_replace;
+use const DIRECTORY_SEPARATOR;
+
+class Miscellaneous extends AbstractExtension
+{
+    public function getFunctions(): array
+    {
+        return [
+            new TwigFunction(
+                'print_r',
+                static fn ($data = null) => print_r($data, true),
+                [
+                    'is_safe' => ['html']
+                ]
+            ),
+            new TwigFunction(
+                'container',
+                fn ($containerName = null) => is_string($containerName) ? ContainerHelper::getNull(
+                    $containerName,
+                    $this->getContainer()
+                ) : null
+            ),
+            new TwigFunction(
+                'base_uri',
+                fn ($path = '') => $this->engine->getView()->getBaseURI((string) $path)
+            ),
+            new TwigFunction(
+                'base_url',
+                fn ($path = '') => (string) $this->engine->getView()->getBaseURI((string) $path)
+            ),
+            new TwigFunction(
+                'request',
+                [$this->engine->getView(), 'getRequest']
+            ),
+            new TwigFunction(
+                'template_uri',
+                fn ($path = '') => $this->engine->getView()->getTemplateURI((string) $path)
+            ),
+            new TwigFunction(
+                'template_url',
+                fn ($path = '') => (string) $this->engine->getView()->getTemplateURI((string) $path)
+            ),
+        ];
+    }
+
+    /** @noinspection PhpInternalEntityUsedInspection */
+    public function getTests(): array
+    {
+        return [
+            new TwigTest(
+                'function_loaded',
+                fn ($fn) => (bool) (is_string($fn) && $this->engine->getTwig()->getFunction($fn)
+                    ? '(true)'
+                    : '(false)'
+                ),
+            ),
+        ];
+    }
+
+    /**
+     * @return TwigFilter[]
+     */
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter(
+                'protect_path',
+                function ($data) {
+                    $root = ContainerHelper::use(KernelInterface::class, $this->getContainer())
+                        ?->getRootDirectory();
+                    if (!$root) {
+                        return $data;
+                    }
+                    $root = DataNormalizer::normalizeDirectorySeparator($root, true);
+                    $root = preg_quote($root . DIRECTORY_SEPARATOR, '~');
+                    if ($data instanceof Stringable || is_scalar($data)) {
+                        return preg_replace("~$root~", '', (string) $data);
+                    }
+                    if (!is_iterable($data)) {
+                        return $data;
+                    }
+
+                    $data = !is_iterable($data) ? [$data] : $data;
+                    foreach ($data as $key => $v) {
+                        if (!is_string($data) && $data instanceof Stringable) {
+                            continue;
+                        }
+                        $data[$key] = preg_replace("~$root~", '', (string) $v);
+                    }
+                    return $data;
+                }
+            ),
+        ];
+    }
+}

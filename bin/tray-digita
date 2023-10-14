@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+namespace ArrayAccess\TrayDigita\Root\Bin;
+
+use ArrayAccess\TrayDigita\Bin;
+use function class_exists;
+
+(function() {
+    if (!class_exists(Bin::class)) {
+        require_once dirname(__DIR__) . '/src/Bin.php';
+    }
+    Bin::run();
+    exit(255);
+})();
