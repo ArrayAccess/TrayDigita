@@ -22,6 +22,12 @@ constant ```TD_APP_DIRECTORY``` must be declared on console or index loader.
 
 ## INSTALL
 
+Create project using composer
+
+```bash
+composer create-project arrayaccess/traydigita --prefer-dist --stability=dev example.com
+```
+
 - copy [config.example.php](config.example.php) to `config.php`
 - create database & put info `config.php`
 - Doing install database schema via command line
