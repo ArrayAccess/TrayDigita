@@ -429,6 +429,11 @@ trait HttpKernelInitTrait
 
             // FALLBACK DEFAULT
             $timezone ??= $databaseTimeZone??date_default_timezone_get();
+            try {
+                $timezone = new DateTimeZone($timezone);
+                $timezone = $timezone->getName();
+            } catch (Throwable) {
+            }
             $databaseTimeZone = $databaseTimeZone?:$timezone;
 
             // SET CONFIG
@@ -436,7 +441,7 @@ trait HttpKernelInitTrait
             $environment->set('timezone', $timezone);
 
             // SET TIMEZONE
-            date_default_timezone_set($timezone);
+            Consolidation::callbackReduceError(static fn() => date_default_timezone_set($timezone));
 
             $templatePath = $path->get('template');
             $templatePath = !is_string($templatePath) || trim($templatePath) === ''
