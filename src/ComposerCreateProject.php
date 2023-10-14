@@ -81,15 +81,15 @@ class ComposerCreateProject
         if (!$vendorDir) {
             return;
         }
-        $vendor = rtrim($vendorDir, '\\/');
+        $vendorDir = rtrim($vendorDir, '\\/');
         $installDir = realpath($installDir)?:$installDir;
         $installDir = rtrim($installDir, '\\/');
-        $vendor = str_replace('\\', '/', $vendor);
+        $vendorDir = str_replace('\\', '/', $vendorDir);
         $installDir = str_replace('\\', '/', $installDir);
-        if (str_starts_with($vendor, $installDir . '/')) {
+        if (!str_starts_with($vendorDir, $installDir . '/')) {
             return;
         }
-        $vendor = substr($vendor, strlen($installDir) + 1);
+        $vendor = substr($vendorDir, strlen($installDir) + 1);
         $vendor = addcslashes($vendor, "'");
         $createFiles = [
             'data/README.md' => <<<MD
