@@ -14,6 +14,7 @@ use function in_array;
 use function is_link;
 use function preg_match;
 use function random_bytes;
+use function realpath;
 use function sha1;
 use function sprintf;
 use function str_replace;
@@ -47,11 +48,18 @@ class ComposerCreateProject
         if (!$event instanceof \Composer\Script\Event) {
             return;
         }
+
+        $consoleIO = $event->getIO();
+        $consoleIO->write(
+            sprintf('<info>Event</info> [%s]', $event->getName()),
+            true,
+            $consoleIO::VERY_VERBOSE
+        );
         // only allow post create project
         if ($event->getName() !== 'post-create-project-cmd') {
             return;
         }
-        $consoleIO = $event->getIO();
+
         $installDir = getcwd();
         ///*
         // $package = $event->getComposer()->getPackage();
@@ -60,10 +68,21 @@ class ComposerCreateProject
             ? "#!/usr/bin/env php\n"
             : '';
         $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
+        $consoleIO->write(
+            sprintf('<info>Install Directory</info> [%s]', $installDir),
+            true,
+            $consoleIO::VERY_VERBOSE
+        );
+        $consoleIO->write(
+            sprintf('<info>Vendor Directory</info> [%s]', $vendorDir),
+            true,
+            $consoleIO::VERY_VERBOSE
+        );
         if (!$vendorDir) {
             return;
         }
         $vendor = rtrim($vendorDir, '\\/');
+        $installDir = realpath($installDir)?:$installDir;
         $installDir = rtrim($installDir, '\\/');
         $vendor = str_replace('\\', '/', $vendor);
         $installDir = str_replace('\\', '/', $installDir);
