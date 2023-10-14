@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Database\Wrapper\DriverWrapper;
 use ArrayAccess\TrayDigita\Database\Wrapper\EntityManagerWrapper;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
+use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -142,7 +143,7 @@ class Connection implements ContainerIndicateInterface
             $proxyPath = is_string($proxyDir) ? $proxyDir : $database->get('proxyDir');
             $proxyPath = $proxyPath ?: "$storage/database/proxy";
             $proxyPath = $configuration->getProxyDir() ?: $proxyPath;
-            if (!is_dir($proxyPath)) {
+            if (!is_dir($proxyPath) && ! Consolidation::isCli()) {
                 mkdir($proxyPath, 0755, true);
             }
 
