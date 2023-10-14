@@ -17,7 +17,7 @@ Also see [composer.json](composer.json)
 
 ## NOTE
 
-constant ```TD_APP_DIRECTORY``` must be declared on console or index loader.
+constant ```TD_APP_DIRECTORY``` ~~must be declared~~ on console or index loader.
 
 
 ## INSTALL
