@@ -25,7 +25,7 @@
 
     <!-- Path To Check -->
     <file>bin/tray-digita</file>
-    <file>public/index.php</file>
+    <!-- <file>public/index.php</file>-->
     <file>src/</file>
 
     <!-- Slevomat Ruleset -->
