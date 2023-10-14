@@ -198,6 +198,12 @@ class Waterfall
      */
     public function createHtmlStructure(bool $showEmpty = false) : string
     {
+        $microtimeStart = $_SERVER['REQUEST_TIME_FLOAT']
+            ??$this->getProfiler()->getStartTime();
+        $firstRender = $this->getProfiler()->convertMicrotime(
+            microtime(true) - $microtimeStart
+        );
+
         $memory_get_usage = memory_get_usage();
         $memory_get_real_usage = memory_get_usage(true);
         $memory_get_peak_usage = memory_get_peak_usage();
@@ -386,6 +392,19 @@ class Waterfall
                             ]
                         ),
                         round($profilerDurations, 2) . ' ms',
+                        true
+                    ) . $this->createOpenTag(
+                        'span',
+                        $this->appendAttributeClass(
+                            [
+                                //'severity-info',
+                                'info'
+                            ],
+                            [
+                                'title' => 'Application rendering duration'
+                            ]
+                        ),
+                        round($firstRender, 2) . ' ms',
                         true
                     ),
                     true,
