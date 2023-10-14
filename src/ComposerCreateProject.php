@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita;
 
 use Exception;
+use function chmod;
 use function class_exists;
 use function dirname;
 use function file_exists;
@@ -375,8 +376,8 @@ PHP
         }
         foreach ($createFiles as $pathName => $content) {
             $path = $installDir . DIRECTORY_SEPARATOR . $pathName;
+            $isConsole = $pathName === 'bin/tray-digita';
             if (file_exists($path)) {
-                $isConsole = $pathName === 'bin/tray-digita';
                 if (!$isConsole || is_link($path)) {
                     continue;
                 }
@@ -405,6 +406,9 @@ PHP
                 $consoleIO::VERBOSE
             );
             file_put_contents($path, $content);
+            if ($isConsole) {
+                chmod($path, 0744);
+            }
         }
         // */
     }
