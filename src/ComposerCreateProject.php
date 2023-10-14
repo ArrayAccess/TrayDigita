@@ -407,6 +407,11 @@ PHP
             );
             file_put_contents($path, $content);
             if ($isConsole) {
+                $consoleIO->write(
+                    sprintf('[RESOLVE PERMISSION] <comment>%s</comment>', $path),
+                    true,
+                    $consoleIO::VERBOSE
+                );
                 chmod($path, 0744);
             }
         }
