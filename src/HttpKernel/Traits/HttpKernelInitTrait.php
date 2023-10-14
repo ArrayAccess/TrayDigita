@@ -439,11 +439,13 @@ trait HttpKernelInitTrait
             $path->set('template', $templatePath);
             $storageDir = $path->get('storage');
             $dataDir = $path->get('data');
-            if (!is_dir($storageDir)) {
-                mkdir($storageDir, 0755, true);
-            }
-            if (!is_dir($dataDir)) {
-                mkdir($dataDir, 0755, true);
+            if (!Consolidation::isCli()) {
+                if (!is_dir($storageDir)) {
+                    mkdir($storageDir, 0755, true);
+                }
+                if (!is_dir($dataDir)) {
+                    mkdir($dataDir, 0755, true);
+                }
             }
             $dataDir = realpath($dataDir)?:$dataDir;
             $storageDir = realpath($storageDir)?:$storageDir;
