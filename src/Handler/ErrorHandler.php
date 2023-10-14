@@ -193,6 +193,9 @@ class ErrorHandler implements ErrorHandlerInterface
 
     protected int $inLoopError = 0;
 
+    /**
+     * @throws Throwable
+     */
     public function __invoke(
         ServerRequestInterface $request,
         Throwable $exception,

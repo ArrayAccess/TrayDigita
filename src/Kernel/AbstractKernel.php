@@ -7,6 +7,7 @@ use ArrayAccess\TrayDigita\Container\Factory\ContainerFactory;
 use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
 use ArrayAccess\TrayDigita\HttpKernel\Interfaces\HttpKernelInterface;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use Throwable;
 
 abstract class AbstractKernel extends BaseKernel
 {
@@ -22,7 +23,11 @@ abstract class AbstractKernel extends BaseKernel
         if (!$container->has(HttpKernelInterface::class)) {
             $container->set(HttpKernelInterface::class, HttpKernel::class);
         }
-        $kernel = $container->get(HttpKernelInterface::class);
-        parent::__construct($kernel, $baseConfigFileName);
+        try {
+            $kernel = $container->get(HttpKernelInterface::class);
+            parent::__construct($kernel, $baseConfigFileName);
+        } catch (Throwable) {
+            parent::__construct(new HttpKernel($container));
+        }
     }
 }

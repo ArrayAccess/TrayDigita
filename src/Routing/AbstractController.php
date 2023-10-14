@@ -19,9 +19,7 @@ use ArrayAccess\TrayDigita\Traits\Responder\JsonResponderFactoryTrait;
 use ArrayAccess\TrayDigita\Traits\View\ViewTrait;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use JsonSerializable;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -103,9 +101,6 @@ abstract class AbstractController implements ControllerInterface
      * @template T of object
      * @param string $expect
      * @return T|mixed
-     * @throws Throwable
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @noinspection PhpUnused
      */
     public function serviceContainer(string $expect)
@@ -176,12 +171,10 @@ abstract class AbstractController implements ControllerInterface
     public function getManager(): ?ManagerInterface
     {
         if (!$this->manager) {
-            if (!$this->getContainer()->has(ManagerInterface::class)) {
-                return null;
-            }
-            $manager = $this->getContainer()->get(ManagerInterface::class);
-            $manager = $manager instanceof ManagerInterface ? $manager : null;
-            $this->manager = $manager;
+            $this->manager = ContainerHelper::use(
+                ManagerInterface::class,
+                $this->getContainer()
+            );
         }
         return $this->manager;
     }

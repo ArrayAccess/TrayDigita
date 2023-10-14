@@ -16,6 +16,7 @@ use function restore_error_handler;
 use function serialize;
 use function set_error_handler;
 use function str_contains;
+use function strlen;
 use function strpos;
 use function substr;
 use function trim;
@@ -180,7 +181,7 @@ class DataType
             return true;
         }
 
-        if (\strlen($data) < 4 || ':' !== $data[1]) {
+        if (strlen($data) < 4 || ':' !== $data[1]) {
             return false;
         }
 

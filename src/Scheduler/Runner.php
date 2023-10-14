@@ -131,6 +131,7 @@ final class Runner
         return (float) (microtime(true) * 1000);
     }
 
+    /** @noinspection DuplicatedCode */
     public function skip() : self
     {
         $time_start = time();
@@ -153,6 +154,7 @@ final class Runner
         return $this;
     }
 
+    /** @noinspection DuplicatedCode */
     public function process() : self
     {
         $time_start = time();

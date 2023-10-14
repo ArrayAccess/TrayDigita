@@ -58,6 +58,7 @@ use function strtolower;
 use function substr;
 use function uasort;
 use const PREG_NO_ERROR;
+use const TD_INDEX_FILE;
 
 class Router implements RouterInterface, ManagerAllocatorInterface, ContainerAllocatorInterface
 {
@@ -503,9 +504,9 @@ class Router implements RouterInterface, ManagerAllocatorInterface, ContainerAll
 
         if (($scriptFileName??null) === null
             && defined('TD_INDEX_FILE')
-            && is_string(\TD_INDEX_FILE)
-            && is_file(\TD_INDEX_FILE)
-            && ($index = realpath(\TD_INDEX_FILE)) !== false
+            && is_string(TD_INDEX_FILE)
+            && is_file(TD_INDEX_FILE)
+            && ($index = realpath(TD_INDEX_FILE)) !== false
             && str_starts_with($index, $documentRoot)
         ) {
             $scriptFileName = dirname($index);

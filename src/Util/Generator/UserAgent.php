@@ -63,10 +63,11 @@ class UserAgent
     public function yandexBot(string $version = '3.0') : string
     {
         // Mozilla/5.0 (compatible; YandexForDomain/3.0; +http://yandex.com/bots)
+        /** @noinspection HttpUrlsUsage */
         return $this->bot(
             'YandexForDomain',
             $version,
-            'http://yandex.com/bot.html'
+            'http://yandex.com/bots'
         );
     }
 
@@ -183,7 +184,7 @@ class UserAgent
         string $browserVersion,
         string $engineVersion = '20100101'
     ) : string {
-        // Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko/20100101 Firefox/105.0
+        // Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:110.0) Gecko/20100101 Firefox/110.0
         return $this->generate(
             $system,
             sprintf('Gecko/%s', $engineVersion),
@@ -191,12 +192,20 @@ class UserAgent
         );
     }
 
+    /**
+     * User agent for firefox mobile
+     *
+     * @param string $system
+     * @param string $browserVersion
+     * @param string $engineVersion
+     * @return string
+     */
     public function firefoxMobile(
         string $system,
         string $browserVersion,
-        string $engineVersion = '68.0'
+        string $engineVersion = '110.0'
     ) : string {
-        // Mozilla/5.0 (Android 13; Mobile; rv:68.0) Gecko/68.0 Firefox/105.0
+        // Mozilla/5.0 (Android 13; Mobile; rv:109.0) Gecko/110.0 Firefox/110.0
         return $this->generate(
             $system,
             sprintf('Gecko/%s', $engineVersion),
@@ -204,6 +213,15 @@ class UserAgent
         );
     }
 
+    /**
+     * Use agent for firefox os
+     *
+     * @param string $system
+     * @param string $browserVersion
+     * @param string $engineVersion
+     * @param string $firmwareBuildNumber
+     * @return string
+     */
     public function firefoxIOS(
         string $system,
         string $browserVersion,

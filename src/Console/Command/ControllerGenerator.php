@@ -278,6 +278,7 @@ EOT),
                 )
             )
         );
+        /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
             $this->translate('Are you sure to continue (Yes/No)?'),
@@ -371,14 +372,14 @@ class $baseClassName extends AbstractController
     /**
      * Do routing for get($prefix?)
      *
-     * @param ServerRequestInterface \$request 
-     * @param ResponseInterface \$response 
-     * @param array<string> \$parameters 
-     * @param string \$prefixSlash 
-     * @param string \$suffixSlash 
+     * @param ServerRequestInterface \$request
+     * @param ResponseInterface \$response
+     * @param array<string> \$parameters
+     * @param string \$prefixSlash
+     * @param string \$suffixSlash
      * @return ResponseInterface
      */
-     #[Get('/')]
+    #[Get('/')]
     public function main(
         ServerRequestInterface \$request,
         ResponseInterface \$response,

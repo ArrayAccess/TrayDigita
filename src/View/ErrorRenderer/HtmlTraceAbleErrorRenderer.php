@@ -31,6 +31,7 @@ use function realpath;
 use function sprintf;
 use function str_replace;
 use function trim;
+use const CONFIG_FILE;
 use const JSON_UNESCAPED_SLASHES;
 
 class HtmlTraceAbleErrorRenderer extends AbstractErrorRenderer
@@ -378,9 +379,9 @@ HTML;
         $configFile = is_string($configFile)
             ? (realpath($configFile)?:null)
             : null;
-        $definedConfig = defined('CONFIG_FILE') && is_string(\CONFIG_FILE)
-            && file_exists(\CONFIG_FILE)
-            ? realpath(\CONFIG_FILE)?:null
+        $definedConfig = defined('CONFIG_FILE') && is_string(CONFIG_FILE)
+            && file_exists(CONFIG_FILE)
+            ? realpath(CONFIG_FILE)?:null
             : null;
         $isCallstack = $exception instanceof MaximumCallstackExceeded
             && count($exception->getTrace()) > 50;

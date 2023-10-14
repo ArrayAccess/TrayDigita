@@ -245,7 +245,6 @@ class AbstractEntity implements JsonSerializable
 
     /**
      * @return array
-     * @throws MappingException
      */
     protected function maskArray(): array
     {
@@ -277,7 +276,12 @@ class AbstractEntity implements JsonSerializable
                 if ($em && empty($columns)) {
                     $metadata = $em->getClassMetadata($className);
                     foreach ($metadata->getFieldNames() as $item) {
-                        $mapping = $metadata->getFieldMapping($item);
+                        try {
+                            $mapping = $metadata->getFieldMapping($item);
+                        } catch (MappingException) {
+                            continue;
+                        }
+                        /** @noinspection DuplicatedCode */
                         $fieldName = $mapping['fieldName']??null;
                         $columnName = $mapping['columnName']??null;
                         if (!$fieldName || !$columnName) {

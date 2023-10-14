@@ -24,6 +24,7 @@ use Throwable;
 use function array_key_exists;
 use function array_unshift;
 use function class_exists;
+use function count;
 use function end;
 use function is_a;
 use function is_array;
@@ -52,66 +53,60 @@ class ContainerResolver implements ContainerIndicateInterface
      * @throws ContainerFrozenException
      * @throws ContainerNotFoundException
      * @throws Throwable
-     * @throws Throwable
      */
     public function resolveCallable(mixed $callable, array $arguments = []): mixed
     {
-        try {
-            $container = $this->getContainer();
-            $value = $callable;
-            if (is_string($callable)
-                && Consolidation::isValidClassName($callable)
-                && class_exists($callable)
-            ) {
-                $ref = new ReflectionClass($callable);
-                if ($ref->isInstantiable()) {
-                    $arguments = $this->resolveArguments($ref, $arguments);
-                    // resolver empty arguments when auto resolve enabled
-                    $value = new $callable(
-                        ...$arguments
-                    );
-                }
-            } elseif (!$callable instanceof UnInvokableInterface) {
-                if ($callable instanceof ContainerInvokable
-                    && !reset($arguments) instanceof ContainerInterface
-                ) {
-                    array_unshift($arguments, $this);
-                }
-                if (is_array($callable)
-                    && \count($callable) === 2
-                    && is_string(reset($callable))
-                ) {
-                    $first = reset($callable);
-                    if ($container->has($first)) {
-                        $callable = [$container->get($first), end($callable)];
-                    } elseif (method_exists($container, 'hasAlias')
-                        && method_exists($container, 'getAlias')
-                        && $container->hasAlias($first)
-                        && ($alias = $container->getAlias($first))
-                        && is_string($alias)
-                    ) {
-                        $callable = [$container->get($alias), end($callable)];
-                    }
-                }
-
-                if (empty($arguments) && is_callable($callable)) {
-                    $arguments = $this
-                        ->resolveArguments(
-                            (is_string($callable) || $callable instanceof Closure)
-                                ? new ReflectionFunction($callable)
-                                : new ReflectionMethod(...$callable),
-                            $arguments
-                        );
-                }
-
-                $value = is_callable($callable) ? $callable(...$arguments) : $callable;
+        $container = $this->getContainer();
+        $value = $callable;
+        if (is_string($callable)
+            && Consolidation::isValidClassName($callable)
+            && class_exists($callable)
+        ) {
+            $ref = new ReflectionClass($callable);
+            if ($ref->isInstantiable()) {
+                $arguments = $this->resolveArguments($ref, $arguments);
+                // resolver empty arguments when auto resolve enabled
+                $value = new $callable(
+                    ...$arguments
+                );
             }
-            $this->allocateService($value);
-            return $value;
-        } catch (Throwable $e) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            throw $e;
+        } elseif (!$callable instanceof UnInvokableInterface) {
+            if ($callable instanceof ContainerInvokable
+                && !reset($arguments) instanceof ContainerInterface
+            ) {
+                array_unshift($arguments, $this);
+            }
+            if (is_array($callable)
+                && count($callable) === 2
+                && is_string(reset($callable))
+            ) {
+                $first = reset($callable);
+                if ($container->has($first)) {
+                    $callable = [$container->get($first), end($callable)];
+                } elseif (method_exists($container, 'hasAlias')
+                    && method_exists($container, 'getAlias')
+                    && $container->hasAlias($first)
+                    && ($alias = $container->getAlias($first))
+                    && is_string($alias)
+                ) {
+                    $callable = [$container->get($alias), end($callable)];
+                }
+            }
+
+            if (empty($arguments) && is_callable($callable)) {
+                $arguments = $this
+                    ->resolveArguments(
+                        (is_string($callable) || $callable instanceof Closure)
+                            ? new ReflectionFunction($callable)
+                            : new ReflectionMethod(...$callable),
+                        $arguments
+                    );
+            }
+
+            $value = is_callable($callable) ? $callable(...$arguments) : $callable;
         }
+        $this->allocateService($value);
+        return $value;
     }
 
     public function allocateService($containerValue) : void
@@ -147,7 +142,13 @@ class ContainerResolver implements ContainerIndicateInterface
         }
     }
 
-    public function resolve(string $id)
+    /**
+     * @param string $id
+     * @return array|mixed
+     * @throws ContainerNotFoundException
+     * @throws Throwable
+     */
+    public function resolve(string $id): mixed
     {
         $container = $this->getContainer();
         if (!$container instanceof Container || !$container->hasQueuedService($id)) {

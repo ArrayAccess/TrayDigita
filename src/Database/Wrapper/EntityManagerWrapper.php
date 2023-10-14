@@ -11,6 +11,7 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\Decorator\EntityManagerDecorator;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
 use Doctrine\Persistence\ObjectRepository;
 use Throwable;
@@ -101,6 +102,9 @@ class EntityManagerWrapper extends EntityManagerDecorator
         return $manager instanceof ManagerInterface ? $manager : null;
     }
 
+    /**
+     * @throws ORMException
+     */
     public function getHydrator($hydrationMode): AbstractHydrator
     {
         return $this->newHydrator($hydrationMode);

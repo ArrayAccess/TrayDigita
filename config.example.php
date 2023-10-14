@@ -17,6 +17,8 @@ return [
         // site profiling (benchmarking)
         // profiling is consume high memory footprints (set false in production)
         'profiling' => false,
+        // print comment after html tag about consume time
+        'showPerformance' => true,
         // enable debug bar (profiling must be enabled)
         'debugBar' => false,
         // debug bar dark style
@@ -36,7 +38,7 @@ return [
         // 'language' => __DIR__ . '/app/Languages', // language directory
         // 'middleware' => __DIR__ . '/app/Middlewares', // middlewares directory
         // 'migration' => __DIR__ . '/app/Migrations', // migrations directory
-        // 'module' => __DIR__ . '/app/Modules', // modules path (DO NOT CHANGE!) this is contain cores
+        // 'module' => __DIR__ . '/app/Modules', // modules path (DO NOT CHANGE!) this is contained cores
         // 'view' => __DIR__ . '/app/Views', // views path
         // 'databaseEvent' => __DIR__ . '/app/DatabaseEvents', // database events app
         // 'storage' => __DIR__ . '/storage', // temporary storage directory

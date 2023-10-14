@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnused */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Kernel;
@@ -22,9 +23,7 @@ use ArrayAccess\TrayDigita\Scheduler\Scheduler;
 use ArrayAccess\TrayDigita\View\Interfaces\ViewInterface;
 use Doctrine\Persistence\ObjectRepository;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 use function array_search;
@@ -114,6 +113,7 @@ final class Decorator
     {
         return self::decorator()->locked !== null;
     }
+
     public static function findKernelName(AbstractKernel $kernel): ?string
     {
         return array_search($kernel, self::decorator()->kernels)?:null;
@@ -261,13 +261,10 @@ final class Decorator
      * @template T of Object
      * @param string $name
      * @return mixed|T
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws Throwable
      */
     public static function service(string $name)
     {
-        return self::resolveInternal($name)->get($name);
+        return self::resolveDepend($name);
     }
 
     private static function resolveInternal(string $name): Container|ContainerWrapper
@@ -276,15 +273,32 @@ final class Decorator
         $container = ContainerWrapper::maybeContainerOrCreate($container);
         if (isset(ContainerFactory::DEFAULT_SERVICES[$name])) {
             $has = $container->has($name);
-            if ($has && !$container->get($name) instanceof $name) {
-                $has = false;
-                $container->remove($name);
+            try {
+                if ($has && !$container->get($name) instanceof $name) {
+                    $has = false;
+                    $container->remove($name);
+                }
+            } catch (Throwable) {
             }
             if (!$has) {
                 $container->set($name, ContainerFactory::DEFAULT_SERVICES[$name]);
             }
         }
         return $container;
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $name
+     * @return ?T
+     */
+    private static function resolveDepend(string $name)
+    {
+        try {
+            return self::resolveInternal($name)->get($name);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public static function router() : RouterInterface
@@ -299,26 +313,22 @@ final class Decorator
 
     public static function database() : Connection
     {
-        return self::resolveInternal(Connection::class)
-            ->get(Connection::class);
+        return self::resolveDepend(Connection::class);
     }
 
     public static function translator() : TranslatorInterface
     {
-        return self::resolveInternal(TranslatorInterface::class)
-            ->get(TranslatorInterface::class);
+        return self::resolveDepend(TranslatorInterface::class);
     }
 
     public static function cache() : CacheItemPoolInterface
     {
-        return self::resolveInternal(CacheItemPoolInterface::class)
-            ->get(CacheItemPoolInterface::class);
+        return self::resolveDepend(CacheItemPoolInterface::class);
     }
 
     public static function logger() : LoggerInterface
     {
-        return self::resolveInternal(LoggerInterface::class)
-            ->get(LoggerInterface::class);
+        return self::resolveDepend(LoggerInterface::class);
     }
 
     /**
@@ -333,44 +343,37 @@ final class Decorator
 
     public static function config() : Config
     {
-        return self::resolveInternal(Config::class)
-            ->get(Config::class);
+        return self::resolveDepend(Config::class);
     }
 
     public static function manager() : ManagerInterface
     {
-        return self::resolveInternal(ManagerInterface::class)
-            ->get(ManagerInterface::class);
+        return self::resolveDepend(ManagerInterface::class);
     }
 
     public static function view() : ViewInterface
     {
-        return self::resolveInternal(ViewInterface::class)
-            ->get(ViewInterface::class);
+        return self::resolveDepend(ViewInterface::class);
     }
 
     public static function benchmark() : ProfilerInterface
     {
-        return self::resolveInternal(ProfilerInterface::class)
-            ->get(ProfilerInterface::class);
+        return self::resolveDepend(ProfilerInterface::class);
     }
 
     public static function scheduler() : Scheduler
     {
-        return self::resolveInternal(Scheduler::class)
-            ->get(Scheduler::class);
+        return self::resolveDepend(Scheduler::class);
     }
 
     public static function permission() : PermissionInterface
     {
-        return self::resolveInternal(PermissionInterface::class)
-            ->get(PermissionInterface::class);
+        return self::resolveDepend(PermissionInterface::class);
     }
 
     public static function modules() : Modules
     {
-        return self::resolveInternal(Modules::class)
-            ->get(Modules::class);
+        return self::resolveDepend(Modules::class);
     }
 
     /**

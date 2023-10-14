@@ -13,8 +13,10 @@ use ArrayAccess\TrayDigita\L10n\Translations\Exceptions\UnsupportedLanguageExcep
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\EntryInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use Doctrine\DBAL\Connection as DoctrineConnection;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Throwable;
@@ -153,6 +155,10 @@ class DatabaseAdapter extends AbstractAdapter
             ->fetchAllAssociative();
     }
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     private function addTableToSchema(Schema $schema): void
     {
         $table = $schema->createTable($this->getTableName());
@@ -239,6 +245,10 @@ class DatabaseAdapter extends AbstractAdapter
         $table->setComment('Translations table');
     }
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     protected function configureSchema(): void
     {
         if ($this->initSchema) {
@@ -305,6 +315,10 @@ class DatabaseAdapter extends AbstractAdapter
         }
     }
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     public function save(string $language, string $domain, Entry $entry): int
     {
         $this->configureSchema();
@@ -381,6 +395,10 @@ class DatabaseAdapter extends AbstractAdapter
      */
     protected array $deferredSave = [];
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     public function saveDeferred(string $language, string $domain, Entry $entry): void
     {
         $this->configureSchema();

@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Console\Command\ApplicationChecker;
 use ArrayAccess\TrayDigita\Cache\Cache;
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -112,7 +113,8 @@ class CacheChecker extends AbstractChecker
             ),
             OutputInterface::VERBOSITY_VERBOSE
         );
-        $config = $container->get(Config::class)->get('cache');
+        $config = ContainerHelper::use(Config::class, $container)
+            ?->get('cache');
         if (!$config instanceof Config) {
             return Command::SUCCESS;
         }

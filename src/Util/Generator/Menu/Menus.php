@@ -186,6 +186,7 @@ class Menus implements ContainerIndicateInterface, ManagerAllocatorInterface
         return $attributes;
     }
 
+    /** @noinspection DuplicatedCode */
     private function renderMenu(
         ?ServerRequestInterface $request,
         AbstractMenu $menu,
@@ -279,6 +280,7 @@ class Menus implements ContainerIndicateInterface, ManagerAllocatorInterface
      * @param int $maxDepth
      * @param array $attributes
      * @return string
+     * @noinspection DuplicatedCode
      */
     public function display(
         ?ServerRequestInterface $request = null,

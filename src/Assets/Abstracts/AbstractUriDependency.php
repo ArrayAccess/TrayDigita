@@ -38,6 +38,7 @@ abstract class AbstractUriDependency extends AbstractDependency implements Depen
         array $attributes = [],
         string ...$inherits
     ): static {
+        /** @noinspection DuplicatedCode */
         $object = new static($dependencies);
         $object->id = $id;
         foreach ($attributes as $key => $value) {

@@ -167,6 +167,7 @@ trait HttpKernelServiceTrait
             $cacheItemGlobal = $this->getCacheItem($cacheGlobalKey);
             $cacheData = $cacheItemGlobal?->get();
             $toLoad[$namespace] = [];
+            /** @noinspection DuplicatedCode */
             if (is_array($cacheData)
                 && is_array($cacheData['list']??null)
                 && is_array($cacheData['directories']??null)

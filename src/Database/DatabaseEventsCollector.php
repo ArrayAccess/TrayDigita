@@ -47,7 +47,10 @@ class DatabaseEventsCollector
         }
         $this->defaultEventRegistered = true;
         foreach (static::PROVIDERS as $className) {
-            $this->add($className);
+            try {
+                $this->add($className);
+            } catch (Throwable) {
+            }
         }
     }
 

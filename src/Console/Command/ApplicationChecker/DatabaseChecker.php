@@ -5,9 +5,11 @@ namespace ArrayAccess\TrayDigita\Console\Command\ApplicationChecker;
 
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
 use ArrayAccess\TrayDigita\Database\Connection;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\MissingMappingDriverImplementation;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,6 +23,9 @@ class DatabaseChecker extends AbstractChecker
 
     protected ?EntityManager $entityManager = null;
 
+    /**
+     * @throws MissingMappingDriverImplementation
+     */
     public function check(InputInterface $input, OutputInterface $output) : int
     {
         $container = $this->applicationCheck->getContainer();
@@ -33,7 +38,7 @@ class DatabaseChecker extends AbstractChecker
             return Command::FAILURE;
         }
 
-        $database = $container->get(Connection::class);
+        $database = ContainerHelper::getNull(Connection::class, $container);
         if (!$database instanceof Connection) {
             $this->write(
                 $output,
@@ -85,6 +90,7 @@ class DatabaseChecker extends AbstractChecker
             );
         }
 
+        /** @noinspection DuplicatedCode */
         if (!$error && !$this->entityManager) {
             $orm = clone $ormConfig;
             $cache = new ArrayAdapter();

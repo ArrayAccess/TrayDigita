@@ -22,6 +22,9 @@ class FileLoader extends FilesystemLoader
         return $this->twigEngine;
     }
 
+    /**
+     * @throws LoaderError
+     */
     protected function findTemplate(string $name, bool $throw = true): ?string
     {
         try {
@@ -32,7 +35,7 @@ class FileLoader extends FilesystemLoader
                 return $this->cache[$name] = $this->twigEngine->getFile($name);
             }
             if (!$throw) {
-                throw $e;
+                return null;
             }
             throw $e;
         }

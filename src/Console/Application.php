@@ -56,6 +56,7 @@ use function str_replace;
 use function trim;
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
 use const DIRECTORY_SEPARATOR;
+use const TD_APP_DIRECTORY;
 
 class Application extends SymfonyConsole implements
     ContainerIndicateInterface,
@@ -100,6 +101,7 @@ class Application extends SymfonyConsole implements
         DumpCompletionCommand::class => true
     ];
 
+    /** @noinspection PhpMissingFieldTypeInspection */
     private $migrationConfig = null;
 
     public function __construct(
@@ -162,7 +164,7 @@ class Application extends SymfonyConsole implements
                 if ($config instanceof Config) {
                     $migrationPath = $config->get('migration')??null;
                 } else {
-                    $migrationPath = \TD_APP_DIRECTORY . DIRECTORY_SEPARATOR . 'Migrations';
+                    $migrationPath = TD_APP_DIRECTORY . DIRECTORY_SEPARATOR . 'Migrations';
                 }
             }
 

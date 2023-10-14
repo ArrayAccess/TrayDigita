@@ -47,6 +47,7 @@ use function strtolower;
 use function trim;
 use const DIRECTORY_SEPARATOR;
 use const PHP_BINARY;
+use const TD_INDEX_FILE;
 
 /**
  * @final
@@ -298,7 +299,7 @@ EOT),
         OutputInterface $output
     ) : int {
         if (defined('TD_INDEX_FILE')) {
-            $publicFile = \TD_INDEX_FILE;
+            $publicFile = TD_INDEX_FILE;
         }
 
         $index = $input->getOption('index-file');
@@ -462,6 +463,7 @@ EOT),
             $this->getApplication()->getLongVersion()
         );
         $output->writeln('');
+        /** @noinspection HttpUrlsUsage */
         $output->writeln(
             sprintf(
                 '<info>Listening builtin web server on : </info> http://%s:%d',

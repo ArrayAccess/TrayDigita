@@ -83,6 +83,7 @@ final class RequestNonce implements NonceRequestInterface
         ?ServerRequestInterface $request = null
     ): bool|int {
         $cacheKey = $this->createRequestHash($action, $request);
+        /** @noinspection DuplicatedCode */
         $valid = $this->cachedResult[$nonce][$cacheKey]??null;
         if ($valid === self::NONCE_VALID
             || $valid === self::NONCE_INVALID

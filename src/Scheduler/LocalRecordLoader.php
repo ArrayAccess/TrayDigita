@@ -17,10 +17,10 @@ use ArrayAccess\TrayDigita\Scheduler\Messages\Success;
 use ArrayAccess\TrayDigita\Scheduler\Messages\Unknown;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use ArrayAccess\TrayDigita\Util\Filter\DataType;
 use Psr\Container\ContainerInterface;
 use Stringable;
-use Throwable;
 use function array_shift;
 use function base64_decode;
 use function debug_backtrace;
@@ -78,17 +78,12 @@ class LocalRecordLoader implements RecordLoaderInterface, ContainerAllocatorInte
         if ($this->executionRecords === null) {
             $container = $this->getContainer();
             $this->executionRecords = [];
-            try {
-                $config = $container?->has(Config::class)
-                    ? $container->get(Config::class)
+            $config = ContainerHelper::use(Config::class, $container);
+            if ($config instanceof Config) {
+                $config = $config->get('path');
+                $storage = $config instanceof Config
+                    ? $config->get('storage')
                     : null;
-                if ($config instanceof Config) {
-                    $config = $config->get('path');
-                    $storage = $config instanceof Config
-                        ? $config->get('storage')
-                        : null;
-                }
-            } catch (Throwable) {
             }
             $project_id = sha1(__DIR__);
             $storage = ($storage ?? sys_get_temp_dir()) . '/scheduler';
@@ -234,6 +229,7 @@ class LocalRecordLoader implements RecordLoaderInterface, ContainerAllocatorInte
         Runner $runner,
         Scheduler $scheduler
     ): ?LastRecord {
+        /** @noinspection DuplicatedCode */
         if ($this::class === __CLASS__) {
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
             if (!isset($trace['class'])
@@ -271,6 +267,7 @@ class LocalRecordLoader implements RecordLoaderInterface, ContainerAllocatorInte
         Runner $runner,
         Scheduler $scheduler
     ): ?LastRecord {
+        /** @noinspection DuplicatedCode */
         if ($this::class === __CLASS__) {
             $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
             if (!isset($trace['class'])

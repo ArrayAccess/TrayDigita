@@ -6,7 +6,6 @@ namespace ArrayAccess\TrayDigita\Benchmark\Injector\Injection;
 use ArrayAccess\TrayDigita\Benchmark\Injector\ManagerProfiler;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use SensitiveParameter;
-use function var_dump;
 
 class ManagerProfilerInjector extends AbstractBasedCoreInjector
 {

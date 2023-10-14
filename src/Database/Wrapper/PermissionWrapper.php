@@ -15,6 +15,8 @@ use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\IterableHelper;
 use Psr\Container\ContainerInterface;
 use Throwable;
+use function array_filter;
+use function count;
 use function strtolower;
 
 class PermissionWrapper implements PermissionInterface
@@ -165,8 +167,8 @@ class PermissionWrapper implements PermissionInterface
         if (empty($this->availableIdentities)) {
             return [];
         }
-        $total = \count($this->availableIdentities);
-        $count = \count(\array_filter($this->availableIdentities));
+        $total = count($this->availableIdentities);
+        $count = count(array_filter($this->availableIdentities));
         if ($total !== $count) {
             IterableHelper::every(
                 $this

@@ -24,6 +24,7 @@ use function strtotime;
 use function substr;
 use function time;
 use function trim;
+use const PREG_UNMATCHED_AS_NULL;
 
 class HashIdentity
 {
@@ -148,7 +149,7 @@ class HashIdentity
         $~x',
             $generatedHash,
             $match,
-            \PREG_UNMATCHED_AS_NULL
+            PREG_UNMATCHED_AS_NULL
         );
 
         if ($match === null) {

@@ -17,7 +17,6 @@ use function dirname;
 use function is_array;
 use function is_dir;
 use function is_string;
-use function iterator_to_array;
 use function md5;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
@@ -40,10 +39,18 @@ trait HttpKernelModuleLoaderTrait
             return;
         }
 
-        $modules = ContainerHelper::decorate(
-            Modules::class,
-            $this->getHttpKernel()->getContainer()
-        );
+        try {
+            $modules = ContainerHelper::decorate(
+                Modules::class,
+                $this->getHttpKernel()->getContainer()
+            );
+        } catch (Throwable) {
+            $modules = ContainerHelper::service(
+                Modules::class,
+                $this->getHttpKernel()->getContainer()
+            );
+        }
+
         if (!$modules) {
             return;
         }
@@ -130,6 +137,7 @@ trait HttpKernelModuleLoaderTrait
             $cacheData = $cacheItemGlobal?->get();
             $toLoad = [];
             $includes = [];
+            /** @noinspection DuplicatedCode */
             if (is_array($cacheData)
                 && is_array($cacheData['list']??null)
                 && is_array($cacheData['directories']??null)
@@ -152,7 +160,7 @@ trait HttpKernelModuleLoaderTrait
                         require_once $realPath;
                     })($file);
                 }
-                foreach ($cacheData['list'] as $file => $className) {
+                foreach ($cacheData['list'] as $className) {
                     $modules->attach($className);
                 }
                 if ($cacheData['directories'] !== []) {

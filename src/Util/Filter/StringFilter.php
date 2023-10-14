@@ -13,6 +13,7 @@ use function array_pop;
 use function array_unique;
 use function array_values;
 use function checkdnsrr;
+use function explode;
 use function filter_var;
 use function function_exists;
 use function hash;
@@ -26,6 +27,7 @@ use function is_null;
 use function is_object;
 use function is_string;
 use function ltrim;
+use function mb_strlen;
 use function parse_url;
 use function preg_match;
 use function preg_match_all;
@@ -34,6 +36,7 @@ use function preg_replace_callback;
 use function restore_error_handler;
 use function set_error_handler;
 use function sprintf;
+use function str_contains;
 use function str_replace;
 use function stripos;
 use function strlen;
@@ -133,9 +136,9 @@ final class StringFilter
          * it needs http:// prepended (unless it's a relative link
          * starting with /, # or ?, or a PHP file).
          */
-        if (!\str_contains($url, ':') && !in_array($url[0], ['/', '#', '?']) &&
+        if (!str_contains($url, ':') && !in_array($url[0], ['/', '#', '?']) &&
             !preg_match('/^[a-z0-9-]+?\.php/i', $url)) {
-            $url = 'http://' . $url;
+            $url = 'https://' . $url;
         }
 
         // Replace ampersands and single quotes only when displaying.
@@ -337,7 +340,7 @@ final class StringFilter
             return self::sanitizeUtf8Encode($string);
         }
 
-        if (!function_exists('mb_strlen') || \mb_strlen($string, 'UTF-8') !== strlen($string)) {
+        if (!function_exists('mb_strlen') || mb_strlen($string, 'UTF-8') !== strlen($string)) {
             $result = false;
             // try to un-serial
             try {
@@ -409,11 +412,11 @@ final class StringFilter
         bool $validateDNSSR = false
     ): bool|string {
         $email = trim(strtolower($email));
-        $explode = \explode('@', $email);
+        $explode = explode('@', $email);
         // validate email address & domain
         if (count($explode) !== 2
             // Domain must be contained Period, and it will be real email
-            || !\str_contains($explode[1], '.')
+            || !str_contains($explode[1], '.')
             // could not use email with double period and hyphens
             || preg_match('~[.]{2,}|[\-_]{3,}~', $explode[0])
             // check validate email

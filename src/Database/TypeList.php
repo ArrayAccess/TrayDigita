@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Database;
 use ArrayAccess\TrayDigita\Database\Types\Data;
 use ArrayAccess\TrayDigita\Database\Types\DataBlob;
 use ArrayAccess\TrayDigita\Database\Types\Year;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Types\Type;
 
 final class TypeList
@@ -29,7 +30,10 @@ final class TypeList
         self::$registered = true;
         foreach (self::TYPES as $type => $className) {
             if (!Type::hasType($type)) {
-                Type::addType($type, $className);
+                try {
+                    Type::addType($type, $className);
+                } catch (Exception) {
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ namespace ArrayAccess\TrayDigita\Http;
 
 use ArrayAccess\TrayDigita\Http\Factory\ResponseFactory;
 use ArrayAccess\TrayDigita\Http\Factory\StreamFactory;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -41,6 +42,9 @@ class Client implements ClientInterface
         return $this->getClient()->sendRequest($request);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     */
     public function send(string $method, UriInterface|string $uri): ResponseInterface
     {
         $request = $this->getClient()->createRequest($method, $uri);

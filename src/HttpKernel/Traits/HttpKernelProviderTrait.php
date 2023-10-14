@@ -10,6 +10,7 @@ use ArrayAccess\TrayDigita\L10n\Translations\Adapter\Gettext\PoMoAdapter;
 use ArrayAccess\TrayDigita\L10n\Translations\Adapter\Json\JsonAdapter;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use Throwable;
 use function is_dir;
 use function is_string;
 
@@ -25,22 +26,22 @@ trait HttpKernelProviderTrait
         $manager = ContainerHelper::use(ManagerInterface::class, $container);
         $manager?->dispatch('kernel.beforeRegisterProviders', $this);
         try {
-            $config = $container?->get(Config::class)->get('path');
+            $config = ContainerHelper::use(Config::class, $container)?->get('path');
             $config = $config instanceof Config ? $config : null;
-            $translator = $container?->has(TranslatorInterface::class)
-                ? $container?->get(TranslatorInterface::class)
-                : null;
+            $translator = ContainerHelper::use(TranslatorInterface::class, $container);
             $translator = $translator instanceof TranslatorInterface
                 ? $translator
                 : null;
             if ($translator) {
                 if ($container instanceof Container) {
-                    $poMoAdapter = $container->decorate(PoMoAdapter::class);
-                    $jsonAdapter = $container->decorate(JsonAdapter::class);
-                } else {
-                    $poMoAdapter = new PoMoAdapter();
-                    $jsonAdapter = new JsonAdapter();
+                    try {
+                        $poMoAdapter = $container->decorate(PoMoAdapter::class);
+                        $jsonAdapter = $container->decorate(JsonAdapter::class);
+                    } catch (Throwable) {
+                    }
                 }
+                $poMoAdapter ??= new PoMoAdapter();
+                $jsonAdapter ??= new JsonAdapter();
                 $translator->addAdapter($poMoAdapter);
                 $translator->addAdapter($jsonAdapter);
 

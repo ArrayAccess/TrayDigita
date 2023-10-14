@@ -16,6 +16,7 @@ use ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface;
 use ArrayAccess\TrayDigita\Benchmark\Traits\DurationTimeTrait;
 use ArrayAccess\TrayDigita\Benchmark\Traits\MemoryTrait;
 use ReflectionClass;
+use ReflectionException;
 use SplObjectStorage;
 use Traversable;
 use function is_string;
@@ -175,13 +176,16 @@ class Profiler implements ProfilerInterface
     {
         if (!isset($this->groups[$id])) {
             $this->groupReflection ??= new ReflectionClass(Group::class);
-            $this->groups[$id] = (function ($obj) use ($id) {
-                /**
-                 * @var Group $this
-                 */
-                $this->{'__construct'}($obj, $id);
-                return $this;
-            })->call($this->groupReflection->newInstanceWithoutConstructor(), $this);
+            try {
+                $this->groups[$id] = (function ($obj) use ($id) {
+                    /**
+                     * @var Group $this
+                     */
+                    $this->{'__construct'}($obj, $id);
+                    return $this;
+                })->call($this->groupReflection->newInstanceWithoutConstructor(), $this);
+            } catch (ReflectionException) {
+            }
         }
 
         return $this->groups[$id];

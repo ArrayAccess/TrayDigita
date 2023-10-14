@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
 use ReflectionAttribute;
 use ReflectionObject;
+use Throwable;
 use function array_diff;
 use function array_map;
 use function in_array;
@@ -83,7 +84,12 @@ trait FieldNameGetter
             ) {
                 $prop = [];
                 foreach ($metadata->getFieldNames() as $item) {
-                    $mapping = $metadata->getFieldMapping($item);
+                    try {
+                        $mapping = $metadata->getFieldMapping($item);
+                    } catch (Throwable) {
+                        continue;
+                    }
+                    /** @noinspection DuplicatedCode */
                     $fieldName = $mapping['fieldName']??null;
                     $columnName = $mapping['columnName']??null;
                     if (!$fieldName || !$columnName) {

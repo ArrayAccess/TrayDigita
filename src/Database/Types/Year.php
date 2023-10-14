@@ -5,6 +5,7 @@ namespace ArrayAccess\TrayDigita\Database\Types;
 
 use DateTime;
 use DateTimeInterface;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\ConversionException;
 use Doctrine\DBAL\Types\DateTimeType;
@@ -80,7 +81,11 @@ class Year extends DateTimeType
         if ($platform->hasDoctrineTypeMappingFor('year')) {
             return 'YEAR';
         }
-        return $platform->getDateTypeDeclarationSQL($column);
+        try {
+            return $platform->getDateTypeDeclarationSQL($column);
+        } catch (Exception) {
+            return 'YEAR';
+        }
     }
 
     public function getMappedDatabaseTypes(AbstractPlatform $platform): array

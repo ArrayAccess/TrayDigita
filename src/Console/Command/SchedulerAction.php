@@ -130,7 +130,7 @@ EOT),
                 ),
                 $countQueue === 0 ? self::MODE_SUCCESS : self::MODE_WARNING
             );
-
+            /** @noinspection DuplicatedCode */
             foreach ($queue as $task) {
                 $interval = $task->getInterval();
                 if (is_int($interval)) {
@@ -175,6 +175,7 @@ EOT),
                 ),
                 self::MODE_SUCCESS
             );
+            /** @noinspection DuplicatedCode */
             foreach ($skipped as $task) {
                 $interval = $task->getInterval();
                 if (is_int($interval)) {

@@ -1,5 +1,8 @@
 <?php
-/** @noinspection PhpComposerExtensionStubsInspection */
+/**
+ * @noinspection PhpUndefinedClassInspection
+ * @noinspection PhpComposerExtensionStubsInspection
+ */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Cache;
@@ -251,17 +254,21 @@ class Cache implements AdapterInterface, ContainerIndicateInterface
             }
 
             $adapter = isset($adapterArgs[$adapter]) ? $adapter : FilesystemAdapter::class;
-            $ref = new ReflectionClass($adapter);
-            if ($ref->hasMethod('isSupported')) {
-                if ($ref->getMethod('isSupported')->isPublic()
-                    && $ref->getMethod('isSupported')->isStatic()
-                ) {
-                    $adapter = call_user_func([$adapter, 'isSupported'])
-                        ? $adapter
-                        : FilesystemAdapter::class;
-                } else {
-                    $adapter = FilesystemAdapter::class;
+            try {
+                $ref = new ReflectionClass($adapter);
+                if ($ref->hasMethod('isSupported')) {
+                    if ($ref->getMethod('isSupported')->isPublic()
+                        && $ref->getMethod('isSupported')->isStatic()
+                    ) {
+                        $adapter = call_user_func([$adapter, 'isSupported'])
+                            ? $adapter
+                            : FilesystemAdapter::class;
+                    } else {
+                        $adapter = FilesystemAdapter::class;
+                    }
                 }
+            } catch (Throwable) {
+                $adapter = FilesystemAdapter::class;
             }
 
             switch ($adapter) {

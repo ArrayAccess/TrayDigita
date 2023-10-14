@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InvalidArgumentException;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use ArrayAccess\TrayDigita\Util\Filter\Ip as IpValidator;
 use Psr\Cache\CacheItemPoolInterface;
+use Throwable;
 use function is_int;
 use function is_object;
 use function is_string;
@@ -58,12 +59,16 @@ class Checker
             return null;
         }
         $cacheName = self::CACHE_NAME_PREFIX . sha1($domain);
-        $item = $pool->getItem($cacheName);
-        $result = $item->get();
-        if (!$result instanceof WhoisResult
-            || ! $result->isValid()
-        ) {
-            $pool->deleteItem($cacheName);
+        try {
+            $item = $pool->getItem($cacheName);
+            $result = $item->get();
+            if (!$result instanceof WhoisResult
+                || !$result->isValid()
+            ) {
+                $pool->deleteItem($cacheName);
+                return null;
+            }
+        } catch (Throwable) {
             return null;
         }
 
@@ -84,13 +89,17 @@ class Checker
             return false;
         }
         $cacheName = self::CACHE_NAME_PREFIX . sha1($ascii);
-        $item = $pool->getItem($cacheName);
-        $item->set($data);
-        $expired = static::DEFAULT_EXPIRED;
-        /** @noinspection PhpConditionAlreadyCheckedInspection */
-        $expired = !is_int($expired) ? self::DEFAULT_EXPIRED : $expired;
-        $item->expiresAfter($expired);
-        return $pool->save($item) ? $cacheName : false;
+        try {
+            $item = $pool->getItem($cacheName);
+            $item->set($data);
+            $expired = static::DEFAULT_EXPIRED;
+            /** @noinspection PhpConditionAlreadyCheckedInspection */
+            $expired = !is_int($expired) ? self::DEFAULT_EXPIRED : $expired;
+            $item->expiresAfter($expired);
+            return $pool->save($item) ? $cacheName : false;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public function whois(

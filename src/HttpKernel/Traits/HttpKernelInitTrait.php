@@ -49,6 +49,7 @@ use function strlen;
 use function strtolower;
 use function substr;
 use function trim;
+use const CONFIG_FILE;
 use const DIRECTORY_SEPARATOR;
 use const TD_APP_DIRECTORY;
 use const TD_INDEX_FILE;
@@ -249,8 +250,8 @@ trait HttpKernelInitTrait
         $config->set('path', $path);
 
         $configFile = $root . DIRECTORY_SEPARATOR . $this->baseConfigFile;
-        if (defined('CONFIG_FILE') && is_string(\CONFIG_FILE)) {
-            $configFile = \CONFIG_FILE;
+        if (defined('CONFIG_FILE') && is_string(CONFIG_FILE)) {
+            $configFile = CONFIG_FILE;
         }
 
         if (!defined('CONFIG_FILE')) {
@@ -258,21 +259,21 @@ trait HttpKernelInitTrait
         }
 
         // use resolver
-        if (\CONFIG_FILE !== $configFile
+        if (CONFIG_FILE !== $configFile
             && (
-                !is_string(\CONFIG_FILE)
-                || is_file(\CONFIG_FILE)
+                !is_string(CONFIG_FILE)
+                || is_file(CONFIG_FILE)
             )
         ) {
             // override
-            $this->configFile = \CONFIG_FILE;
+            $this->configFile = CONFIG_FILE;
         } else {
             $this->configFile = $configFile;
         }
 
-        if (!file_exists(\CONFIG_FILE)) {
+        if (!file_exists(CONFIG_FILE)) {
             $this->configError = self::CONFIG_UNAVAILABLE;
-        } elseif (!is_file(\CONFIG_FILE)) {
+        } elseif (!is_file(CONFIG_FILE)) {
             $this->configError = self::CONFIG_NOT_FILE;
         } else {
             $configurations = null;
@@ -374,9 +375,12 @@ trait HttpKernelInitTrait
             if ($manager
                 && true === $environment->get('profiling')
             ) {
-                $managerProfiler = ContainerHelper::decorate(ManagerProfiler::class, $container);
-                $managerProfiler->registerProviders();
-                $manager->setDispatchListener($managerProfiler);
+                try {
+                    $managerProfiler = ContainerHelper::decorate(ManagerProfiler::class, $container);
+                    $managerProfiler->registerProviders();
+                    $manager->setDispatchListener($managerProfiler);
+                } catch (Throwable) {
+                }
             }
 
             // @dispatch(kernel.beforeInit)
@@ -388,6 +392,7 @@ trait HttpKernelInitTrait
                 ? $databaseConfig
                 : null;
             $timezone = $environment->get('timezone');
+            /** @noinspection DuplicatedCode */
             $timezone = is_string($timezone) ? trim($timezone) : null;
             $timezone = $timezone?:null;
             if ($timezone) {
@@ -404,6 +409,7 @@ trait HttpKernelInitTrait
 
             $timezone = $timezone ?: null;
             $databaseTimeZone = $databaseConfig?->get('timezone');
+            /** @noinspection DuplicatedCode */
             $databaseTimeZone = is_string($databaseTimeZone)
                 ? trim($databaseTimeZone)
                 : null;
@@ -568,15 +574,10 @@ trait HttpKernelInitTrait
                 $this->commandNameSpace => $path->get('command') ?? $defaultPaths['command'],
             ];
 
-            $routing = $container->has(RoutingMiddleware::class)
-                ? $container->get(RoutingMiddleware::class)
-                : null;
-            $routing = $routing instanceof RoutingMiddleware
-                ? $routing
-                : new RoutingMiddleware(
-                    $container,
-                    $this->getHttpKernel()->getRouter()
-                );
+            $routing = ContainerHelper::getNull(
+                RoutingMiddleware::class,
+                $container
+            )??new RoutingMiddleware($container, $this->getHttpKernel()->getRouter());
             $manager->dispatch('kernel.initConfig', $this);
         } finally {
             $manager->dispatch('kernel.afterInitConfig', $this);

@@ -7,9 +7,7 @@ use ArrayAccess\TrayDigita\Container\ContainerWrapper;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Throwable;
 use function is_object;
 
@@ -72,9 +70,6 @@ class ContainerHelper
      * @param string|class-string<T> $expect
      * @param ContainerInterface|null $container
      * @return mixed|T
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @throws Throwable
      */
     public static function service(
         string $expect,

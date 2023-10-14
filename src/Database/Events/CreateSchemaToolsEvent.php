@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Database\Events;
 use ArrayAccess\TrayDigita\Database\Attributes\SubscribeEvent;
 use ArrayAccess\TrayDigita\Database\DatabaseEvent;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
@@ -25,6 +26,7 @@ use Doctrine\DBAL\Types\TimeType;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Tools\Event\GenerateSchemaTableEventArgs;
 use Doctrine\ORM\Tools\ToolEvents;
+use Throwable;
 use function array_change_key_case;
 use function array_combine;
 use function array_map;
@@ -49,11 +51,10 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
 
     protected function getManager() : ?ManagerInterface
     {
-        $container = $this->getConnection()->getContainer();
-        $manager = $container->has(ManagerInterface::class)
-            ? $container->get(ManagerInterface::class)
-            : null;
-        return $manager instanceof ManagerInterface ? $manager : null;
+        return ContainerHelper::use(
+            ManagerInterface::class,
+            $this->getConnection()->getContainer()
+        );
     }
 
     public function postGenerateSchemaTable(GenerateSchemaTableEventArgs $eventArgs): void
@@ -71,11 +72,14 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                 if (!isset($attributes['attribute'])) {
                     continue;
                 }
-                $definition = $this->getColumnDeclarationSQLOnUpdate(
-                    $column
-                );
-                if ($definition) {
-                    $column->setColumnDefinition($definition);
+                try {
+                    $definition = $this->getColumnDeclarationSQLOnUpdate(
+                        $column
+                    );
+                    if ($definition) {
+                        $column->setColumnDefinition($definition);
+                    }
+                } catch (Throwable) {
                 }
             }
 
@@ -113,6 +117,7 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                     }
                     if (!$onUpdate) {
                         $update = $options['onupdate'] ?? null;
+                        /** @noinspection DuplicatedCode */
                         $update = is_string($update)
                             ? strtoupper(str_replace('  ', '', $update))
                             : null;
@@ -135,6 +140,7 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                     }
                     if (!$onDelete) {
                         $delete = $options['ondelete'] ?? null;
+                        /** @noinspection DuplicatedCode */
                         $delete = is_string($delete)
                             ? strtoupper(str_replace('  ', '', $delete))
                             : null;
@@ -191,14 +197,17 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                     if ($onDelete && empty($opt['onDelete'])) {
                         $opt['onDelete'] = $onDelete;
                     }
-                    $table->removeForeignKey($foreignName);
-                    $table->addForeignKeyConstraint(
-                        $foreignKey->getForeignTableName(),
-                        $foreignKey->getLocalColumns(),
-                        $foreignKey->getForeignColumns(),
-                        $opt,
-                        $validName ? $relationName : $foreignName
-                    );
+                    try {
+                        $table->removeForeignKey($foreignName);
+                        $table->addForeignKeyConstraint(
+                            $foreignKey->getForeignTableName(),
+                            $foreignKey->getLocalColumns(),
+                            $foreignKey->getForeignColumns(),
+                            $opt,
+                            $validName ? $relationName : $foreignName
+                        );
+                    } catch (Throwable) {
+                    }
                 }
             }
             $manager

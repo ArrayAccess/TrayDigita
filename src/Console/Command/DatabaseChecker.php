@@ -1,4 +1,8 @@
 <?php
+/**
+ * @noinspection PhpUndefinedNamespaceInspection
+ * @noinspection PhpUndefinedClassInspection
+ */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Console\Command;
@@ -14,7 +18,9 @@ use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Types\Type;
@@ -162,6 +168,9 @@ EOT),
 
     private array $blackListOptimize = [];
 
+    /**
+     * @throws Throwable
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // no execute
@@ -170,10 +179,7 @@ EOT),
         }
         $startTime = microtime(true);
         $memory = memory_get_usage();
-        $manager = $this->getManager();
-        $manager = ! $manager && $this->getContainer()->has(ManagerInterface::class)
-            ? $this->getContainer()->get(ManagerInterface::class)
-            : $manager;
+        $manager = ContainerHelper::getNull(ManagerInterface::class, $this->getContainer());
         if ($manager instanceof ManagerInterface) {
             $this->setManager($manager);
         }
@@ -219,6 +225,9 @@ EOT),
         return self::SUCCESS;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function databaseSchemaDetect(InputInterface $input, OutputInterface $output) : int
     {
         $container = $this->getContainer();
@@ -231,7 +240,7 @@ EOT),
             );
             return Command::FAILURE;
         }
-        $database = $container->get(Connection::class);
+        $database = ContainerHelper::getNull(Connection::class, $container);
         if (!$database instanceof Connection) {
             $this->writeDanger(
                 $output,
@@ -312,6 +321,7 @@ EOT),
                     ->getName();
                 $inQuestionMark[] = '?';
             }
+            /** @noinspection DuplicatedCode */
             if (!empty($tablesMeta)) {
                 foreach ($database
                              ->executeQuery(
@@ -1192,6 +1202,7 @@ EOT),
                 );
             }
 
+            /** @noinspection DuplicatedCode */
             $answer = $interactive ? $io->ask(
                 $this->translate('Are you sure to continue (Yes/No)?'),
                 null,
@@ -1327,6 +1338,7 @@ EOT),
             );
         }
 
+        /** @noinspection DuplicatedCode */
         $answer = $interactive ? $io->ask(
             $this->translate('Are you sure to continue (Yes/No)?'),
             null,
@@ -1422,7 +1434,10 @@ EOT),
             $progressBar?->clear();
         } catch (Throwable $e) {
             if ($is_pdo && $conn->inTransaction()) {
-                $conn->rollBack();
+                try {
+                    $conn->rollBack();
+                } catch (Exception $e) {
+                }
             }
             $progressBar?->finish();
             $progressBar?->clear();
@@ -1450,6 +1465,9 @@ EOT),
         return Command::SUCCESS;
     }
 
+    /**
+     * @throws Throwable
+     */
     private function doDatabaseCheck(
         OutputInterface $output,
         bool $skipChecking
@@ -1465,7 +1483,7 @@ EOT),
             return;
         }
 
-        $database = $container->get(Connection::class);
+        $database = ContainerHelper::getNull(Connection::class, $container);
         if (!$database instanceof Connection) {
             $this->writeDanger(
                 $output,
@@ -1519,6 +1537,7 @@ EOT),
             );
         }
 
+        /** @noinspection DuplicatedCode */
         if (!$error && !$this->entityManager) {
             $orm = clone $ormConfig;
             $cache = new ArrayAdapter();
@@ -1657,13 +1676,11 @@ EOT),
                 $output,
                 sprintf(
                     '<info>- ClassMetaData</info> [%s]',
-                    $metadata ? $metadata::class : 'Unknown'
+                    $metadata::class
                 )
             );
             try {
-                $repository = $metadata
-                    ? $database->getRepository($metadata->getName())::class
-                    : null;
+                $repository = $database->getRepository($metadata->getName())::class;
             } catch (Throwable) {
             }
             $this->writeIndent(
@@ -1720,6 +1737,9 @@ EOT),
         }
     }
 
+    /**
+     * @throws Throwable
+     */
     protected function doCheckData(
         OutputInterface $output,
         $error,
@@ -1742,6 +1762,7 @@ EOT),
                 $inQuestionMark[] = '?';
             }
 
+            /** @noinspection DuplicatedCode */
             if (!empty($tablesMeta)) {
                 foreach ($database
                              ->executeQuery(

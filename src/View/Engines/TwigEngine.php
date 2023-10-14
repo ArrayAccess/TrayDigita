@@ -13,6 +13,7 @@ use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\HtmlTagAttributes;
 use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\Miscellaneous;
 use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\Translator;
 use Stringable;
+use Throwable;
 use Twig\Cache\CacheInterface;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
@@ -51,7 +52,7 @@ final class TwigEngine extends AbstractEngine
             $options = [];
             $container = $this->view->getContainer();
             if ($container?->has(CacheInterface::class)) {
-                $options['cache'] = $container->get(CacheInterface::class);
+                $options['cache'] = ContainerHelper::getNull(CacheInterface::class, $container);
             }
             $twig = ContainerHelper::getNull(Environment::class, $container);
             if (!$twig instanceof Environment) {
@@ -65,7 +66,10 @@ final class TwigEngine extends AbstractEngine
                 if ($loader instanceof FilesystemLoader) {
                     foreach ($this->getFilteredViewsDir() as $dir) {
                         if (!in_array($dir, $loader->getPaths())) {
-                            $loader->addPath($dir);
+                            try {
+                                $loader->addPath($dir);
+                            } catch (Throwable) {
+                            }
                         }
                     }
                 }
@@ -103,7 +107,7 @@ final class TwigEngine extends AbstractEngine
             $twig = clone $this->getTwig();
             $parameters = $parameters + $this->view->getParameters();
             $result = $twig->load($path)->render(['this' => $this] + $parameters);
-            $manager?->dispatch('viewEngine.twigLoad', $path, $parameters, $this, $result??null);
+            $manager?->dispatch('viewEngine.twigLoad', $path, $parameters, $this, $result);
             return $result;
         } finally {
             $manager?->dispatch('viewEngine.afterTwigLoad', $path, $parameters, $this, $result??null);

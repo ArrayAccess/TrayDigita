@@ -28,6 +28,7 @@ class ComposerCreateProject
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection HtmlRequiredLangAttribute
      * @noinspection PhpUnused
+     * @throws Exception
      */
     public static function composerDoCreateProject($event)
     {

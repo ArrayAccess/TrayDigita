@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Scheduler\Runner;
 use Cron\CronExpression;
 use DateTimeInterface;
 use DateTimeZone;
+use Exception;
 use function array_slice;
 use function explode;
 use function implode;
@@ -66,11 +67,17 @@ class CronTime implements SchedulerTimeInterface
         return $this->cronExpression;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getNextRunDate(?DateTimeZone $timezone = null) : DateTimeInterface
     {
         return $this->getCronExpression()->getNextRunDate($timezone);
     }
 
+    /**
+     * @throws Exception
+     */
     public function shouldRun(Task $task, int $lastExecuteTime, int $lastStatusCode): bool
     {
         $inProgress = $lastStatusCode === Runner::STATUS_PROGRESS;

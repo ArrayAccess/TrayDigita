@@ -36,6 +36,7 @@ final class Nonce implements NonceInterface
      */
     public function validate(string $nonce, string $action): bool|int
     {
+        /** @noinspection DuplicatedCode */
         $valid = $this->cachedResult[$nonce][$action]??null;
         if ($valid === self::NONCE_VALID
             || $valid === self::NONCE_INVALID

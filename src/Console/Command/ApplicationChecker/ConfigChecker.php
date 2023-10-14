@@ -21,7 +21,9 @@ use function is_writable;
 use function realpath;
 use function sprintf;
 use function ucfirst;
+use const CONFIG_FILE;
 use const DIRECTORY_SEPARATOR;
+use const TD_APP_DIRECTORY;
 
 class ConfigChecker extends AbstractChecker
 {
@@ -52,7 +54,7 @@ class ConfigChecker extends AbstractChecker
     protected function validateEnvironment(InputInterface $input, OutputInterface $output) : int
     {
         $container = $this->applicationCheck->getContainer();
-        $config = $container?->get(Config::class)->get('environment');
+        $config = ContainerHelper::use(Config::class, $container)?->get('environment');
         if (!$config instanceof Config) {
             $this->writeDanger(
                 $output,
@@ -139,16 +141,13 @@ class ConfigChecker extends AbstractChecker
     protected function validatePath(InputInterface $input, OutputInterface $output) : int
     {
         $container = $this->applicationCheck->getContainer();
-        $config = $container->has(Config::class)
-            ? $container->get(Config::class)
-            : null;
-        $config = $config instanceof Config ? $config : new Config();
+        $config = ContainerHelper::use(Config::class, $container)??new Config();
         $path = $config->get('path');
         $path = $path instanceof Config ? $path : null;
         $directory = defined('TD_APP_DIRECTORY')
-            && is_string(\TD_APP_DIRECTORY)
-            && is_dir(\TD_APP_DIRECTORY)
-            ? \TD_APP_DIRECTORY
+            && is_string(TD_APP_DIRECTORY)
+            && is_dir(TD_APP_DIRECTORY)
+            ? TD_APP_DIRECTORY
             : null;
         $root = ContainerHelper::use(KernelInterface::class)
             ->getRootDirectory();
@@ -233,15 +232,12 @@ class ConfigChecker extends AbstractChecker
     protected function validateConfig(InputInterface $input, OutputInterface $output) : int
     {
         $container = $this->applicationCheck->getContainer();
-        $kernel = $container->has('kernel') ? $container->get('kernel') : null;
-        $kernel = $kernel instanceof KernelInterface
-            ? $kernel
-            : Decorator::kernel();
+        $kernel = ContainerHelper::use(KernelInterface::class, $container)??Decorator::kernel();
         if (!$container && ($container = $kernel->getContainer())) {
             $this->applicationCheck->setContainer($container);
         }
         $configFile = $kernel->getConfigFile()?:(
-            !defined('CONFIG_FILE') ? \CONFIG_FILE : null
+            !defined('CONFIG_FILE') ? CONFIG_FILE : null
         );
         if (!is_string($configFile)
             || !file_exists($configFile)
@@ -282,10 +278,8 @@ class ConfigChecker extends AbstractChecker
             );
             return Command::FAILURE;
         }
-        $config = $container->get(Config::class);
-        $config = $config instanceof Config
-            ? $config
-            : null;
+
+        $config = ContainerHelper::getNull(Config::class, $container);
         if (!$config) {
             $this->writeDanger(
                 $output,

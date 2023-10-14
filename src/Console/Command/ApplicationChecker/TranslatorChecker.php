@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 use function sprintf;
 
 class TranslatorChecker extends AbstractChecker
@@ -24,7 +25,11 @@ class TranslatorChecker extends AbstractChecker
             );
             return Command::FAILURE;
         }
-        $translator = $container->get(TranslatorInterface::class);
+        try {
+            $translator = $container->get(TranslatorInterface::class);
+        } catch (Throwable) {
+            $translator = null;
+        }
         if (!$translator instanceof TranslatorInterface) {
             $this->writeDanger(
                 $output,

@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Database\DatabaseEvent;
 use ArrayAccess\TrayDigita\Database\Entities\Abstracts\AbstractEntity;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostLoadEventArgs;
@@ -27,11 +28,7 @@ class PostLoadEvent extends DatabaseEvent implements EventSubscriber
 {
     protected function getManager() : ?ManagerInterface
     {
-        $container = $this->getConnection()->getContainer();
-        $manager = $container->has(ManagerInterface::class)
-            ? $container->get(ManagerInterface::class)
-            : null;
-        return $manager instanceof ManagerInterface ? $manager : null;
+        return ContainerHelper::use(ManagerInterface::class, $this->getConnection()->getContainer());
     }
 
     public function postLoad(PostLoadEventArgs $eventArgs): void
@@ -48,9 +45,7 @@ class PostLoadEvent extends DatabaseEvent implements EventSubscriber
             if ($object instanceof ContainerAllocatorInterface) {
                 $object->setContainer($container);
             }
-            $manager = $container->has(ManagerInterface::class)
-                ? $container->get(ManagerInterface::class)
-                : null;
+            $manager = ContainerHelper::use(ManagerInterface::class, $container);
             if ($object instanceof ManagerAllocatorInterface
                 && $container->has(ManagerInterface::class)
             ) {

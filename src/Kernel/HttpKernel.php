@@ -102,8 +102,8 @@ class HttpKernel implements
             }
         }
 
-        $this->router = $container->get(RouterInterface::class);
-        $this->middlewareDispatcher = $container->get(MiddlewareDispatcherInterface::class);
+        $this->router = ContainerHelper::service(RouterInterface::class, $container);
+        $this->middlewareDispatcher = ContainerHelper::service(MiddlewareDispatcherInterface::class, $container);
     }
 
     public function getStartMemory(): int

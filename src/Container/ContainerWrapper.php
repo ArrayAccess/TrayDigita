@@ -7,7 +7,10 @@ use ArrayAccess;
 use ArrayAccess\TrayDigita\Container\Interfaces\UnInvokableInterface;
 use ArrayAccess\TrayDigita\Container\Traits\ContainerDecorator;
 use ArrayAccess\TrayDigita\Exceptions\Logical\InvokeAbleException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
 use function method_exists;
 use function sprintf;
 
@@ -93,6 +96,11 @@ class ContainerWrapper implements ContainerInterface, ArrayAccess, UnInvokableIn
         return $this->has((string) $offset);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws Throwable
+     */
     public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);

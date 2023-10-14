@@ -13,7 +13,6 @@ use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Scheduler\Abstracts\Task;
 use ArrayAccess\TrayDigita\Scheduler\Scheduler;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use Psr\Cache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use SplFileInfo;
@@ -32,17 +31,6 @@ use function ucfirst;
 trait HttpKernelSchedulerCommandTrait
 {
     /**
-     * @param ?string $namespace
-     * @param string $application
-     * @param string $objectProperty
-     * @param string $eventName
-     * @param string $parentClass
-     * @param string|null $methodBefore
-     * @param string|null $propertyBefore
-     * @return void
-     * @throws InvalidArgumentException
-     * @throws Throwable
-     * @throws ReflectionException
      * @internal
      *
      * @see registerSchedulers()
@@ -123,6 +111,7 @@ trait HttpKernelSchedulerCommandTrait
                     })($realPath);
                 }
 
+                /** @noinspection PhpUnhandledExceptionInspection */
                 $ref = new ReflectionClass($className);
                 $className = $ref->getName();
                 if ($rewrite && $cacheItem) {
@@ -154,7 +143,7 @@ trait HttpKernelSchedulerCommandTrait
                         return null;
                     }
                 }
-            } catch (Throwable) {
+            } catch (ReflectionException|Throwable) {
             }
             return null;
         };

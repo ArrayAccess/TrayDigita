@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpComposerExtensionStubsInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Image\Adapter;

@@ -150,6 +150,9 @@ final class DriverWrapper extends AbstractDriverMiddleware
         } elseif ($platform instanceof DB2Platform) {
             $query = "SET SESSION TIME_ZONE='$timezone';";
         }
-        $query && $connection->exec($query);
+        try {
+            $query && $connection->exec($query);
+        } catch (Throwable) {
+        }
     }
 }

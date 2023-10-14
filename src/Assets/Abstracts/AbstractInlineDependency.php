@@ -39,6 +39,7 @@ abstract class AbstractInlineDependency extends AbstractDependency implements De
         array $attributes = [],
         string ...$inherits
     ): static {
+        /** @noinspection DuplicatedCode */
         $object = new static($dependencies);
         $object->id = $id;
         foreach ($attributes as $key => $value) {

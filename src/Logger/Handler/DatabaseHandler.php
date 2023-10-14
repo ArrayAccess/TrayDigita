@@ -5,9 +5,11 @@ namespace ArrayAccess\TrayDigita\Logger\Handler;
 
 use ArrayAccess\TrayDigita\Database\Connection;
 use Doctrine\DBAL\Connection as DoctrineConnection;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Types\Types;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
@@ -57,6 +59,9 @@ class DatabaseHandler extends AbstractProcessingHandler
         $this->tableName = trim($tableName);
     }
 
+    /**
+     * @throws Exception
+     */
     public function createTable(): void
     {
         $schema = new Schema();
@@ -67,6 +72,10 @@ class DatabaseHandler extends AbstractProcessingHandler
         }
     }
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     private function addTableToSchema(Schema $schema): void
     {
         $table = $schema->createTable($this->tableName);
@@ -122,6 +131,10 @@ class DatabaseHandler extends AbstractProcessingHandler
         $table->setComment('Record for logs');
     }
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     protected function configureSchema(): void
     {
         if ($this->initSchema) {
@@ -212,6 +225,10 @@ class DatabaseHandler extends AbstractProcessingHandler
         return $this->connection;
     }
 
+    /**
+     * @throws Exception
+     * @throws SchemaException
+     */
     protected function write(LogRecord $record): void
     {
         $this->configureSchema();

@@ -12,6 +12,7 @@ use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -107,6 +108,7 @@ EOT),
      */
     protected function filterNames(string $name) : ?array
     {
+        /** @noinspection DuplicatedCode */
         $name = trim($name);
         $name = ltrim(str_replace(['/', '_', '-'], '\\', $name), '\\');
         $name = preg_replace('~\\\+~', '\\', $name);
@@ -221,10 +223,7 @@ EOT),
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = $container?->has(Config::class)
-            ? $container->get(Config::class)
-            : null;
-        $config = $config instanceof Config ? $config : new Config();
+        $config = ContainerHelper::use(Config::class, $container)??new Config();
         $path = $config->get('path');
         $path = $path instanceof Config ? $path : null;
         $entityDir = $path?->get('entity');
@@ -313,24 +312,25 @@ EOT),
                 )
             )
         );
+        /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
             $this->translate('Are you sure to continue (Yes/No)?'),
             null,
             function ($e) {
-                    $e = !is_string($e) ? '' : $e;
-                    $e = strtolower(trim($e));
-                    $ask = match ($e) {
-                        'yes' => true,
-                        'no' => false,
-                        default => null
-                    };
+                $e = !is_string($e) ? '' : $e;
+                $e = strtolower(trim($e));
+                $ask = match ($e) {
+                    'yes' => true,
+                    'no' => false,
+                    default => null
+                };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
                         $this->translate('Please enter valid answer! (Yes / No)')
                     );
                 }
-                    return $ask;
+                return $ask;
             }
         );
         if ($answer) {
@@ -478,7 +478,7 @@ class $baseClassName extends AbstractEntity
 
     public function getId() : int
     {
-        return \$this->id; 
+        return \$this->id;
     }
     
     public function getCreatedAt(): DateTimeInterface

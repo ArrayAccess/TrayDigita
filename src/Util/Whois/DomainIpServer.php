@@ -5,6 +5,7 @@ namespace ArrayAccess\TrayDigita\Util\Whois;
 
 use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use Psr\Cache\CacheItemPoolInterface;
+use Throwable;
 use function array_pop;
 use function explode;
 use function is_int;
@@ -102,14 +103,18 @@ final class DomainIpServer
         }
 
         $cacheName = self::CACHE_NAME_PREFIX.sha1($extension);
-        $item = $this->cache?->getItem($cacheName);
-        $cache = $item?->get();
-        if ($cache instanceof WhoisExtensionCache
-            && $cache->isValid()
-        ) {
-            $this->server = $cache->getServer();
-            self::$extensionServers[$extension] = $this->server;
-            return $this->server;
+        $item = null;
+        try {
+            $item = $this->cache?->getItem($cacheName);
+            $cache = $item?->get();
+            if ($cache instanceof WhoisExtensionCache
+                && $cache->isValid()
+            ) {
+                $this->server = $cache->getServer();
+                self::$extensionServers[$extension] = $this->server;
+                return $this->server;
+            }
+        } catch (Throwable) {
         }
         $response = $this->request->doRequest(
             self::DEFAULT_SERVER,

@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Scheduler\Runner;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Exception;
 use function array_unique;
 use function array_values;
 use function date;
@@ -120,6 +121,9 @@ final class Periodic implements SchedulerTimeInterface
         return $this->hour === null && $this->minutes === null;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getNextRunDate(?DateTimeZone $timezone = null) : DateTime
     {
         if (!empty($this->days)) {

@@ -12,6 +12,7 @@ use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -108,6 +109,7 @@ EOT),
      */
     protected function filterNames(string $name) : ?array
     {
+        /** @noinspection DuplicatedCode */
         $name = trim($name);
         $name = ltrim(str_replace(['/', '_', '-'], '\\', $name), '\\');
         $name = preg_replace('~\\\+~', '\\', $name);
@@ -232,10 +234,8 @@ EOT),
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = $container?->has(Config::class)
-            ? $container->get(Config::class)
-            : null;
-        $config = $config instanceof Config ? $config : new Config();
+        $config = ContainerHelper::use(Config::class, $container)
+            ??new Config();
         $path = $config->get('path');
         $path = $path instanceof Config ? $path : null;
         $schedulerDir = $path?->get('scheduler');
@@ -329,6 +329,7 @@ EOT),
                 )
             )
         );
+        /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
             $this->translate('Are you sure to continue (Yes/No)?'),
@@ -425,8 +426,8 @@ use ArrayAccess\TrayDigita\Scheduler\Runner;
 class $baseClassName extends Task
 {
     /**
-     * Name of scheduler. 
-     * @var string \$name 
+     * Name of scheduler.
+     * @var string \$name
      */
     protected string \$name = '$name';
 
@@ -434,7 +435,7 @@ class $baseClassName extends Task
      * Unique scheduler identity.
      * Should use lowercase alphanumeric characters & underscore only
      * @see getIdentity()
-     * @var string \$identity 
+     * @var string \$identity
      */
     protected string \$identity = '$identity';
 
@@ -443,10 +444,10 @@ class $baseClassName extends Task
      * @see getInterval()
      * @var int|SchedulerTimeInterface \$interval
      */
-    protected int|Periodic \$interval = 60;
+    protected int|SchedulerTimeInterface \$interval = 60;
 
     /**
-     * Scheduler periodic 
+     * Scheduler periodic
      * @return int|SchedulerTimeInterface
      */
     public function getInterval(): int|SchedulerTimeInterface
@@ -458,10 +459,10 @@ class $baseClassName extends Task
     /**
      * Method to trigger scheduler process
      * Returning status / message can be :
-     * @use Success 
+     * @use Success
      * @use Skipped mean the process skipped
      * @use Failure mean the process is failure
-     * @use Unknown -> do not use this 
+     * @use Unknown -> do not use this
      * @param Runner \$runner
      * @return MessageInterface
      */

@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Logger\Handler\DatabaseHandler;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use DateTimeZone;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\RedisHandler;
@@ -80,10 +81,9 @@ class Logger extends AbstractLogger implements ResettableInterface, ContainerInd
 
     protected function configureLogger() : Monolog
     {
-        $config = $this->container->has(Config::class)
-            ? $this->container->get(Config::class)
-            : null;
-        $config = $config instanceof Config ? $config->get('log') : null;
+        $config = ContainerHelper::use(Config::class, $this->getContainer())
+            ??new Config();
+        $config = $config->get('log');
         if (!$config instanceof Config) {
             return new Monolog(
                 self::DEFAULT_NAME

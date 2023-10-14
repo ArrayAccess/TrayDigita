@@ -15,7 +15,6 @@ use function microtime;
 use function sprintf;
 use function substr;
 use function trim;
-use function var_dump;
 
 abstract class AbstractBasedCoreInjector extends AbstractManagerProfilingListener
 {

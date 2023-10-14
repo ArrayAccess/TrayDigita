@@ -366,7 +366,7 @@ class View implements ViewInterface, ManagerAllocatorInterface
         }
         $manager = $this->getManager();
         try {
-            $manager?->dispatch(
+            $manager->dispatch(
                 'view.beforeRender',
                 $path,
                 $parameters,
@@ -396,7 +396,7 @@ class View implements ViewInterface, ManagerAllocatorInterface
                     )
                 );
             }
-            $manager?->dispatch(
+            $manager->dispatch(
                 'view.render',
                 $path,
                 $parameters,
@@ -405,7 +405,7 @@ class View implements ViewInterface, ManagerAllocatorInterface
             );
             return $result;
         } finally {
-            $manager?->dispatch(
+            $manager->dispatch(
                 'view.afterRender',
                 $path,
                 $parameters,

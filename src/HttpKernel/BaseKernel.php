@@ -22,7 +22,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -41,6 +40,7 @@ use function pathinfo;
 use function sha1;
 use function sprintf;
 use function strtolower;
+use const INF;
 use const PATHINFO_EXTENSION;
 
 /**
@@ -137,7 +137,7 @@ abstract class BaseKernel implements
     /** @noinspection PhpUnused */
     public function getBootTime(): float
     {
-        return null !== $this->bootTime ? $this->bootTime : -\INF;
+        return null !== $this->bootTime ? $this->bootTime : -INF;
     }
 
     private CacheItemPoolInterface|null|false $cache = null;
@@ -171,11 +171,14 @@ abstract class BaseKernel implements
     /**
      * @param string $name
      * @return ?CacheItemInterface
-     * @throws InvalidArgumentException
      */
     private function getCacheItem(string $name): ?CacheItemInterface
     {
-        return $this->getInternalCache()?->getItem($name);
+        try {
+            return $this->getInternalCache()?->getItem($name);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -196,7 +199,6 @@ abstract class BaseKernel implements
      * @param string $directory
      * @param string $namespace
      * @return ?array{time: int, name: string, data: mixed, item: CacheItemInterface}
-     * @throws InvalidArgumentException
      */
     private function getInternalCacheData(
         string $directory,
@@ -280,7 +282,6 @@ abstract class BaseKernel implements
      * @param $rewrite
      * @param $cacheItem
      * @return array{mtime: int, file:string, classNAme: string}
-     * @throws Throwable
      */
     private function getClasNameFromFile(
         SplFileInfo $splFileInfo,

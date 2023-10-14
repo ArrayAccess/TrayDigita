@@ -7,6 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use function is_array;
 use function is_int;
+use const INF;
 
 // phpcs:disable PSR1.Files.SideEffects
 /**
@@ -59,7 +60,7 @@ final readonly class StartProgress
         $size = $this->processor->contentRangeHeader->size;
         $ranges = $this->processor->contentRangeHeader->ranges;
         if (!is_int($size) || !is_array($ranges)) {
-            return -\INF;
+            return -INF;
         }
         $calculate = $ranges[1] - $ranges[0];
         $handlerSize = $this->handler->getSize();

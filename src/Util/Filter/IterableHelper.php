@@ -4,6 +4,12 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Util\Filter;
 
 use Generator;
+use function array_keys;
+use function array_values;
+use function count;
+use function is_array;
+use function iterator_count;
+use function iterator_to_array;
 
 class IterableHelper
 {
@@ -16,12 +22,12 @@ class IterableHelper
 
     public static function keys(iterable $data): array
     {
-        return \array_keys(self::all($data));
+        return array_keys(self::all($data));
     }
 
     public static function all(iterable $data): array
     {
-        return \is_array($data) ? $data : \iterator_to_array($data);
+        return is_array($data) ? $data : iterator_to_array($data);
     }
 
     public static function has(iterable $data, string|float|int $key) : bool
@@ -36,12 +42,12 @@ class IterableHelper
 
     public static function values(iterable $data) : array
     {
-        return \array_values(self::all($data));
+        return array_values(self::all($data));
     }
 
     public static function count(iterable $data) : int
     {
-        return \is_array($data) ? \count($data) : \iterator_count($data);
+        return is_array($data) ? count($data) : iterator_count($data);
     }
 
     public static function exists(iterable $data, callable $mapping) : bool

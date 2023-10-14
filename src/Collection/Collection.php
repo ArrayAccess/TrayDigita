@@ -10,6 +10,9 @@ use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\IterableHelper;
 use IteratorAggregate;
 use Traversable;
+use function array_key_exists;
+use function array_keys;
+use function in_array;
 
 class Collection implements CollectionInterface, IteratorAggregate
 {
@@ -22,7 +25,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function get($id, $default = null)
     {
-        return \array_key_exists($id, $this->data)
+        return array_key_exists($id, $this->data)
             ? $this->data[$id]
             : $default;
     }
@@ -39,12 +42,12 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function has($id): bool
     {
-        return \array_key_exists($id, $this->data);
+        return array_key_exists($id, $this->data);
     }
 
     public function contain($param): bool
     {
-        return \in_array($this->data, $param, true);
+        return in_array($this->data, $param, true);
     }
 
     public function all(): array
@@ -54,7 +57,7 @@ class Collection implements CollectionInterface, IteratorAggregate
 
     public function keys(): array
     {
-        return \array_keys($this->data);
+        return array_keys($this->data);
     }
 
     public function offsetExists(mixed $offset): bool
