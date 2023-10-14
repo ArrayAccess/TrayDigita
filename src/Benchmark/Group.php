@@ -238,13 +238,16 @@ class Group implements GroupInterface, ClearableInterface
     }
 
     /**
-     * @return array<string, array<string, Interfaces\RecordInterface[]>>
+     * @return array<string, array<string, RecordInterface[]>>
      */
     public function getRecords(): array
     {
         return $this->records;
     }
 
+    /**
+     * @return array<RecordInterface>
+     */
     public function getAllRecords() : array
     {
         $records = [];
@@ -271,7 +274,7 @@ class Group implements GroupInterface, ClearableInterface
     }
 
     /**
-     * @return Traversable<string, array<string, Interfaces\RecordInterface[]>>
+     * @return Traversable<string, array<string, RecordInterface[]>>
      */
     public function getIterator(): Traversable
     {
