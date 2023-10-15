@@ -444,8 +444,7 @@ PHP
         }
         $consoleIO->write(
             '<info>Done</info>',
-            true,
-            $consoleIO::VERBOSE
+            true
         );
         // */
     }
