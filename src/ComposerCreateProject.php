@@ -440,7 +440,7 @@ PHP
             if (file_exists($langDir . DIRECTORY_SEPARATOR . $baseName)) {
                 continue;
             }
-            copy($directory, $langDir . DIRECTORY_SEPARATOR . $baseName);
+            copy($directory->getRealPath(), $langDir . DIRECTORY_SEPARATOR . $baseName);
         }
         // */
     }
