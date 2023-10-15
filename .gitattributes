@@ -1,0 +1,6 @@
+# Ignore the md files
+/*.md           export-ignore
+# Ignore .gitignore
+/.gitignore     export-ignore
+# Ignore self
+/.gitattributes export-ignore
