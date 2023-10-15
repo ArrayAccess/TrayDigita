@@ -68,10 +68,10 @@ class PoReader extends AbstractReader
 
             //End of translation
             if ($line === '') {
-                if ($translation->getOriginal() || $translation->getTranslation()) {
+                // translation should not empty
+                if ($translation->getOriginal() && $translation->getTranslation()) {
                     $translations->add($translation);
                 }
-
                 $translation = $this->translationFactory->createTranslation(null, '');
                 $line = $nextLine;
                 continue;
@@ -114,7 +114,7 @@ class PoReader extends AbstractReader
                         }
                     }
                     break;
-                case 'msgctx': // context
+                case 'msgctxt': // context
                     $translation = $translation->withContext($this->normalize($trans));
                     break;
                 case 'msgid': // original message id

@@ -48,26 +48,9 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
      */
     private array $translations = [];
 
-    /**
-     * Set ignore context
-     *
-     * @var bool
-     */
-    private bool $ignoreContext = true;
-
     public function __construct()
     {
         $this->reader = new GettextReader(new TranslationFactory());
-    }
-
-    public function isIgnoreContext(): bool
-    {
-        return $this->ignoreContext;
-    }
-
-    public function setIgnoreContext(bool $ignoreContext): void
-    {
-        $this->ignoreContext = $ignoreContext;
     }
 
     public function getName() : string
@@ -75,6 +58,14 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
         return 'Gettext';
     }
 
+    /**
+     * @param AbstractReader $reader
+     * @param string $file
+     * @param string|null $fallbackLanguage
+     * @param string|null $forceLanguage
+     * @param string|null $forceDomain
+     * @return Entries
+     */
     private function addFromReader(
         AbstractReader $reader,
         string $file,
@@ -237,6 +228,7 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
             }
             $translations->merge(...$reader->fromFile($file)->getTranslations());
         }
+
         if ($translations && $translations->count() > 0) {
             $entries ??= new Entries();
             foreach ($translations->getTranslations() as $translation) {
@@ -282,9 +274,6 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
     ) : ?EntryInterface {
         $translations = $this->getTranslationLanguage($language, $domain);
         $entry = $translations?->entry(self::generateId($context, $original));
-        if ($entry === null && $context && $this->isIgnoreContext()) {
-            $entry = $translations?->entry(self::generateId(null, $original));
-        }
         return $entry??null;
     }
 

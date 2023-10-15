@@ -88,6 +88,7 @@ class MoReader extends AbstractReader
 
         $translations ??= new Translations();
         $translations->setRevision($revision);
+        $pluralForms = $translations->getHeaders()->getPluralForm();
         for ($i = 0; $i < $total; ++$i) {
             $next = $i * 2;
             $stream->seek($originalTable[$next + 2]);
@@ -110,7 +111,8 @@ class MoReader extends AbstractReader
                 }
                 continue;
             }
-            $context = $plural = null;
+            $context = null;
+            $plural = null;
             // Look for context, separated by \4.
             $chunks = explode("\4", $original, 2);
             if (isset($chunks[1])) {
@@ -124,19 +126,20 @@ class MoReader extends AbstractReader
             if (isset($chunks[1])) {
                 $plural = $chunks[1];
             }
+            if ($translated === '' && $original !== '') {
+                continue;
+            }
             $translation = $this->translationFactory->createTranslation(
                 $context,
-                $original
-            )->setPlural($plural);
-            if ($translated || $translated === '' && $original === '') {
-                $translation->setTranslation($translated);
-            }
+                $original,
+                $plural
+            );
+            $translation->setPluralForm($pluralForms);
+            $translation->setTranslation($translated);
             $translations->add($translation);
             if ($translated === '' || $plural === null) {
                 continue;
             }
-
-            $translation->setPluralForm($translations->getHeaders()->getPluralForm());
             $v = explode("\0", $translated);
             array_shift($v);
             $translation->setPluralTranslations(...array_filter($v));
@@ -159,11 +162,13 @@ class MoReader extends AbstractReader
     public function fromString(string $data, ?Translations $translations = null) : Translations
     {
         $stream = Stream::fromFile('php://temp', 'rb+');
-        while ($data !== '') {
-            $stream->write(substr($data, 0, 4096));
-            $data = substr($data, 4096);
-        }
-
+        $size = 0;
+        do {
+            if (($tmpData = substr($data, $size, 4096)) === '') {
+                break;
+            }
+            $size = $stream->write($tmpData);
+        } while ($size > 0);
         return $this->fromStream($stream, $translations);
     }
 

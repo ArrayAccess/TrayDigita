@@ -45,6 +45,22 @@ interface TranslatorInterface
         ?string $context = null
     ) : string;
 
+    public function translateContext(
+        string $singular,
+        string $context,
+        string $domain = self::DEFAULT_DOMAIN,
+    ) : string;
+
+    /**
+     * Translate plural
+     *
+     * @param string $singular
+     * @param string $plural
+     * @param int|float $number
+     * @param string $domain
+     * @param string|null $context
+     * @return string
+     */
     public function translatePlural(
         string $singular,
         string $plural,
@@ -53,6 +69,32 @@ interface TranslatorInterface
         ?string $context = null
     ) : string;
 
+    /**
+     * Translate plural context
+     *
+     * @param string $singular
+     * @param string $plural
+     * @param int|float $number
+     * @param string $context
+     * @param string $domain
+     * @return string
+     */
+    public function translatePluralContext(
+        string $singular,
+        string $plural,
+        int|float $number,
+        string $context,
+        string $domain = self::DEFAULT_DOMAIN
+    ) : string;
+
+    /**
+     * Find translation
+     *
+     * @param string $singular
+     * @param string $domain
+     * @param string|null $context
+     * @return EntryInterface|null
+     */
     public function find(
         string $singular,
         string $domain = self::DEFAULT_DOMAIN,

@@ -272,6 +272,20 @@ class Translator implements TranslatorInterface, ManagerAllocatorInterface
 
     /**
      * @param string $singular
+     * @param string $context
+     * @param string $domain
+     * @return string
+     */
+    public function translateContext(
+        string $singular,
+        string $context,
+        string $domain = self::DEFAULT_DOMAIN,
+    ) : string {
+        return $this->translate($singular, $domain, $context);
+    }
+
+    /**
+     * @param string $singular
      * @param string $domain
      * @param string|null $context
      *
@@ -361,5 +375,25 @@ class Translator implements TranslatorInterface, ManagerAllocatorInterface
         return $translation ?? (
             $index === 0 ? $singular : $plural
         );
+    }
+
+    /**
+     * Translate plural by context
+     *
+     * @param string $singular
+     * @param string $plural
+     * @param int|float $number
+     * @param string $context
+     * @param string $domain
+     * @return string
+     */
+    public function translatePluralContext(
+        string $singular,
+        string $plural,
+        int|float $number,
+        string $context,
+        string $domain = self::DEFAULT_DOMAIN
+    ) : string {
+        return $this->translatePlural($singular, $plural, $number, $domain, $context);
     }
 }

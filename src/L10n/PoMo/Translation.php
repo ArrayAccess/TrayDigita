@@ -154,6 +154,19 @@ class Translation
     }
 
     /**
+     * @param string $context
+     *
+     * @return static
+     */
+    public function withContext(string $context) : static
+    {
+        $clone = clone $this;
+        $clone->context = $context;
+        $clone->id = static::generateId($context, $clone->getOriginal());
+        return $clone;
+    }
+
+    /**
      * @return string
      */
     public function getId() : string

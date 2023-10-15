@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\L10n\Translations\Adapter\Gettext;
 use ArrayAccess\TrayDigita\L10n\PoMo\Translation as TranslationGettext;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\EntryInterface;
 use function array_shift;
+use function var_dump;
 
 class PoMoTranslation extends TranslationGettext implements EntryInterface
 {

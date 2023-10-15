@@ -22,6 +22,9 @@ abstract class AbstractReader
      */
     protected TranslationFactoryInterface $translationFactory;
 
+    /**
+     * @var ?Translations
+     */
     protected ?Translations $translations;
 
     /**
