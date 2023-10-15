@@ -76,23 +76,22 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
             ->setName('app:generate:command')
             ->setAliases(['generate-command'])
             ->setDescription(
-                $this->translate('Generate command class.')
+                $this->translateContext('Generate command class.', 'console')
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_NONE,
-                    $this->translate('Print generated class file only')
+                    $this->translateContext('Print generated class file only', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<EOT
-The %s help you to create %s object.
-
-Command will use prefix namespace with %s
-Command only support single class name.
-
-EOT),
+                    $this->translateContext(
+                        "The %s help you to create %s object.\n\n"
+                        . "Command will use prefix namespace with %s\n"
+                        . "Command only support single class name.\n",
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     'command',
                     sprintf(
@@ -172,13 +171,16 @@ EOT),
     {
         $io = new SymfonyStyle($input, $output);
         return $io->ask(
-            $this->translate('Please enter command class name'),
+            $this->translateContext('Please enter command class name', 'console'),
             null,
             function ($name) {
                 $definitions = $this->filterNames($name);
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid command class name!')
+                        $this->translateContext(
+                            'Please enter valid command class name!',
+                            'console'
+                        )
                     );
                 }
                 $commandName = $definitions['identity'];
@@ -186,8 +188,9 @@ EOT),
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Command [%s] is invalid! class name contain reserved keyword!'
+                            $this->translateContext(
+                                'Command [%s] is invalid! class name contain reserved keyword!',
+                                'console'
                             ),
                             $className
                         )
@@ -196,8 +199,9 @@ EOT),
                 if (count(explode('\\', $className)) > 1) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Command [%s] is invalid! Command only contain single class name, not namespaced!'
+                            $this->translateContext(
+                                'Command [%s] is invalid! Command only contain single class name, not namespaced!',
+                                'console'
                             ),
                             $className
                         )
@@ -206,8 +210,9 @@ EOT),
                 if (strlen($commandName) > 128) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Command [%s] is too long! Must be less or equal 128 characters'
+                            $this->translateContext(
+                                'Command [%s] is too long! Must be less or equal 128 characters',
+                                'console'
                             ),
                             $commandName
                         )
@@ -216,7 +221,7 @@ EOT),
                 if ($this->isFileExists($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate('Command [%s] exist'),
+                            $this->translateContext('Command [%s] exist', 'console'),
                             $this->commandNamespace . $className
                         )
                     );
@@ -245,8 +250,9 @@ EOT),
         if (!$this->commandDir) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Could not detect command directory'
+                    $this->translateContext(
+                        '%s Could not detect command directory',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -258,8 +264,9 @@ EOT),
         if (!$named && !$input->isInteractive()) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s generator only support in interactive mode'
+                    $this->translateContext(
+                        '%s generator only support in interactive mode',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -281,8 +288,9 @@ EOT),
         $name = 'app:console:'. strtolower($named['className']);
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Command Name  : %s'
+                $this->translateContext(
+                    'Command Name  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -293,8 +301,9 @@ EOT),
         $className = $this->commandNamespace . $named['className'];
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Command Class : %s'
+                $this->translateContext(
+                    'Command Class : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -304,8 +313,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Command File  : %s'
+                $this->translateContext(
+                    'Command File  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -316,7 +326,7 @@ EOT),
         /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext('Are you sure to continue (Yes/No)?', 'console'),
             null,
             function ($e) {
                     $e = !is_string($e) ? '' : $e;
@@ -328,7 +338,10 @@ EOT),
                     };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid answer! (Yes / No)')
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
                     );
                 }
                     return $ask;
@@ -347,8 +360,9 @@ EOT),
             if (!$status) {
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            '%s Could not save command!'
+                        $this->translateContext(
+                            '%s Could not save command!',
+                            'console'
                         ),
                         '<fg=red;options=bold>[X]</>'
                     )
@@ -357,8 +371,9 @@ EOT),
             }
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Command successfully created!'
+                    $this->translateContext(
+                        '%s Command successfully created!',
+                        'console'
                     ),
                     '<fg=green;options=bold>[√]</>'
                 )
@@ -368,7 +383,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<comment>%s</comment>',
-                $this->translate('Operation cancelled!')
+                $this->translateContext('Operation cancelled!', 'console')
             )
         );
         return self::SUCCESS;

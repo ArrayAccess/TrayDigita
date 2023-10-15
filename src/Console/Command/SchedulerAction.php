@@ -35,21 +35,22 @@ class SchedulerAction extends Command implements ContainerAllocatorInterface, Ma
             ->setName('app:scheduler')
             ->setAliases(['run-scheduler'])
             ->setDescription(
-                $this->translate('List or run scheduler.')
+                $this->translateContext('List or run scheduler.', 'console')
             )
             ->setDefinition([
                 new InputOption(
                     'run',
                     'x',
                     InputOption::VALUE_NONE,
-                    $this->translate('Run the pending schedulers')
+                    $this->translateContext('Run the pending schedulers', 'console')
                 )
             ])
             ->setHelp(
                 sprintf(
-                    $this->translate(<<<'EOT'
-The %s help you to list & run scheduler
-EOT),
+                    $this->translateContext(
+                        'The %s help you to list & run scheduler',
+                        'console'
+                    ),
                     '<info>%command.name%</info>'
                 )
             );
@@ -73,7 +74,10 @@ EOT),
         );
         if (!$scheduler instanceof Scheduler) {
             throw new RuntimeException(
-                'Object scheduler is not valid'
+                $this->translateContext(
+                    'Object scheduler is not valid',
+                    'console'
+                )
             );
         }
 
@@ -95,7 +99,7 @@ EOT),
                     $output->writeln(
                         sprintf(
                             '<info>%s</info>',
-                            $this->translate('No task in queue')
+                            $this->translateContext('No task in queue', 'console')
                         )
                     );
                     return self::SUCCESS;
@@ -104,10 +108,11 @@ EOT),
                     sprintf(
                         '<info>%s</info>',
                         sprintf(
-                            $this->translatePlural(
+                            $this->translatePluralContext(
                                 'Executing %s task',
                                 'Executing %s tasks',
-                                $countQueue
+                                $countQueue,
+                                'console'
                             ),
                             $countQueue
                         )
@@ -122,10 +127,11 @@ EOT),
                 sprintf(
                     '<info>%s</info> %s',
                     $countQueue,
-                    $this->translatePlural(
+                    $this->translatePluralContext(
                         'scheduler in queue to run',
                         'schedulers in queue to run',
-                        $countQueue
+                        $countQueue,
+                        'console'
                     )
                 ),
                 $countQueue === 0 ? self::MODE_SUCCESS : self::MODE_WARNING
@@ -135,7 +141,7 @@ EOT),
                 $interval = $task->getInterval();
                 if (is_int($interval)) {
                     $every = sprintf(
-                        $this->translate('run every %s seconds'),
+                        $this->translateContext('run every %s seconds', 'console'),
                         sprintf(
                             '<comment>%s</comment>',
                             max($interval, Task::MINIMUM_INTERVAL_TIME)
@@ -143,7 +149,7 @@ EOT),
                     );
                 } else {
                     $every = sprintf(
-                        $this->translate('next executed time %s'),
+                        $this->translateContext('next executed time %s', 'console'),
                         sprintf(
                             '[<comment>%s</comment>]',
                             $interval->getNextRunDate()->format('Y-m-d H:i:s e')
@@ -167,10 +173,11 @@ EOT),
                 sprintf(
                     '<info>%s</info> %s',
                     $countSkipped,
-                    $this->translatePlural(
+                    $this->translatePluralContext(
                         'scheduler skipped',
                         'schedulers skipped',
-                        $countSkipped
+                        $countSkipped,
+                        'console'
                     )
                 ),
                 self::MODE_SUCCESS
@@ -180,7 +187,7 @@ EOT),
                 $interval = $task->getInterval();
                 if (is_int($interval)) {
                     $every = sprintf(
-                        $this->translate('run every %s seconds'),
+                        $this->translateContext('run every %s seconds', 'console'),
                         sprintf(
                             '<comment>%s</comment>',
                             max($interval, Task::MINIMUM_INTERVAL_TIME)
@@ -188,7 +195,7 @@ EOT),
                     );
                 } else {
                     $every = sprintf(
-                        $this->translate('next executed time %s'),
+                        $this->translateContext('next executed time %s', 'console'),
                         sprintf(
                             '[<comment>%s</comment>]',
                             $interval->getNextRunDate()->format('Y-m-d H:i:s e')

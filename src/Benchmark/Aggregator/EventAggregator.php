@@ -41,7 +41,7 @@ class EventAggregator extends AbstractAggregator
         }
         $this->translated = true;
         return $this->name = ContainerHelper::use(TranslatorInterface::class)
-            ?->translate('Event', context: 'benchmark')??$this->name;
+            ?->translateContext('Event', 'benchmark')??$this->name;
     }
 
     public function addBlacklistedGroup(string $name): void

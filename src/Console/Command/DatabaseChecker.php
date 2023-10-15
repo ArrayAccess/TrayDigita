@@ -82,14 +82,17 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             ->setName('app:db')
             ->setAliases(['app:database'])
             ->setDescription(
-                $this->translate('Check & validate database.')
+                $this->translateContext('Check & validate database.', 'console')
             )
             ->setDefinition([
                 new InputOption(
                     $this->schemaCommand,
                     's',
                     InputOption::VALUE_NONE,
-                    $this->translate('Validate changed / difference about database schema'),
+                    $this->translateContext(
+                        'Validate changed / difference about database schema',
+                        'console'
+                    ),
                     null
                 ),
                 new InputOption(
@@ -97,7 +100,10 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     'p',
                     InputOption::VALUE_NONE,
                     sprintf(
-                        $this->translate('Print sql query create schema (should execute with %s command)'),
+                        $this->translateContext(
+                            'Print sql query create schema (should execute with %s command)',
+                            'console'
+                        ),
                         sprintf(
                             '<info>--%s</info>',
                             $this->schemaCommand
@@ -110,8 +116,9 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     'd',
                     InputOption::VALUE_NONE,
                     sprintf(
-                        $this->translate(
-                            'Dump create schema (should execute with %s & %s command)'
+                        $this->translateContext(
+                            'Dump create schema (should execute with %s & %s command)',
+                            'console'
                         ),
                         sprintf(
                             '<info>--%s</info>',
@@ -129,8 +136,9 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     'x',
                     InputOption::VALUE_NONE,
                     sprintf(
-                        $this->translate(
-                            'Execute query sql that from new schema into database (should execute with %s command)'
+                        $this->translateContext(
+                            'Execute query sql that from new schema into database (should execute with %s command)',
+                            'console'
                         ),
                         sprintf(
                             '<info>--%s</info>',
@@ -144,8 +152,9 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     'o',
                     InputOption::VALUE_NONE,
                     sprintf(
-                        $this->translate(
-                            'Optimize database when possible (should execute with %s command)'
+                        $this->translateContext(
+                            'Optimize database when possible (should execute with %s command)',
+                            'console'
                         ),
                         sprintf(
                             '<info>--%s</info>',
@@ -157,10 +166,11 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             ])
             ->setHelp(
                 sprintf(
-                    $this->translate(<<<'EOT'
-The %s help you to validate database.
-This command show information about installed database & configuration services.
-EOT),
+                    $this->translateContext(
+                        "The %s help you to validate database.\n"
+                        . "This command show information about installed database & configuration services.",
+                        'console'
+                    ),
                     '<info>%command.name%</info>'
                 )
             );
@@ -234,8 +244,9 @@ EOT),
         if (!$container?->has(Connection::class)) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Can not get database object from container'
+                $this->translateContext(
+                    'Can not get database object from container',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -244,8 +255,9 @@ EOT),
         if (!$database instanceof Connection) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Database connection is not valid object from container'
+                $this->translateContext(
+                    'Database connection is not valid object from container',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -349,7 +361,7 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
-                        $this->translate('No schema can be created')
+                        $this->translateContext('No schema can be created', 'console')
                     )
                 );
                 return Command::SUCCESS;
@@ -381,7 +393,7 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
-                        $this->translate('No change into database schema')
+                        $this->translateContext('No change into database schema', 'console')
                     )
                 );
                 return Command::SUCCESS;
@@ -411,7 +423,7 @@ EOT),
                         $this->writeIndent(
                             $output,
                             sprintf(
-                                $this->translate('Table "%s" does not exist!'),
+                                $this->translateContext('Table "%s" does not exist!', 'console'),
                                 sprintf(
                                     '<comment>%s</comment>',
                                     $tableName
@@ -423,8 +435,9 @@ EOT),
                         $this->write(
                             $output,
                             sprintf(
-                                $this->translate(
-                                    'Table "%s" does not exist!'
+                                $this->translateContext(
+                                    'Table "%s" does not exist!',
+                                    'console'
                                 ),
                                 sprintf(
                                     '<comment>%s</comment>',
@@ -447,8 +460,9 @@ EOT),
                         $this->writeIndent(
                             $output,
                             sprintf(
-                                $this->translate(
-                                    'Table "%s" %s'
+                                $this->translateContext(
+                                    'Table "%s" %s',
+                                    'console'
                                 ),
                                 sprintf(
                                     '<comment>%s</comment>',
@@ -458,12 +472,12 @@ EOT),
                                     '%s%s%s',
                                     sprintf(
                                         '<info>%s</info>',
-                                        $this->translate('no difference')
+                                        $this->translateContext('no difference', 'console')
                                     ),
                                     $isNeedOptimize
                                     ? sprintf(
                                         ' <comment>[%s]</comment>',
-                                        $this->translate('NEED TO OPTIMIZE')
+                                        $this->translateContext('NEED TO OPTIMIZE', 'console')
                                     ) : '',
                                     ($currentTable->getComment()
                                         ? sprintf(' <fg=gray>(%s)</>', $currentTable->getComment())
@@ -480,7 +494,7 @@ EOT),
                 $message = sprintf(
                     '%s%s',
                     sprintf(
-                        $this->translate('Table "%s" need to be change'),
+                        $this->translateContext('Table "%s" need to be change', 'console'),
                         sprintf(
                             '<comment>%s</comment>',
                             $tableName,
@@ -488,7 +502,7 @@ EOT),
                     ),
                     $isNeedOptimize ? sprintf(
                         ' <comment>[%s]</comment>',
-                        $this->translate('NEED TO OPTIMIZE')
+                        $this->translateContext('NEED TO OPTIMIZE', 'console')
                     ) : '',
                 );
                 if (!$isExecute) {
@@ -517,11 +531,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
-                                $this->translate('type'),
+                                $this->translateContext('type', 'console'),
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $typeRegistry->lookupName($oldColumn->getType())
@@ -539,11 +553,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
-                                $this->translate('default value'),
+                                $this->translateContext('default value', 'console'),
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getDefault() ?? '<empty>'
@@ -561,11 +575,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
                                 'fixed',
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getFixed() ? 'YES' : 'NO'
@@ -583,11 +597,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
                                 'auto increment',
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getAutoincrement() ? 'YES' : 'NO'
@@ -605,11 +619,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
                                 'length',
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getLength() ?? '<empty>'
@@ -627,11 +641,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
                                 'precision',
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getPrecision() ?? '<empty>'
@@ -649,18 +663,18 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
                                 'not null',
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
-                                        !$oldColumn->getNotnull() ? 'YES' : 'NOT'
+                                        !$oldColumn->getNotnull() ? 'YES' : 'NO'
                                     ),
                                     sprintf(
                                         '<comment>%s</comment>',
-                                        !$newColumn->getNotnull() ? 'YES' : 'NOT'
+                                        !$newColumn->getNotnull() ? 'YES' : 'NO'
                                     )
                                 )
                             )
@@ -671,11 +685,14 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
-                                $this->translate('scale'),
+                                $this->translateContext('scale', 'console'),
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext(
+                                        'change from: [%s] to [%s]',
+                                        'console'
+                                    ),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getScale() ??'<empty>'
@@ -693,11 +710,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
                                 'unsigned',
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getUnsigned() ? 'YES' : 'NO'
@@ -715,11 +732,11 @@ EOT),
                             $output,
                             sprintf(
                                 '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translate('Column'),
+                                $this->translateContext('Column', 'console'),
                                 $newColumn->getName(),
-                                $this->translate('comment'),
+                                $this->translateContext('comment', 'console'),
                                 sprintf(
-                                    $this->translate('change from: [%s] to [%s]'),
+                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $oldColumn->getComment() ?? '<empty>'
@@ -740,7 +757,7 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> [<comment>%s</comment>]',
-                            $this->translate('Added Column'),
+                            $this->translateContext('Added Column', 'console'),
                             $column->getName()
                         )
                     );
@@ -751,7 +768,7 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> [<comment>%s</comment>]',
-                            $this->translate('Removed Column'),
+                            $this->translateContext('Removed Column', 'console'),
                             $column->getName()
                         )
                     );
@@ -762,9 +779,9 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> %s',
-                            $this->translate('Renamed Column'),
+                            $this->translateContext('Renamed Column', 'console'),
                             sprintf(
-                                $this->translate('from [%s] to [%s]'),
+                                $this->translateContext('from [%s] to [%s]', 'console'),
                                 sprintf(
                                     '<comment>%s</comment>',
                                     $columnName
@@ -787,24 +804,30 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> %s',
-                            $this->translate('Modify index'),
+                            $this->translateContext('Modify Index', 'console'),
                             sprintf(
-                                'from [%s](%s) to [%s](%s)',
+                                $this->translateContext('from %s to %s', 'console'),
                                 sprintf(
-                                    '<comment>%s</comment>',
-                                    $indexName
+                                    '[%s](%s)',
+                                    sprintf(
+                                        '<comment>%s</comment>',
+                                        $indexName
+                                    ),
+                                    sprintf(
+                                        '<comment>%s</comment>',
+                                        implode(', ', $oldIndex->getColumns())
+                                    )
                                 ),
                                 sprintf(
-                                    '<comment>%s</comment>',
-                                    implode(', ', $oldIndex->getColumns())
-                                ),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $index->getName()
-                                ),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    implode(', ', $index->getColumns())
+                                    '[%s](%s)',
+                                    sprintf(
+                                        '<comment>%s</comment>',
+                                        $index->getName()
+                                    ),
+                                    sprintf(
+                                        '<comment>%s</comment>',
+                                        implode(', ', $index->getColumns())
+                                    )
                                 )
                             )
                         )
@@ -816,7 +839,7 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> [<comment>%s</comment>] %s',
-                            $this->translate('Added Index'),
+                            $this->translateContext('Added Index', 'console'),
                             $index->getName(),
                             sprintf(
                                 'with columns [%s]',
@@ -834,7 +857,7 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> [<comment>%s</comment>] %s',
-                            $this->translate('Removed Index'),
+                            $this->translateContext('Removed Index', 'console'),
                             $index->getName(),
                             sprintf(
                                 'contain columns [%s]',
@@ -854,7 +877,7 @@ EOT),
                         $output,
                         sprintf(
                             '<info>- %s</info> %s',
-                            $this->translate('Renamed index'),
+                            $this->translateContext('Renamed Index', 'console'),
                             sprintf(
                                 'from [%s] to [%s]',
                                 sprintf('<comment>%s</comment>', $indexName),
@@ -875,7 +898,7 @@ EOT),
                             '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>)'
                             . ' -> (<comment>%s</comment>)'
                             . ' [<comment>%s</comment>](<comment>%s</comment>) -> (<comment>%s</comment>)%s',
-                            $this->translate('Modify ForeignKey'),
+                            $this->translateContext('Modify ForeignKey', 'console'),
                             $foreignName,
                             sprintf(
                                 '%s(%s)',
@@ -921,7 +944,7 @@ EOT),
                         sprintf(
                             '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>) '
                             . '-> (<comment>%s</comment>)',
-                            $this->translate('Added ForeignKey'),
+                            $this->translateContext('Added ForeignKey', 'console'),
                             $foreignKey->getName(),
                             sprintf(
                                 '%s(%s)',
@@ -943,7 +966,7 @@ EOT),
                         sprintf(
                             '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>) '
                             . '-> (<comment>%s</comment>)',
-                            $this->translate('Removed ForeignKey'),
+                            $this->translateContext('Removed ForeignKey', 'console'),
                             $foreignKey->getName(),
                             sprintf(
                                 '%s(%s)',
@@ -979,7 +1002,10 @@ EOT),
                             sprintf(
                                 '%s%s',
                                 sprintf(
-                                    $this->translate('Table "%s" for %s & does not exist in schema'),
+                                    $this->translateContext(
+                                        'Table "%s" for %s & does not exist in schema',
+                                        'console'
+                                    ),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $table->getName(),
@@ -1009,7 +1035,10 @@ EOT),
                             sprintf(
                                 '%s%s',
                                 sprintf(
-                                    $this->translate('Table "%s" for %s & does not exist in schema'),
+                                    $this->translateContext(
+                                        'Table "%s" for %s & does not exist in schema',
+                                        'console'
+                                    ),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $table->getName(),
@@ -1040,7 +1069,10 @@ EOT),
                             sprintf(
                                 '%s%s',
                                 sprintf(
-                                    $this->translate('Table "%s" for %s & does not exist in schema'),
+                                    $this->translateContext(
+                                        'Table "%s" for %s & does not exist in schema',
+                                        'console'
+                                    ),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $table->getName(),
@@ -1066,7 +1098,7 @@ EOT),
                             sprintf(
                                 '%s%s',
                                 sprintf(
-                                    $this->translate('Table "%s" for %s'),
+                                    $this->translateContext('Table "%s" for %s', 'console'),
                                     sprintf(
                                         '<comment>%s</comment>',
                                         $table->getName(),
@@ -1112,7 +1144,10 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
-                        $this->translate('Contains changed database schema, you can execute command :')
+                        $this->translateContext(
+                            'Contains changed database schema, you can execute command :',
+                            'console'
+                        )
                     )
                 );
                 $output->writeln('');
@@ -1134,7 +1169,10 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
-                        $this->translate('Contains database table that can be optimized, you can execute command :')
+                        $this->translateContext(
+                            'Contains database table that can be optimized, you can execute command :',
+                            'console'
+                        )
                     )
                 );
                 $output->writeln('');
@@ -1159,7 +1197,10 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
-                        $this->translate('There are no tables that can be optimized')
+                        $this->translateContext(
+                            'There are no tables that can be optimized',
+                            'console'
+                        )
                     )
                 );
                 return Command::SUCCESS;
@@ -1171,7 +1212,10 @@ EOT),
                 $className = preg_replace('~Platform$~', '', $className);
                 $output->writeln(
                     sprintf(
-                        $this->translate('%s does not yet support optimization'),
+                        $this->translateContext(
+                            '%s does not yet support optimization',
+                            'console'
+                        ),
                         sprintf(
                             '<comment>%s</comment>',
                             $className
@@ -1189,7 +1233,10 @@ EOT),
                 $optimizeArray[$tableName] = $table->getName();
                 $output->writeln(
                     sprintf(
-                        $this->translate('Table "%s" can be freed up to : (%s)'),
+                        $this->translateContext(
+                            'Table "%s" can be freed up to : (%s)',
+                            'console'
+                        ),
                         sprintf(
                             '<comment>%s</comment>',
                             $table->getName(),
@@ -1204,7 +1251,10 @@ EOT),
 
             /** @noinspection DuplicatedCode */
             $answer = $interactive ? $io->ask(
-                $this->translate('Are you sure to continue (Yes/No)?'),
+                $this->translateContext(
+                    'Are you sure to continue (Yes/No)?',
+                    'console'
+                ),
                 null,
                 function ($e) {
                     $e = !is_string($e) ? '' : $e;
@@ -1216,7 +1266,10 @@ EOT),
                     };
                     if ($ask === null) {
                         throw new InteractiveArgumentException(
-                            $this->translate('Please enter valid answer! (Yes / No)')
+                            $this->translateContext(
+                                'Please enter valid answer! (Yes / No)',
+                                'console'
+                            )
                         );
                     }
                     return $ask;
@@ -1226,7 +1279,7 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<comment>%s</comment>',
-                        $this->translate('Operation cancelled!')
+                        $this->translateContext('Operation cancelled!', 'console')
                     )
                 );
                 return Command::SUCCESS;
@@ -1235,7 +1288,7 @@ EOT),
             $output->writeln(
                 sprintf(
                     '<options=bold><comment>%s</comment></>',
-                    $this->translate('PLEASE DO NOT CANCEL OPERATION!')
+                    $this->translateContext('PLEASE DO NOT CANCEL OPERATION!', 'console')
                 )
             );
             $output->writeln('');
@@ -1243,7 +1296,7 @@ EOT),
                 $output->write(
                     sprintf(
                         '<info>%s</info> <comment>"%s"</comment>',
-                        $this->translate('Optimizing table'),
+                        $this->translateContext('Optimizing table', 'console'),
                         $tableName
                     )
                 );
@@ -1272,7 +1325,7 @@ EOT),
                     $output->writeln(
                         sprintf(
                             ' [<fg=red>%s</>] <fg=red>%s</>',
-                            $this->translate('FAIL'),
+                            $this->translateContext('FAIL', 'console'),
                             $e->getMessage()
                         )
                     );
@@ -1282,7 +1335,7 @@ EOT),
             $output->writeln(
                 sprintf(
                     '<info>%s</info>',
-                    $this->translate('ALL DONE!')
+                    $this->translateContext('ALL DONE!', 'console')
                 )
             );
             return Command::SUCCESS;
@@ -1304,7 +1357,7 @@ EOT),
             $output->writeln(
                 sprintf(
                     '<info>%s</info>',
-                    $this->translate('No change into database schema')
+                    $this->translateContext('No change into database schema', 'console')
                 )
             );
             return Command::SUCCESS;
@@ -1315,7 +1368,7 @@ EOT),
             $output->writeln(
                 sprintf(
                     '<info>%s</info>',
-                    $this->translate('No change into database schema')
+                    $this->translateContext('No change into database schema', 'console')
                 )
             );
             return Command::SUCCESS;
@@ -1325,7 +1378,7 @@ EOT),
         $output->writeLn(
             sprintf(
                 '<info>%s</info>',
-                $this->translate('Executed Command:')
+                $this->translateContext('Executed Command:', 'console')
             )
         );
         $output->writeln('');
@@ -1340,7 +1393,10 @@ EOT),
 
         /** @noinspection DuplicatedCode */
         $answer = $interactive ? $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext(
+                'Are you sure to continue (Yes/No)?',
+                'console'
+            ),
             null,
             function ($e) {
                 $e = !is_string($e) ? '' : $e;
@@ -1352,7 +1408,10 @@ EOT),
                 };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid answer! (Yes / No)')
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
                     );
                 }
                 return $ask;
@@ -1363,7 +1422,10 @@ EOT),
             $output->writeln(
                 sprintf(
                     '<comment>%s</comment>',
-                    $this->translate('Operation cancelled!')
+                    $this->translateContext(
+                        'Operation cancelled!',
+                        'console'
+                    )
                 )
             );
             return Command::SUCCESS;
@@ -1373,7 +1435,10 @@ EOT),
         $output->writeln(
             sprintf(
                 '<options=bold><comment>%s</comment></>',
-                $this->translate('PLEASE DO NOT CANCEL OPERATION!')
+                $this->translateContext(
+                    'PLEASE DO NOT CANCEL OPERATION!',
+                    'console'
+                )
             )
         );
         $output->writeln('');
@@ -1397,7 +1462,7 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<info>%s</info> <comment>%s</comment>',
-                        $this->translate('Executing:'),
+                        $this->translateContext('Executing:', 'console'),
                         $sql
                     ),
                     OutputInterface::VERBOSITY_VERY_VERBOSE
@@ -1415,7 +1480,7 @@ EOT),
                     $output->writeln(
                         sprintf(
                             '<error>%s</error>',
-                            $this->translate('Failed to execute command')
+                            $this->translateContext('Failed to execute command', 'console')
                         )
                     );
                     $output->writeln(
@@ -1444,7 +1509,7 @@ EOT),
             $output->writeln(
                 sprintf(
                     '<error>%s</error>',
-                    $this->translate('Failed to execute command')
+                    $this->translateContext('Failed to execute command', 'console')
                 )
             );
             $output->writeln(
@@ -1459,7 +1524,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<info>%s</info>',
-                $this->translate('ALL DONE!')
+                $this->translateContext('ALL DONE!', 'console')
             )
         );
         return Command::SUCCESS;
@@ -1476,8 +1541,9 @@ EOT),
         if (!$container?->has(Connection::class)) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Can not get database object from container'
+                $this->translateContext(
+                    'Can not get database object from container',
+                    'console'
                 )
             );
             return;
@@ -1487,8 +1553,9 @@ EOT),
         if (!$database instanceof Connection) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Database connection is not valid object from container'
+                $this->translateContext(
+                    'Database connection is not valid object from container',
+                    'console'
                 ),
             );
             return;
@@ -1512,13 +1579,13 @@ EOT),
         if ($error) {
             $this->writeDanger(
                 $output,
-                $this->translate('Database connection error.')
+                $this->translateContext('Database connection error.', 'console')
             );
             $this->writeIndent(
                 $output,
                 sprintf(
                     '<comment>%s</comment> [<comment>%s</comment>] <fg=red>%s</>',
-                    $this->translate('Error:'),
+                    $this->translateContext('Error:', 'console'),
                     $error::class,
                     $error->getMessage()
                 ),
@@ -1530,7 +1597,7 @@ EOT),
                 $output,
                 sprintf(
                     '%s [<info>%s</info>]',
-                    $this->translate('Database connection succeed'),
+                    $this->translateContext('Database connection succeed', 'console'),
                     $database::class
                 ),
                 self::MODE_SUCCESS
@@ -1568,7 +1635,7 @@ EOT),
             $output,
             sprintf(
                 '<info>%s</info> [<comment>%s</comment>]',
-                $this->translate('Database name'),
+                $this->translateContext('Database name', 'console'),
                 $dbName ?? '<Empty>'
             ),
             $error ? self::MODE_DANGER : self::MODE_SUCCESS
@@ -1585,7 +1652,7 @@ EOT),
             $output,
             sprintf(
                 '<info>%s</info> [<comment>%s</comment>]',
-                $this->translate('Database host'),
+                $this->translateContext('Database host', 'console'),
                 $dbHost ?? '<Empty>'
             ),
             $errorX ? self::MODE_DANGER : self::MODE_SUCCESS
@@ -1594,7 +1661,7 @@ EOT),
             $output,
             sprintf(
                 '<info>%s</info> [<comment>%s</comment>]',
-                $this->translate('Database user'),
+                $this->translateContext('Database user', 'console'),
                 $dbUser ?? '<Empty>'
             ),
             $error ? self::MODE_DANGER : self::MODE_SUCCESS
@@ -1603,7 +1670,7 @@ EOT),
             $output,
             sprintf(
                 '<info>%s</info> [<comment>%s</comment>]',
-                $this->translate('Database password'),
+                $this->translateContext('Database password', 'console'),
                 $dbPass ? '<redacted>' : '<Empty>'
             ),
             $error ? self::MODE_DANGER : (
@@ -1625,7 +1692,7 @@ EOT),
                 sprintf(
                     // no translate for driver
                     '<info>Driver</info> [<comment>%s</comment>]',
-                    $this->translate('Unknown'),
+                    $this->translateContext('Unknown', 'console'),
                 )
             );
         }
@@ -1634,7 +1701,7 @@ EOT),
             $output,
             sprintf(
                 '<info>%s</info>',
-                $this->translate('Connection Object Info')
+                $this->translateContext('Connection Object Info', 'console')
             ),
             $error ? self::MODE_WARNING : self::MODE_SUCCESS
         );
@@ -1642,7 +1709,7 @@ EOT),
             $output,
             sprintf(
                 '<info>- %s</info> [%s]',
-                $this->translate('Connection'),
+                $this->translateContext('Connection', 'console'),
                 $database::class
             )
         );
@@ -1696,21 +1763,21 @@ EOT),
             $output,
             sprintf(
                 '<info>%s</info>',
-                $this->translate('ORM Configuration')
+                $this->translateContext('ORM Configuration', 'console')
             ),
             $error ? self::MODE_DANGER : self::SUCCESS
         );
         if ($ormConfig) {
             $lists = [
-                'Query Cache' => $ormConfig->getQueryCache(),
-                'Result Cache' => $ormConfig->getResultCache(),
-                'Proxy Namespace' => $ormConfig->getProxyNamespace(),
-                'Proxy Directory' => $ormConfig->getProxyDir(),
-                'Metadata Driver' => $ormConfig->getMetadataDriverImpl(),
-                'Repository Factory' => $ormConfig->getRepositoryFactory(),
-                'Quote Strategy' => $ormConfig->getQuoteStrategy(),
-                'Naming Factory' => $ormConfig->getNamingStrategy(),
-                'Schema Manager Factory' => $ormConfig->getSchemaManagerFactory(),
+                $this->translateContext('Query Cache', 'console') => $ormConfig->getQueryCache(),
+                $this->translateContext('Result Cache', 'console') => $ormConfig->getResultCache(),
+                $this->translateContext('Proxy Namespace', 'console') => $ormConfig->getProxyNamespace(),
+                $this->translateContext('Proxy Directory', 'console') => $ormConfig->getProxyDir(),
+                $this->translateContext('Metadata Driver', 'console') => $ormConfig->getMetadataDriverImpl(),
+                $this->translateContext('Repository Factory', 'console') => $ormConfig->getRepositoryFactory(),
+                $this->translateContext('Quote Strategy', 'console') => $ormConfig->getQuoteStrategy(),
+                $this->translateContext('Naming Factory', 'console') => $ormConfig->getNamingStrategy(),
+                $this->translateContext('Schema Manager Factory', 'console') => $ormConfig->getSchemaManagerFactory(),
             ];
             foreach ($lists as $key => $obj) {
                 $this->writeIndent(
@@ -1718,7 +1785,9 @@ EOT),
                     sprintf(
                         '<info>- %s</info> [%s]',
                         $key,
-                        is_object($obj) ? $obj::class : ( is_string($obj) ? $obj : $this->translate('Not Set'))
+                        is_object($obj) ? $obj::class : (
+                            is_string($obj) ? $obj : $this->translateContext('Not Set', 'console')
+                        )
                     )
                 );
             }
@@ -1727,7 +1796,7 @@ EOT),
             $output,
             sprintf(
                 '<info>%s (%d)</info>',
-                $this->translate('Registered Schema / Entities'),
+                $this->translateContext('Registered Schema / Entities', 'console'),
                 count($allMetadata)
             ),
             $error ? self::MODE_DANGER : self::MODE_SUCCESS
@@ -1846,7 +1915,7 @@ EOT),
                     $isNeedOptimize
                         ? sprintf(
                             ' <info>[%s]</info>',
-                            $this->translate('NEED TO OPTIMIZE')
+                            $this->translateContext('NEED TO OPTIMIZE', 'console')
                         ) : (
                     !$existTable ? ' <fg=red>[NOT EXISTS]</>' : ''
                     ),
@@ -1860,7 +1929,7 @@ EOT),
                     sprintf(
                         '%s%s : <comment>%s</comment>',
                         $this->getSpacing(),
-                        $this->translate('Changing'),
+                        $this->translateContext('Changing', 'console'),
                         implode(', ', $changed)
                     ),
                     OutputInterface::VERBOSITY_DEBUG
@@ -1873,7 +1942,10 @@ EOT),
                 $output,
                 sprintf(
                     '<info>%s</info>',
-                    $this->translate('Contains changed database schema, you can check with command :')
+                    $this->translateContext(
+                        'Contains changed database schema, you can check with command :',
+                        'console'
+                    )
                 )
             );
             $output->writeln('');
@@ -1895,7 +1967,10 @@ EOT),
                 $output,
                 sprintf(
                     '<info>%s</info>',
-                    $this->translate('Contains database table that can be optimized, you can execute command :')
+                    $this->translateContext(
+                        'Contains database table that can be optimized, you can execute command :',
+                        'console'
+                    )
                 )
             );
             $output->writeln('');

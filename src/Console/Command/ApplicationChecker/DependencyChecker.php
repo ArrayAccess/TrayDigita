@@ -34,7 +34,7 @@ class DependencyChecker extends AbstractChecker
             $output,
             sprintf(
                 '%s <comment>%s%s</comment>',
-                $this->translate('Php version'),
+                $this->translateContext('Php version', 'console'),
                 PHP_VERSION,
                 PHP_EXTRA_VERSION ? '-'. PHP_EXTRA_VERSION : ''
             ),
@@ -60,7 +60,7 @@ class DependencyChecker extends AbstractChecker
                 $notExists[$extension] = sprintf(
                     '<fg=red;options=bold>[x]</> %s %s',
                     $extension,
-                    $this->translate('extension is not exist')
+                    $this->translateContext('extension is not exist', 'console')
                 );
                 continue;
             }
@@ -71,11 +71,11 @@ class DependencyChecker extends AbstractChecker
             $exists[$extension] = sprintf(
                 '%s <comment>%s</comment> %s %s',
                 '<fg=green;options=bold>[√]</>',
-                $this->translate('extension valid'),
+                $this->translateContext('extension valid', 'console'),
                 $extension,
                 $version ? sprintf(
                     "%s [<comment>%s</comment>]",
-                    $this->translate('with version'),
+                    $this->translateContext('with version', 'console'),
                     $version
                 ) : ''
             );
@@ -83,7 +83,10 @@ class DependencyChecker extends AbstractChecker
         if (empty($notExists)) {
             $this->writeSuccess(
                 $output,
-                $this->translate('All required extensions are installed')
+                $this->translateContext(
+                    'All required extensions are installed',
+                    'console'
+                )
             );
         } else {
             $this->writeWarning(
@@ -91,7 +94,10 @@ class DependencyChecker extends AbstractChecker
                 sprintf(
                     '<comment>%s</comment> %s',
                     count($notExists),
-                    $this->translate('required extensions is not installed')
+                    $this->translateContext(
+                        'required extensions is not installed',
+                        'console'
+                    )
                 ),
             );
         }
@@ -134,15 +140,16 @@ class DependencyChecker extends AbstractChecker
                 '%s <comment>%s</comment> %s %s',
                 '<fg=green;options=bold>[√]</>',
                 $extension,
-                $this->translate('extension installed'),
+                $this->translateContext('extension installed', 'console'),
                 $version ? sprintf("with version [<comment>%s</comment>]", $version) : ''
             );
         }
         if (empty($exists)) {
             $this->writeWarning(
                 $output,
-                $this->translate(
-                    'No recommended extensions installed'
+                $this->translateContext(
+                    'No recommended extensions installed',
+                    'console'
                 )
             );
         } else {
@@ -151,10 +158,11 @@ class DependencyChecker extends AbstractChecker
                 sprintf(
                     '<comment>%s</comment> %s',
                     count($exists),
-                    $this->translatePlural(
+                    $this->translatePluralContext(
                         'recommended extension installed',
                         'recommended extensions installed',
-                        count($exists)
+                        count($exists),
+                        'console'
                     )
                 ),
                 true

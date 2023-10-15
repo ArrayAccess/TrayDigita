@@ -28,7 +28,7 @@ class KernelAggregator extends AbstractAggregator
         }
         $this->translated = true;
         return $this->name = ContainerHelper::use(TranslatorInterface::class)
-            ?->translate('Kernel', context: 'benchmark')??$this->name;
+            ?->translateContext('Kernel', 'benchmark')??$this->name;
     }
 
     public function accepted(RecordInterface $record): bool

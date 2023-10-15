@@ -31,6 +31,8 @@ abstract class AbstractTemplateRule
 
     protected string $jsonPath = self::METADATA_JSON;
 
+    protected ?string $templateLoad = 'template.php';
+
     private ?string $initializedDirectory = null;
 
     private array $templates = [];
@@ -39,6 +41,11 @@ abstract class AbstractTemplateRule
 
     public function __construct(public readonly Wrapper $wrapper)
     {
+    }
+
+    public function getTemplateLoad(): ?string
+    {
+        return $this->templateLoad;
     }
 
     public function setActive(string|AbstractTemplate $active): bool

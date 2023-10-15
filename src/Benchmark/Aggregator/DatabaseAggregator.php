@@ -22,6 +22,6 @@ class DatabaseAggregator extends AbstractAggregator
         }
         $this->translated = true;
         return $this->name = ContainerHelper::use(TranslatorInterface::class)
-            ?->translate('Database', context: 'benchmark')??$this->name;
+            ?->translateContext('Database', 'benchmark')??$this->name;
     }
 }

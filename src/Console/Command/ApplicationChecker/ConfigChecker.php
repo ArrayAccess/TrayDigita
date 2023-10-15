@@ -58,7 +58,7 @@ class ConfigChecker extends AbstractChecker
         if (!$config instanceof Config) {
             $this->writeDanger(
                 $output,
-                $this->translate('Config environment is not set')
+                $this->translateContext('Config environment is not set', 'console')
             );
             return Command::FAILURE;
         }
@@ -68,10 +68,10 @@ class ConfigChecker extends AbstractChecker
         $this->write(
             $output,
             sprintf(
-                $this->translate('Debugging - error display [%s]'),
+                $this->translateContext('Debugging - error display [%s]', 'console'),
                 $displayError
-                    ? sprintf('<fg=red>%s</>', $this->translate('Enabled'))
-                    : sprintf('<info>%s</info>', $this->translate('Disabled'))
+                    ? sprintf('<fg=red>%s</>', $this->translateContext('Enabled', 'console'))
+                    : sprintf('<info>%s</info>', $this->translateContext('Disabled', 'console'))
             ),
             $displayError ? self::MODE_WARNING : self::MODE_SUCCESS
         );
@@ -79,10 +79,10 @@ class ConfigChecker extends AbstractChecker
         $this->write(
             $output,
             sprintf(
-                $this->translate('Benchmark debug bar [%s]'),
+                $this->translateContext('Benchmark debug bar [%s]', 'console'),
                 $debugBar
-                    ? sprintf('<fg=red>%s</>', $this->translate('Enabled'))
-                    : sprintf('<info>%s</info>', $this->translate('Disabled'))
+                    ? sprintf('<fg=red>%s</>', $this->translateContext('Enabled', 'console'))
+                    : sprintf('<info>%s</info>', $this->translateContext('Disabled', 'console'))
             ),
             $debugBar ? self::MODE_WARNING : self::MODE_SUCCESS
         );
@@ -90,10 +90,10 @@ class ConfigChecker extends AbstractChecker
         $this->write(
             $output,
             sprintf(
-                $this->translate('Benchmark profiling [%s]'),
+                $this->translateContext('Benchmark profiling [%s]', 'console'),
                 $profiling
-                    ? sprintf('<fg=red>%s</>', $this->translate('Enabled'))
-                    : sprintf('<info>%s</info>', $this->translate('Disabled'))
+                    ? sprintf('<fg=red>%s</>', $this->translateContext('Enabled', 'console'))
+                    : sprintf('<info>%s</info>', $this->translateContext('Disabled', 'console'))
             ),
             $profiling ? self::MODE_WARNING : self::MODE_SUCCESS
         );
@@ -116,7 +116,7 @@ class ConfigChecker extends AbstractChecker
                 sprintf(
                     '<info>%s</info>',
                     sprintf(
-                        $this->translate('Benchmarks records (%d)'),
+                        $this->translateContext('Benchmarks records (%d)', 'console'),
                         $count
                     )
                 )
@@ -126,7 +126,7 @@ class ConfigChecker extends AbstractChecker
                     $output,
                     sprintf(
                         '<info>%s</info> [<comment>%s</comment>] (%d)',
-                        $this->translate('Benchmarks group'),
+                        $this->translateContext('Benchmarks group', 'console'),
                         $groupName,
                         $total
                     ),
@@ -187,13 +187,13 @@ class ConfigChecker extends AbstractChecker
         if (!$directory) {
             $this->write(
                 $output,
-                $this->translate('App directory is not exists'),
+                $this->translateContext('App directory is not exists', 'console'),
                 false
             );
         }
         $this->write(
             $output,
-            $this->translate('Required Applications directory'),
+            $this->translateContext('Required Applications directory', 'console'),
             !$containFail
         );
 
@@ -205,7 +205,7 @@ class ConfigChecker extends AbstractChecker
                 if (!$datum['valid']) {
                     $additionalComment = sprintf(
                         ' <fg=red>%s</>',
-                        $this->translate('Storage directory is not writable')
+                        $this->translateContext('Storage directory is not writable', 'console')
                     );
                 }
             }
@@ -220,7 +220,7 @@ class ConfigChecker extends AbstractChecker
                     "%s %s %s%s",
                     $status,
                     $name,
-                    $this->translate('directory'),
+                    $this->translateContext('directory', 'console'),
                     $directory
                 )
             );
@@ -247,19 +247,19 @@ class ConfigChecker extends AbstractChecker
             $problem = $kernel->getConfigError();
             $message = match ($problem) {
                 KernelInterface::CONFIG_NOT_FILE => sprintf(
-                    $this->translate('Configuration file is not a valid file (%s)'),
+                    $this->translateContext('Configuration file is not a valid file (%s)', 'console'),
                     '<fg=red>NOT_FILE</>'
                 ),
                 KernelInterface::CONFIG_NOT_ITERABLE => sprintf(
-                    $this->translate('Configuration file is invalid (%s)'),
+                    $this->translateContext('Configuration file is invalid (%s)', 'console'),
                     '<fg=red>NOT_ITERABLE</>'
                 ),
                 KernelInterface::CONFIG_EMPTY_FILE => sprintf(
-                    $this->translate('Configuration file is empty (%s)'),
+                    $this->translateContext('Configuration file is empty (%s)', 'console'),
                     '<fg=red>EMPTY_FILE</>'
                 ),
                 default => sprintf(
-                    $this->translate('Configuration file does not exists (%s)'),
+                    $this->translateContext('Configuration file does not exists (%s)', 'console'),
                     '<fg=red>UNAVAILABLE</>'
                 )
             };
@@ -271,7 +271,7 @@ class ConfigChecker extends AbstractChecker
                 $output,
                 sprintf(
                     '<fg=red;options=bold>[X]</> %s [<comment>%s</comment>]',
-                    $this->translate('Configuration'),
+                    $this->translateContext('Configuration', 'console'),
                     $configFile
                 ),
                 OutputInterface::VERBOSITY_VERBOSE
@@ -283,7 +283,7 @@ class ConfigChecker extends AbstractChecker
         if (!$config) {
             $this->writeDanger(
                 $output,
-                $this->translate('Configuration file is not exists on container')
+                $this->translateContext('Configuration file is not exists on container', 'console')
             );
             return Command::FAILURE;
         }
@@ -292,8 +292,9 @@ class ConfigChecker extends AbstractChecker
         if (!$databaseConfig) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Configuration file does not contain database configuration'
+                $this->translateContext(
+                    'Configuration file does not contain database configuration',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -308,8 +309,9 @@ class ConfigChecker extends AbstractChecker
         ) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Configuration file does not contain valid database configuration'
+                $this->translateContext(
+                    'Configuration file does not contain valid database configuration',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -319,8 +321,9 @@ class ConfigChecker extends AbstractChecker
         if (!$security) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Configuration file does not contain security configuration'
+                $this->translateContext(
+                    'Configuration file does not contain security configuration',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -329,8 +332,9 @@ class ConfigChecker extends AbstractChecker
         if (!$security->get('secret') || !$security->get('salt')) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Configuration file does not contain valid security configuration'
+                $this->translateContext(
+                    'Configuration file does not contain valid security configuration',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -338,13 +342,16 @@ class ConfigChecker extends AbstractChecker
 
         $this->writeSuccess(
             $output,
-            $this->translate('Configuration file is exist & valid')
+            $this->translateContext(
+                'Configuration file is exist & valid',
+                'console'
+            )
         );
         $this->writeIndent(
             $output,
             sprintf(
                 '<fg=green;options=bold>[√]</> %s [<comment>%s</comment>]',
-                $this->translate('Configuration'),
+                $this->translateContext('Configuration', 'console'),
                 $configFile
             ),
             OutputInterface::VERBOSITY_VERBOSE

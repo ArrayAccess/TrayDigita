@@ -40,6 +40,20 @@ interface ManagerInterface extends Countable
     ): int;
 
     /**
+     * Detach by event name & id
+     *
+     * @param string $eventName
+     * @param string $id
+     * @param int|null $priority
+     * @return int
+     */
+    public function detachByEventNameId(
+        string $eventName,
+        string $id,
+        ?int $priority = null
+    ): int;
+
+    /**
      * Detach all events by event name
      *
      * @param string ...$eventNames

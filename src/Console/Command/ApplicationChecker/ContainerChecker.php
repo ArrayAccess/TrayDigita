@@ -20,14 +20,14 @@ class ContainerChecker extends AbstractChecker
         if (!$container) {
             $this->writeDanger(
                 $output,
-                $this->translate('Container object not set')
+                $this->translateContext('Container object not set', 'console')
             );
             return Command::FAILURE;
         }
         $this->write(
             $output,
             sprintf(
-                $this->translate('Container object is set [%s]'),
+                $this->translateContext('Container object is set [%s]', 'console'),
                 sprintf(
                     '<info>%s</info>',
                     $container::class
@@ -43,7 +43,7 @@ class ContainerChecker extends AbstractChecker
                     sprintf(
                         '<info>%s</info>',
                         sprintf(
-                            $this->translate('Registered Container (%d)'),
+                            $this->translateContext('Registered Container (%d)', 'console'),
                             count($container->keys())
                         ),
                     ),
@@ -64,7 +64,7 @@ class ContainerChecker extends AbstractChecker
                     sprintf(
                         '<info>%s</info>',
                         sprintf(
-                            $this->translate('Registered Aliases (%d)'),
+                            $this->translateContext('Registered Aliases (%d)', 'console'),
                             count($container->getAliases())
                         )
                     ),

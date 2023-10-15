@@ -139,8 +139,9 @@ trait WriterHelperTrait
         $output->writeln('');
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Time %s secs; Memory Usage: %s; Memory Peak Usage: %s'
+                $this->translateContext(
+                    'Time %s secs; Memory Usage: %s; Memory Peak Usage: %s',
+                    'console'
                 ),
                 round(microtime(true) - $this->getStartTime(), 3),
                 Consolidation::sizeFormat(

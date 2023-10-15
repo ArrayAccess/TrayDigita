@@ -1,0 +1,1855 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TrayDigita 1.0.0\n"
+"POT-Creation-Date: 2023-10-16 05:06+0700\n"
+"PO-Revision-Date: 2023-10-16 06:07+0700\n"
+"Last-Translator: \n"
+"Language-Team: ArrayAccess\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: translate:1,3c;__;translate;trans;"
+"translatePlural:1,2,5c;translatePlural:1,2;transN:1,2;_n:1,2;"
+"translateContext:1,2c;transX:1,2c;_x:1,2c;translatePluralContext:1,2,4c;"
+"transNX:1,2,4c;_nx:1,2,4c\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.css\n"
+"X-Poedit-SearchPathExcluded-1: *.html\n"
+"X-Poedit-SearchPathExcluded-2: *.json\n"
+
+#: Benchmark/Aggregator/DatabaseAggregator.php:25
+msgctxt "benchmark"
+msgid "Database"
+msgstr "Basis Data"
+
+#: Benchmark/Aggregator/EventAggregator.php:44
+msgctxt "benchmark"
+msgid "Event"
+msgstr "Acara"
+
+#: Benchmark/Aggregator/KernelAggregator.php:31
+msgctxt "benchmark"
+msgid "Kernel"
+msgstr "Kernel"
+
+#: Benchmark/Aggregator/MiddlewareAggregator.php:31
+msgctxt "benchmark"
+msgid "Middleware"
+msgstr "Middleware"
+
+#: Benchmark/Aggregator/ServicesAggregator.php:40
+msgctxt "benchmark"
+msgid "Service"
+msgstr "Layanan"
+
+#: Benchmark/Middlewares/DebuggingMiddleware.php:201
+#: Benchmark/Middlewares/DebuggingMiddleware.php:205
+#: Benchmark/Middlewares/DebuggingMiddleware.php:255
+msgctxt "benchmark"
+msgid "rendered time"
+msgstr "waktu pemuatan"
+
+#: Benchmark/Middlewares/DebuggingMiddleware.php:203
+#: Benchmark/Middlewares/DebuggingMiddleware.php:207
+#: Benchmark/Middlewares/DebuggingMiddleware.php:262
+msgctxt "benchmark"
+msgid "memory usage"
+msgstr "penggunaan memori"
+
+#: Benchmark/Middlewares/DebuggingMiddleware.php:260
+msgctxt "benchmark"
+msgid "peak memory usage"
+msgstr "penggunaan puncak memori"
+
+#: Benchmark/Waterfall.php:284 Benchmark/Waterfall.php:844
+msgctxt "benchmark"
+msgid "Memory"
+msgstr "Memori"
+
+#: Benchmark/Waterfall.php:299
+msgctxt "benchmark"
+msgid "Memory usage"
+msgstr "Penggunaan memori"
+
+#: Benchmark/Waterfall.php:315
+msgctxt "benchmark"
+msgid "Real memory usage"
+msgstr "Pengginaan memori asli"
+
+#: Benchmark/Waterfall.php:331
+msgctxt "benchmark"
+msgid "Peak memory usage"
+msgstr "Penggunaan puncak memori"
+
+#: Benchmark/Waterfall.php:347
+msgctxt "benchmark"
+msgid "Real Peak memory usage"
+msgstr "Penggunaan Puncak Memori sebenarnya"
+
+#: Benchmark/Waterfall.php:366
+msgctxt "benchmark"
+msgid "Benchmark memory usage"
+msgstr "Penggunaan Memori Benchmark"
+
+#: Benchmark/Waterfall.php:398 Benchmark/Waterfall.php:865
+msgctxt "benchmark"
+msgid "Duration"
+msgstr "Durasi"
+
+#: Benchmark/Waterfall.php:412
+msgctxt "benchmark"
+msgid "Total duration"
+msgstr "Total durasi"
+
+#: Benchmark/Waterfall.php:425
+msgctxt "benchmark"
+msgid "Benchmark duration"
+msgstr "Durasi benchmark"
+
+#: Benchmark/Waterfall.php:438
+msgctxt "benchmark"
+msgid "Application rendering duration"
+msgstr "Durasi pemuatan aplikasi"
+
+#: Benchmark/Waterfall.php:454
+msgctxt "benchmark"
+msgid "Total Benchmark"
+msgstr "Total Benchmark"
+
+#: Benchmark/Waterfall.php:481 Benchmark/Waterfall.php:483
+msgctxt "benchmark"
+msgid "Benchmarks"
+msgstr "Benchmarks"
+
+#: Benchmark/Waterfall.php:541
+msgctxt "benchmark"
+msgid "Filter"
+msgstr "Saring"
+
+#: Benchmark/Waterfall.php:630
+msgctxt "benchmark"
+msgid "NO BENCHMARKS"
+msgstr "TIDAK ADA BENCHMARK"
+
+#: Benchmark/Waterfall.php:808
+#, php-format
+msgctxt "benchmark"
+msgid "Total Groups: %d"
+msgstr "Total Grup: %d"
+
+#: Benchmark/Waterfall.php:811
+#, php-format
+msgctxt "benchmark"
+msgid "Group : %s"
+msgstr "Grup : %s"
+
+#: Benchmark/Waterfall.php:818
+msgctxt "benchmark"
+msgid "Group"
+msgstr "Grup"
+
+#: Benchmark/Waterfall.php:837
+#, php-format
+msgctxt "benchmark"
+msgid "Total Memory: %s"
+msgstr "Total Memori: %s"
+
+#: Benchmark/Waterfall.php:856
+#, php-format
+msgctxt "benchmark"
+msgid "Total Benchmarks Duration: %s"
+msgstr "Total Durasi Benchmark: %s"
+
+#: Benchmark/Waterfall.php:878
+msgctxt "benchmark"
+msgid "Waterfall"
+msgstr "Waterfall"
+
+#: Console/Command/ApplicationCheck.php:56
+msgctxt "console"
+msgid "Check & validate application."
+msgstr "Periksa & validasi aplikasi."
+
+#: Console/Command/ApplicationCheck.php:62
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to validate application.\n"
+"This command show information about installed application services."
+msgstr ""
+"%s membantu Anda memvalidasi aplikasi.\n"
+"Perintah ini menampilkan informasi tentang layanan aplikasi yang terinstall."
+
+#: Console/Command/ApplicationCheck.php:95
+msgctxt "console"
+msgid "Application Check"
+msgstr "Pemeriksa Aplikasi"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:31
+msgctxt "console"
+msgid "Can not get cache object from container"
+msgstr "Tidak bisa mendapatkan objek cache dari container"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:43
+msgctxt "console"
+msgid "Cache is not valid object from container"
+msgstr "Objek cache tidak valid dari container"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:52
+msgctxt "console"
+msgid "Cache object error"
+msgstr "Objek cache bermasalah"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:58
+#: Console/Command/ApplicationChecker/CacheChecker.php:94
+#: Console/Command/DatabaseChecker.php:1588
+msgctxt "console"
+msgid "Error:"
+msgstr "Kesalahan:"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:61
+#: Console/Command/ApplicationChecker/CacheChecker.php:97
+msgctxt "console"
+msgid "Unknown Error"
+msgstr "Kesalahan yang tidak diketahui"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:74
+#, php-format
+msgctxt "console"
+msgid "Cache object is set [%s]"
+msgstr "Objek cache telah ditentukan [%s]"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:111
+msgctxt "console"
+msgid "Adapter"
+msgstr "Adaptor"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:120
+msgctxt "console"
+msgid "Default Lifetime"
+msgstr "Lifetime Bawaan"
+
+#: Console/Command/ApplicationChecker/CacheChecker.php:136
+msgctxt "console"
+msgid "Namespace"
+msgstr "Namespace"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:61
+msgctxt "console"
+msgid "Config environment is not set"
+msgstr "Environmen konfig belum ditentukan"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:71
+#, php-format
+msgctxt "console"
+msgid "Debugging - error display [%s]"
+msgstr "Debugging - tampilan kesalahan [%s]"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:73
+#: Console/Command/ApplicationChecker/ConfigChecker.php:84
+#: Console/Command/ApplicationChecker/ConfigChecker.php:95
+msgctxt "console"
+msgid "Enabled"
+msgstr "Diaktifkan"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:74
+#: Console/Command/ApplicationChecker/ConfigChecker.php:85
+#: Console/Command/ApplicationChecker/ConfigChecker.php:96
+msgctxt "console"
+msgid "Disabled"
+msgstr "Dinonaktifkan"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:82
+#, php-format
+msgctxt "console"
+msgid "Benchmark debug bar [%s]"
+msgstr "Benchmark debug bar [%s]"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:93
+#, php-format
+msgctxt "console"
+msgid "Benchmark profiling [%s]"
+msgstr "Profiling benchmark [%s]"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:119
+#, php-format
+msgctxt "console"
+msgid "Benchmarks records (%d)"
+msgstr "Rekaman benchmark (%d)"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:129
+msgctxt "console"
+msgid "Benchmarks group"
+msgstr "Grup benchmark"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:190
+msgctxt "console"
+msgid "App directory is not exists"
+msgstr "Direktori App tidak ada"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:196
+msgctxt "console"
+msgid "Required Applications directory"
+msgstr "Direktori Aplikasi yang diperlukan"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:208
+msgctxt "console"
+msgid "Storage directory is not writable"
+msgstr "Direktori penyimpanan tidak dapat ditulisi"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:223
+msgctxt "console"
+msgid "directory"
+msgstr "direktori"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:250
+#, php-format
+msgctxt "console"
+msgid "Configuration file is not a valid file (%s)"
+msgstr "Berkas konfigurasi bukan berkas yang sah (%s)"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:254
+#, php-format
+msgctxt "console"
+msgid "Configuration file is invalid (%s)"
+msgstr "Berkas konfigurasi tidak sah (%s)"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:258
+#, php-format
+msgctxt "console"
+msgid "Configuration file is empty (%s)"
+msgstr "Berkas konfigurasi kosong (%s)"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:262
+#, php-format
+msgctxt "console"
+msgid "Configuration file does not exists (%s)"
+msgstr "Berkas konfigurasi tidak tersedia (%s)"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:274
+#: Console/Command/ApplicationChecker/ConfigChecker.php:354
+msgctxt "console"
+msgid "Configuration"
+msgstr "Konfigurasi"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:286
+msgctxt "console"
+msgid "Configuration file is not exists on container"
+msgstr "Berkas konfigurasi tidak tersedia di container"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:296
+msgctxt "console"
+msgid "Configuration file does not contain database configuration"
+msgstr "Berkas konfigurasi tidak berisi konfigurasi basis data"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:313
+msgctxt "console"
+msgid "Configuration file does not contain valid database configuration"
+msgstr "Berkas konfigurasi tidak berisi konfigurasi basis data yang sah"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:325
+msgctxt "console"
+msgid "Configuration file does not contain security configuration"
+msgstr "Berkas konfigurasi tidak terdapat konfigurasi keamanan"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:336
+msgctxt "console"
+msgid "Configuration file does not contain valid security configuration"
+msgstr "Berkas konfigurasi tidak berisi konfigurasi keamanan yang sah"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:346
+msgctxt "console"
+msgid "Configuration file is exist & valid"
+msgstr "Berkas konfigurasi tersedia & sah"
+
+#: Console/Command/ApplicationChecker/ContainerChecker.php:23
+msgctxt "console"
+msgid "Container object not set"
+msgstr "Object Container belum ditentukan"
+
+#: Console/Command/ApplicationChecker/ContainerChecker.php:30
+#, php-format
+msgctxt "console"
+msgid "Container object is set [%s]"
+msgstr "Objek Container telah ditentukan [%s]"
+
+#: Console/Command/ApplicationChecker/ContainerChecker.php:46
+#, php-format
+msgctxt "console"
+msgid "Registered Container (%d)"
+msgstr "Container Terdaftar (%d)"
+
+#: Console/Command/ApplicationChecker/ContainerChecker.php:67
+#, php-format
+msgctxt "console"
+msgid "Registered Aliases (%d)"
+msgstr "Alias ​​Terdaftar (%d)"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:37
+msgctxt "console"
+msgid "Php version"
+msgstr "Versi Php"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:63
+msgctxt "console"
+msgid "extension is not exist"
+msgstr "ekstensi tidak tersedia"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:74
+msgctxt "console"
+msgid "extension valid"
+msgstr "ekstensi sah"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:78
+msgctxt "console"
+msgid "with version"
+msgstr "dengan versi"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:87
+msgctxt "console"
+msgid "All required extensions are installed"
+msgstr "Semua ekstensi yang diperlukan telah terpasang"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:98
+msgctxt "console"
+msgid "required extensions is not installed"
+msgstr "ekstensi yang diperlukan belum terpasang"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:143
+msgctxt "console"
+msgid "extension installed"
+msgstr "ekstensi terinstall"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:151
+msgctxt "console"
+msgid "No recommended extensions installed"
+msgstr "Tidak ada rekomendasi ekstensi yang terpasang"
+
+#: Console/Command/ApplicationChecker/DependencyChecker.php:162
+msgctxt "console"
+msgid "recommended extension installed"
+msgid_plural "recommended extensions installed"
+msgstr[0] "rekomendasi ekstensi yang terpasang"
+
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:25
+msgctxt "console"
+msgid "Can not get translator object from container"
+msgstr "Tidak bisa mendapatkan objek penerjemah dari container"
+
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:40
+msgctxt "console"
+msgid "Translator is not valid object from container"
+msgstr "Penerjemah tidak valid dari container"
+
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:51
+msgctxt "console"
+msgid "Translator object is set"
+msgstr "Object penerjemah tidak ditentukan"
+
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:61
+msgctxt "console"
+msgid "No Adapter Registered"
+msgstr "Tidak Ada Adaptor Terdaftar"
+
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:66
+#, php-format
+msgctxt "console"
+msgid "Registered Adapters (%d)"
+msgstr "Adaptor Terdaftar (%d)"
+
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:90
+msgctxt "console"
+msgid "Current Language"
+msgstr "Bahasa Saat Ini"
+
+#: Console/Command/BuiltInWebServer.php:90
+msgctxt "console"
+msgid "Create temporary php builtin web server."
+msgstr "Buat server web sementara bawaan php."
+
+#: Console/Command/BuiltInWebServer.php:99
+msgctxt "console"
+msgid "Port number that used for listening server"
+msgstr "Nomor port yang digunakan untuk server"
+
+#: Console/Command/BuiltInWebServer.php:109
+msgctxt "console"
+msgid "Host that used to listening server."
+msgstr "Host yang digunakan untuk server."
+
+#: Console/Command/BuiltInWebServer.php:123
+msgctxt "console"
+msgid "Public index.php file."
+msgstr "Berkas public index.php."
+
+#: Console/Command/BuiltInWebServer.php:128
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create temporary php builtin web server like:\n"
+"\n"
+"    %s\n"
+"\n"
+"You can use %s\n"
+"\n"
+"Host accept local %s\n"
+"Port accept range between %s"
+msgstr ""
+"%s Membantu anda untuk membuat php builtin web server sementara seperti:\n"
+"\n"
+"    %s\n"
+"\n"
+"Anda dapat menggunakan %s\n"
+"\n"
+"Menerima host local %s\n"
+"Menerima port antara %s"
+
+#: Console/Command/BuiltInWebServer.php:139
+msgctxt "console"
+msgid "port number"
+msgstr "nomor port"
+
+#: Console/Command/BuiltInWebServer.php:143
+#: Console/Command/BuiltInWebServer.php:147
+msgctxt "console"
+msgid "default"
+msgstr "default"
+
+#: Console/Command/BuiltInWebServer.php:170
+#: Console/Command/BuiltInWebServer.php:188
+#: Console/Command/BuiltInWebServer.php:223
+#: Console/Command/BuiltInWebServer.php:256
+#: Console/Command/BuiltInWebServer.php:273
+#: Console/Command/BuiltInWebServer.php:340
+#: Console/Command/BuiltInWebServer.php:357
+#: Console/Command/BuiltInWebServer.php:374
+#: Console/Command/BuiltInWebServer.php:391
+#: Console/Command/BuiltInWebServer.php:457
+#: Console/Command/BuiltInWebServer.php:558
+#, php-format
+msgctxt "console"
+msgid "Command %s Error!"
+msgstr "Perintah %s Bermasalah!"
+
+#: Console/Command/BuiltInWebServer.php:176
+msgctxt "console"
+msgid "Port is Invalid! option port must be numeric."
+msgstr "Port Tidak Sah! opsi port harus berupa angka."
+
+#: Console/Command/BuiltInWebServer.php:195
+#, php-format
+msgctxt "console"
+msgid "Port is Invalid! option port should not use: %s"
+msgstr "Port Tidak Sah! opsi port tidak boleh menggunakan: %s"
+
+#: Console/Command/BuiltInWebServer.php:207
+#, php-format
+msgctxt "console"
+msgid "Typically this port used by %s application."
+msgstr "Biasanya port ini digunakan oleh aplikasi %s."
+
+#: Console/Command/BuiltInWebServer.php:230
+#, php-format
+msgctxt "console"
+msgid "Port is out of range! option port must be between: %s to %s"
+msgstr "Port berada di luar jangkauan! opsi port harus antara: %s hingga %s"
+
+#: Console/Command/BuiltInWebServer.php:262
+msgctxt "console"
+msgid ""
+"Option host is invalid. Host only accept \"localhost\" and local IP address."
+msgstr ""
+"Opsi host tidak sah. Host hanya menerima “localhost” dan alamat IP lokal."
+
+#: Console/Command/BuiltInWebServer.php:280
+#, php-format
+msgctxt "console"
+msgid "Option host is invalid. IP %s is not a local IP address."
+msgstr "Opsi host tidak sah. IP %s bukan merupakan alamat IP lokal."
+
+#: Console/Command/BuiltInWebServer.php:346
+msgctxt "console"
+msgid "Could not detect public root file."
+msgstr "Tidak dapat mendeteksi berkas root publik."
+
+#: Console/Command/BuiltInWebServer.php:363
+msgctxt "console"
+msgid "Public root file is not in application directory!"
+msgstr "Berkas root publik tidak berada pada direktori aplikasi!"
+
+#: Console/Command/BuiltInWebServer.php:380
+msgctxt "console"
+msgid "Could not detect php binary executable file."
+msgstr "Tidak dapat mendeteksi berkas binary executable php."
+
+#: Console/Command/BuiltInWebServer.php:396
+msgctxt "console"
+msgid "Function [exec] is not exist"
+msgstr "Fungsi [exec] tidak tersedia"
+
+#: Console/Command/BuiltInWebServer.php:421
+msgctxt "console"
+msgid "Checking"
+msgstr "Memeriksa"
+
+#: Console/Command/BuiltInWebServer.php:429
+msgctxt "console"
+msgid "Port"
+msgstr "Port"
+
+#: Console/Command/BuiltInWebServer.php:466
+#, php-format
+msgctxt "console"
+msgid "Can not determine port that can be used after doing %s tests"
+msgstr ""
+"Tidak dapat menentukan port yang dapat digunakan setelah melakukan %s tes"
+
+#: Console/Command/BuiltInWebServer.php:475
+#, php-format
+msgctxt "console"
+msgid "Can not listening %s with port %s"
+msgstr "Tidak dapat memproses %s dengan port %s"
+
+#: Console/Command/BuiltInWebServer.php:531
+#, php-format
+msgctxt "console"
+msgid "Press %s to exit."
+msgstr "Tekan %s untuk keluar."
+
+#: Console/Command/ChecksumGenerator.php:59
+msgctxt "console"
+msgid "Create list of core file checksums."
+msgstr "Membuat berkas daftar inti ceksum."
+
+#: Console/Command/ChecksumGenerator.php:68
+msgctxt "console"
+msgid "Display checksums on terminal without writing to disk"
+msgstr "Tampilkan checksum di terminal tanpa menulis ke disk"
+
+#: Console/Command/ChecksumGenerator.php:78
+#, php-format
+msgctxt "console"
+msgid "The %s creating checksum files on %s directory."
+msgstr "%s membuat berkas ceksum pada direktori %s."
+
+#: Console/Command/ChecksumGenerator.php:121
+#, php-format
+msgctxt "console"
+msgid "Files will be put in directory: %s"
+msgstr "Berkas akan diletakkan pada direktori: %s"
+
+#: Console/Command/ChecksumGenerator.php:133
+#: Console/Command/CommandGenerator.php:329
+#: Console/Command/ControllerGenerator.php:292
+#: Console/Command/DatabaseChecker.php:1255
+#: Console/Command/DatabaseChecker.php:1397
+#: Console/Command/DatabaseEventGenerator.php:329
+#: Console/Command/EntityGenerator.php:325
+#: Console/Command/MiddlewareGenerator.php:311
+#: Console/Command/ModuleGenerator.php:344
+#: Console/Command/SchedulerGenerator.php:349
+msgctxt "console"
+msgid "Are you sure to continue (Yes/No)?"
+msgstr "Apakah anda yakin ingin melanjutkan (Yes/No)?"
+
+#: Console/Command/ChecksumGenerator.php:148
+#: Console/Command/CommandGenerator.php:342
+#: Console/Command/ControllerGenerator.php:305
+#: Console/Command/DatabaseChecker.php:1270
+#: Console/Command/DatabaseChecker.php:1412
+#: Console/Command/DatabaseEventGenerator.php:342
+#: Console/Command/EntityGenerator.php:338
+#: Console/Command/MiddlewareGenerator.php:326
+#: Console/Command/ModuleGenerator.php:359
+#: Console/Command/SchedulerGenerator.php:362
+msgctxt "console"
+msgid "Please enter valid answer! (Yes / No)"
+msgstr "Mohon masukkan jawaban yang benar! (Yes/No)"
+
+#: Console/Command/ChecksumGenerator.php:160
+#: Console/Command/CommandGenerator.php:386
+#: Console/Command/ControllerGenerator.php:347
+#: Console/Command/DatabaseChecker.php:1282
+#: Console/Command/DatabaseChecker.php:1426
+#: Console/Command/DatabaseEventGenerator.php:386
+#: Console/Command/EntityGenerator.php:383
+#: Console/Command/MiddlewareGenerator.php:370
+#: Console/Command/ModuleGenerator.php:403
+#: Console/Command/SchedulerGenerator.php:408
+msgctxt "console"
+msgid "Operation cancelled!"
+msgstr "Operasi dibatalkan!"
+
+#: Console/Command/ChecksumGenerator.php:271
+msgctxt "console"
+msgid "Done!"
+msgstr "Selesai!"
+
+#: Console/Command/ChecksumGenerator.php:283
+msgctxt "console"
+msgid "Source"
+msgstr "Sumber"
+
+#: Console/Command/CommandGenerator.php:79
+msgctxt "console"
+msgid "Generate command class."
+msgstr "Hasilkan kelas perintah."
+
+#: Console/Command/CommandGenerator.php:85
+#: Console/Command/ControllerGenerator.php:88
+#: Console/Command/DatabaseEventGenerator.php:89
+#: Console/Command/EntityGenerator.php:85
+#: Console/Command/MiddlewareGenerator.php:85
+#: Console/Command/ModuleGenerator.php:85
+#: Console/Command/SchedulerGenerator.php:85
+msgctxt "console"
+msgid "Print generated class file only"
+msgstr "Tampilkan berkas kelas yang dihasilkan saja"
+
+#: Console/Command/CommandGenerator.php:90
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create %s object.\n"
+"\n"
+"Command will use prefix namespace with %s\n"
+"Command only support single class name.\n"
+msgstr ""
+"%s membantu Anda membuat objek %s.\n"
+"\n"
+"Perintah akan menggunakan awalan namespace dengan %s\n"
+"Perintah hanya mendukung nama kelas tunggal.\n"
+
+#: Console/Command/CommandGenerator.php:174
+msgctxt "console"
+msgid "Please enter command class name"
+msgstr "Mohon masukkan nama kelas perintah"
+
+#: Console/Command/CommandGenerator.php:181
+msgctxt "console"
+msgid "Please enter valid command class name!"
+msgstr "Mohon masukkan nama kelas perintah yang sah!"
+
+#: Console/Command/CommandGenerator.php:192
+#, php-format
+msgctxt "console"
+msgid "Command [%s] is invalid! class name contain reserved keyword!"
+msgstr "Perintah [%s] tidak sah! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/CommandGenerator.php:203
+#, php-format
+msgctxt "console"
+msgid ""
+"Command [%s] is invalid! Command only contain single class name, not "
+"namespaced!"
+msgstr ""
+"Perintah [%s] tidak sah! Perintah hanya boleh berupa nama kelas tunggal, "
+"bukan berupa namsapace!"
+
+#: Console/Command/CommandGenerator.php:214
+#, php-format
+msgctxt "console"
+msgid "Command [%s] is too long! Must be less or equal 128 characters"
+msgstr ""
+"Perintah [%s] terlalu panjang! Harus kurang dari atau sama dengan 128 "
+"karakter"
+
+#: Console/Command/CommandGenerator.php:224
+#, php-format
+msgctxt "console"
+msgid "Command [%s] exist"
+msgstr "Perintah [%s] tersedia"
+
+#: Console/Command/CommandGenerator.php:254
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect command directory"
+msgstr "%s Tidak dapat mendeteksi direktori perintah"
+
+#: Console/Command/CommandGenerator.php:268
+#: Console/Command/ControllerGenerator.php:238
+#: Console/Command/DatabaseEventGenerator.php:269
+#: Console/Command/EntityGenerator.php:253
+#: Console/Command/MiddlewareGenerator.php:250
+#: Console/Command/ModuleGenerator.php:268
+#: Console/Command/SchedulerGenerator.php:272
+#, php-format
+msgctxt "console"
+msgid "%s generator only support in interactive mode"
+msgstr "Generator %s hanya mendukung mode interaktif"
+
+#: Console/Command/CommandGenerator.php:292
+#, php-format
+msgctxt "console"
+msgid "Command Name  : %s"
+msgstr "Nama Perintah  : %s"
+
+#: Console/Command/CommandGenerator.php:305
+#, php-format
+msgctxt "console"
+msgid "Command Class : %s"
+msgstr "Kelas Perintah : %s"
+
+#: Console/Command/CommandGenerator.php:317
+#, php-format
+msgctxt "console"
+msgid "Command File  : %s"
+msgstr "Berkas Perintah  : %s"
+
+#: Console/Command/CommandGenerator.php:364
+#, php-format
+msgctxt "console"
+msgid "%s Could not save command!"
+msgstr "%s Tidak dapat menyimpan perintah!"
+
+#: Console/Command/CommandGenerator.php:375
+#, php-format
+msgctxt "console"
+msgid "%s Command successfully created!"
+msgstr "%s Perintah berhasil dibuat!"
+
+#: Console/Command/ControllerGenerator.php:80
+msgctxt "console"
+msgid "Generate controller class."
+msgstr "Hasilkan kelas pengontrol."
+
+#: Console/Command/ControllerGenerator.php:94
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create controller object.\n"
+"Controller will use prefix namespace with %s\n"
+"Character slash %s, hyphen %s and underscore %s\n"
+"Will converted into namespace separator"
+msgstr ""
+"%s membantu Anda membuat objek pengontrol.\n"
+"Pengontrol akan menggunakan awalan namespace dengan %s\n"
+"Karakter garis miring %s, tanda hubung %s dan garis bawah %s\n"
+"Akan diubah menjadi pemisah namespace"
+
+#: Console/Command/ControllerGenerator.php:160
+msgctxt "console"
+msgid "Please enter controller name"
+msgstr "Mohon masukkan nama pengontrol"
+
+#: Console/Command/ControllerGenerator.php:166
+msgctxt "console"
+msgid "Please enter valid controller name!"
+msgstr "Silakan masukkan nama pengontrol yang sah!"
+
+#: Console/Command/ControllerGenerator.php:173
+#, php-format
+msgctxt "console"
+msgid "Controller [%s] is too long! Must be less or equal 5 namespaces"
+msgstr ""
+"Pengontrol [%s] terlalu panjang! Harus kurang dari atau sama dengan 5 "
+"namespace"
+
+#: Console/Command/ControllerGenerator.php:184
+#, php-format
+msgctxt "console"
+msgid "Controller [%s] is invalid! class name contain reserved keyword!"
+msgstr "Pengontrol [%s] tidak sah! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/ControllerGenerator.php:194
+#, php-format
+msgctxt "console"
+msgid "Controller [%s] exist"
+msgstr "Pengontrol [%s] tersedia"
+
+#: Console/Command/ControllerGenerator.php:224
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect controller directory"
+msgstr "%s Tidak dapat mendeteksi direktori pengontrol"
+
+#: Console/Command/ControllerGenerator.php:260
+#, php-format
+msgctxt "console"
+msgid "Controller Name  : %s"
+msgstr "Nama Pengontrol  : %s"
+
+#: Console/Command/ControllerGenerator.php:271
+#, php-format
+msgctxt "console"
+msgid "Controller Class : %s"
+msgstr "Kelas Pengontrol : %s"
+
+#: Console/Command/ControllerGenerator.php:282
+#, php-format
+msgctxt "console"
+msgid "Controller File  : %s"
+msgstr "Berkas Pengontrol  : %s"
+
+#: Console/Command/ControllerGenerator.php:325
+#, php-format
+msgctxt "console"
+msgid "%s Could not save controller!"
+msgstr "%s Tidak dapat menyimpan pengontrol!"
+
+#: Console/Command/ControllerGenerator.php:336
+#, php-format
+msgctxt "console"
+msgid "%s Controller successfully created!"
+msgstr "%s Pengontrol berhasil dibuat!"
+
+#: Console/Command/DatabaseChecker.php:85
+msgctxt "console"
+msgid "Check & validate database."
+msgstr "Periksa & validasi basis data."
+
+#: Console/Command/DatabaseChecker.php:93
+msgctxt "console"
+msgid "Validate changed / difference about database schema"
+msgstr "Validasi perubahan / perbedaan tentang skema basis data"
+
+#: Console/Command/DatabaseChecker.php:104
+#, php-format
+msgctxt "console"
+msgid "Print sql query create schema (should execute with %s command)"
+msgstr ""
+"Tampilkan kueri sql untuk pembuatan skema (seharusnya dijalankan dengan "
+"perintah %s)"
+
+#: Console/Command/DatabaseChecker.php:120
+#, php-format
+msgctxt "console"
+msgid "Dump create schema (should execute with %s & %s command)"
+msgstr "Dump skema pembuatan (seharusnya dijalankan dengan perintah %s & %s)"
+
+#: Console/Command/DatabaseChecker.php:140
+#, php-format
+msgctxt "console"
+msgid ""
+"Execute query sql that from new schema into database (should execute with %s "
+"command)"
+msgstr ""
+"Jalankan kueri sql yang dari skema baru ke dalam basis data (seharusnya "
+"dijalankan dengan perintah %s)"
+
+#: Console/Command/DatabaseChecker.php:156
+#, php-format
+msgctxt "console"
+msgid "Optimize database when possible (should execute with %s command)"
+msgstr ""
+"Optimalkan basis data apabila memungkinkan (harus dijalankan dengan perintah "
+"%s)"
+
+#: Console/Command/DatabaseChecker.php:170
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to validate database.\n"
+"This command show information about installed database & configuration "
+"services."
+msgstr ""
+"%s membantu Anda memvalidasi database.\n"
+"Perintah ini menampilkan informasi tentang database yang terinstall & "
+"layanan konfigurasi."
+
+#: Console/Command/DatabaseChecker.php:248
+#: Console/Command/DatabaseChecker.php:1545
+msgctxt "console"
+msgid "Can not get database object from container"
+msgstr "Tidak bisa mendapatkan objek basis data dari container"
+
+#: Console/Command/DatabaseChecker.php:259
+#: Console/Command/DatabaseChecker.php:1557
+msgctxt "console"
+msgid "Database connection is not valid object from container"
+msgstr "Koneksi basis data bukan objek yang valid dari container"
+
+#: Console/Command/DatabaseChecker.php:364
+msgctxt "console"
+msgid "No schema can be created"
+msgstr "Tidak ada skema yang bisa dibuat"
+
+#: Console/Command/DatabaseChecker.php:396
+#: Console/Command/DatabaseChecker.php:1360
+#: Console/Command/DatabaseChecker.php:1371
+msgctxt "console"
+msgid "No change into database schema"
+msgstr "Tidak ada perubahan pada skema basis data"
+
+#: Console/Command/DatabaseChecker.php:426
+#: Console/Command/DatabaseChecker.php:439
+#, php-format
+msgctxt "console"
+msgid "Table \"%s\" does not exist!"
+msgstr "Tabel \"%s\" tidak ada!"
+
+#: Console/Command/DatabaseChecker.php:464
+#, php-format
+msgctxt "console"
+msgid "Table \"%s\" %s"
+msgstr "Tabel \"%s\" %s"
+
+#: Console/Command/DatabaseChecker.php:475
+msgctxt "console"
+msgid "no difference"
+msgstr "tak ada perbedaan"
+
+#: Console/Command/DatabaseChecker.php:480
+#: Console/Command/DatabaseChecker.php:505
+#: Console/Command/DatabaseChecker.php:1918
+msgctxt "console"
+msgid "NEED TO OPTIMIZE"
+msgstr "PERLU OPTIMASI"
+
+#: Console/Command/DatabaseChecker.php:497
+#, php-format
+msgctxt "console"
+msgid "Table \"%s\" need to be change"
+msgstr "Tabel \"%s\" butuh diubah"
+
+#: Console/Command/DatabaseChecker.php:534
+#: Console/Command/DatabaseChecker.php:556
+#: Console/Command/DatabaseChecker.php:578
+#: Console/Command/DatabaseChecker.php:600
+#: Console/Command/DatabaseChecker.php:622
+#: Console/Command/DatabaseChecker.php:644
+#: Console/Command/DatabaseChecker.php:666
+#: Console/Command/DatabaseChecker.php:688
+#: Console/Command/DatabaseChecker.php:713
+#: Console/Command/DatabaseChecker.php:735
+msgctxt "console"
+msgid "Column"
+msgstr "Kolom"
+
+#: Console/Command/DatabaseChecker.php:536
+msgctxt "console"
+msgid "type"
+msgstr "tipe"
+
+#: Console/Command/DatabaseChecker.php:538
+#: Console/Command/DatabaseChecker.php:560
+#: Console/Command/DatabaseChecker.php:582
+#: Console/Command/DatabaseChecker.php:604
+#: Console/Command/DatabaseChecker.php:626
+#: Console/Command/DatabaseChecker.php:648
+#: Console/Command/DatabaseChecker.php:670
+#: Console/Command/DatabaseChecker.php:693
+#: Console/Command/DatabaseChecker.php:717
+#: Console/Command/DatabaseChecker.php:739
+#, php-format
+msgctxt "console"
+msgid "change from: [%s] to [%s]"
+msgstr "ubah dari: [%s] ke [%s]"
+
+#: Console/Command/DatabaseChecker.php:558
+msgctxt "console"
+msgid "default value"
+msgstr "nilai bawaan"
+
+#: Console/Command/DatabaseChecker.php:690
+msgctxt "console"
+msgid "scale"
+msgstr "skala"
+
+#: Console/Command/DatabaseChecker.php:737
+msgctxt "console"
+msgid "comment"
+msgstr "komentar"
+
+#: Console/Command/DatabaseChecker.php:760
+msgctxt "console"
+msgid "Added Column"
+msgstr "Kolom Ditambahkan"
+
+#: Console/Command/DatabaseChecker.php:771
+msgctxt "console"
+msgid "Removed Column"
+msgstr "Kolom Yang Dihapus"
+
+#: Console/Command/DatabaseChecker.php:782
+msgctxt "console"
+msgid "Renamed Column"
+msgstr "Kolom Berganti Nama"
+
+#: Console/Command/DatabaseChecker.php:784
+#, php-format
+msgctxt "console"
+msgid "from [%s] to [%s]"
+msgstr "dari [%s] ke [%s]"
+
+#: Console/Command/DatabaseChecker.php:807
+msgctxt "console"
+msgid "Modify Index"
+msgstr "Modifikasi Index"
+
+#: Console/Command/DatabaseChecker.php:809
+#, php-format
+msgctxt "console"
+msgid "from %s to %s"
+msgstr "dari %s ke %s"
+
+#: Console/Command/DatabaseChecker.php:842
+msgctxt "console"
+msgid "Added Index"
+msgstr "Penambahan Index"
+
+#: Console/Command/DatabaseChecker.php:860
+msgctxt "console"
+msgid "Removed Index"
+msgstr "Penghapusan Index"
+
+#: Console/Command/DatabaseChecker.php:880
+msgctxt "console"
+msgid "Renamed Index"
+msgstr "Perubahan Nama Index"
+
+#: Console/Command/DatabaseChecker.php:901
+msgctxt "console"
+msgid "Modify ForeignKey"
+msgstr "Modifikasi ForeignKey"
+
+#: Console/Command/DatabaseChecker.php:947
+msgctxt "console"
+msgid "Added ForeignKey"
+msgstr "Penambahan ForeignKey"
+
+#: Console/Command/DatabaseChecker.php:969
+msgctxt "console"
+msgid "Removed ForeignKey"
+msgstr "Hapus ForeignKey"
+
+#: Console/Command/DatabaseChecker.php:1006
+#: Console/Command/DatabaseChecker.php:1039
+#: Console/Command/DatabaseChecker.php:1073
+#, php-format
+msgctxt "console"
+msgid "Table \"%s\" for %s & does not exist in schema"
+msgstr "Tabel \"%s\" untuk %s & tidak ada di skema"
+
+#: Console/Command/DatabaseChecker.php:1101
+#, php-format
+msgctxt "console"
+msgid "Table \"%s\" for %s"
+msgstr "Tabel \"%s\" untuk %s"
+
+#: Console/Command/DatabaseChecker.php:1148
+msgctxt "console"
+msgid "Contains changed database schema, you can execute command :"
+msgstr "Berisi skema database yang diubah, anda dapat menjalankan perintah:"
+
+#: Console/Command/DatabaseChecker.php:1173
+#: Console/Command/DatabaseChecker.php:1971
+msgctxt "console"
+msgid ""
+"Contains database table that can be optimized, you can execute command :"
+msgstr ""
+"Berisi tabel database yang dapat dioptimasi, anda dapat menjalankan "
+"perintah :"
+
+#: Console/Command/DatabaseChecker.php:1201
+msgctxt "console"
+msgid "There are no tables that can be optimized"
+msgstr "Tidak ada tabel yang dapat dioptimalkan"
+
+#: Console/Command/DatabaseChecker.php:1216
+#, php-format
+msgctxt "console"
+msgid "%s does not yet support optimization"
+msgstr "%s belum mendukung pengoptimalan"
+
+#: Console/Command/DatabaseChecker.php:1237
+#, php-format
+msgctxt "console"
+msgid "Table \"%s\" can be freed up to : (%s)"
+msgstr "Tabel \"%s\" dapat dikosongkan hingga : (%s)"
+
+#: Console/Command/DatabaseChecker.php:1291
+#: Console/Command/DatabaseChecker.php:1439
+msgctxt "console"
+msgid "PLEASE DO NOT CANCEL OPERATION!"
+msgstr "MOHON JANGAN MEMBATALKAN OPERASI!"
+
+#: Console/Command/DatabaseChecker.php:1299
+msgctxt "console"
+msgid "Optimizing table"
+msgstr "Mengoptimasi tabel"
+
+#: Console/Command/DatabaseChecker.php:1328
+msgctxt "console"
+msgid "FAIL"
+msgstr "GAGAL"
+
+#: Console/Command/DatabaseChecker.php:1338
+#: Console/Command/DatabaseChecker.php:1527
+msgctxt "console"
+msgid "ALL DONE!"
+msgstr "SEMUA SELESAI!"
+
+#: Console/Command/DatabaseChecker.php:1381
+msgctxt "console"
+msgid "Executed Command:"
+msgstr "Perintah Tereksekusi:"
+
+#: Console/Command/DatabaseChecker.php:1465
+msgctxt "console"
+msgid "Executing:"
+msgstr "Mengeksekusi:"
+
+#: Console/Command/DatabaseChecker.php:1483
+#: Console/Command/DatabaseChecker.php:1512
+msgctxt "console"
+msgid "Failed to execute command"
+msgstr "Gagal dalam mengeksekusi perintah"
+
+#: Console/Command/DatabaseChecker.php:1582
+msgctxt "console"
+msgid "Database connection error."
+msgstr "Koneksi basis data bermasalah."
+
+#: Console/Command/DatabaseChecker.php:1600
+msgctxt "console"
+msgid "Database connection succeed"
+msgstr "Koneksi basis data berhasil"
+
+#: Console/Command/DatabaseChecker.php:1638
+msgctxt "console"
+msgid "Database name"
+msgstr "Nama basis data"
+
+#: Console/Command/DatabaseChecker.php:1655
+msgctxt "console"
+msgid "Database host"
+msgstr "Host basis data"
+
+#: Console/Command/DatabaseChecker.php:1664
+msgctxt "console"
+msgid "Database user"
+msgstr "Pengguna basis data"
+
+#: Console/Command/DatabaseChecker.php:1673
+msgctxt "console"
+msgid "Database password"
+msgstr "Kata sandi basis data"
+
+#: Console/Command/DatabaseChecker.php:1695
+msgctxt "console"
+msgid "Unknown"
+msgstr "Tidak diketahui"
+
+#: Console/Command/DatabaseChecker.php:1704
+msgctxt "console"
+msgid "Connection Object Info"
+msgstr "Info Objek Koneksi"
+
+#: Console/Command/DatabaseChecker.php:1712
+msgctxt "console"
+msgid "Connection"
+msgstr "Koneksi"
+
+#: Console/Command/DatabaseChecker.php:1766
+msgctxt "console"
+msgid "ORM Configuration"
+msgstr "Konfigurasi ORM"
+
+#: Console/Command/DatabaseChecker.php:1772
+msgctxt "console"
+msgid "Query Cache"
+msgstr "Cache Kueri"
+
+#: Console/Command/DatabaseChecker.php:1773
+msgctxt "console"
+msgid "Result Cache"
+msgstr "Cache Hasil"
+
+#: Console/Command/DatabaseChecker.php:1774
+msgctxt "console"
+msgid "Proxy Namespace"
+msgstr "Namespace Proksi"
+
+#: Console/Command/DatabaseChecker.php:1775
+msgctxt "console"
+msgid "Proxy Directory"
+msgstr "Direktori Proksi"
+
+#: Console/Command/DatabaseChecker.php:1776
+msgctxt "console"
+msgid "Metadata Driver"
+msgstr "Driver Metadata"
+
+#: Console/Command/DatabaseChecker.php:1777
+msgctxt "console"
+msgid "Repository Factory"
+msgstr "Factory Repositori"
+
+#: Console/Command/DatabaseChecker.php:1778
+msgctxt "console"
+msgid "Quote Strategy"
+msgstr "Strategi Quote"
+
+#: Console/Command/DatabaseChecker.php:1779
+msgctxt "console"
+msgid "Naming Factory"
+msgstr "Factory Penamaan"
+
+#: Console/Command/DatabaseChecker.php:1780
+msgctxt "console"
+msgid "Schema Manager Factory"
+msgstr "Factory Manajer Skema"
+
+#: Console/Command/DatabaseChecker.php:1789
+msgctxt "console"
+msgid "Not Set"
+msgstr "Tidak Diatur"
+
+#: Console/Command/DatabaseChecker.php:1799
+msgctxt "console"
+msgid "Registered Schema / Entities"
+msgstr "Skema / Entitas Yang Terdaftar"
+
+#: Console/Command/DatabaseChecker.php:1932
+msgctxt "console"
+msgid "Changing"
+msgstr "Merubah"
+
+#: Console/Command/DatabaseChecker.php:1946
+msgctxt "console"
+msgid "Contains changed database schema, you can check with command :"
+msgstr ""
+"Berisi skema database yang diubah, anda dapat memeriksanya dengan perintah :"
+
+#: Console/Command/DatabaseEventGenerator.php:83
+msgctxt "console"
+msgid "Generate database event class."
+msgstr "Hasilkan kelas event basis data."
+
+#: Console/Command/DatabaseEventGenerator.php:94
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create %s object.\n"
+"\n"
+"Database Event will use prefix namespace with %s\n"
+"Database Event only support single class name."
+msgstr ""
+"%s membantu Anda membuat objek %s.\n"
+"\n"
+"Peristiwa Basis Data akan menggunakan awalan namespace dengan %s\n"
+"Basis Data Event hanya mendukung satu nama kelas."
+
+#: Console/Command/DatabaseEventGenerator.php:178
+msgctxt "console"
+msgid "Please enter database event class name"
+msgstr "Silakan masukkan nama kelas basis data event"
+
+#: Console/Command/DatabaseEventGenerator.php:184
+msgctxt "console"
+msgid "Please enter valid database event class name!"
+msgstr "Silakan masukkan nama kelas basis data event yang sah!"
+
+#: Console/Command/DatabaseEventGenerator.php:193
+#, php-format
+msgctxt "console"
+msgid "Event [%s] is invalid! class name contain reserved keyword!"
+msgstr "Acara [%s] tidak valid! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/DatabaseEventGenerator.php:204
+#, php-format
+msgctxt "console"
+msgid ""
+"Event [%s] is invalid! Database event only contain single class name, not "
+"namespaced!"
+msgstr ""
+"Event [%s] tidak sah! Basis data event hanya boleh berupa nama kelas "
+"tunggal, bukan bermuatan namespace!"
+
+#: Console/Command/DatabaseEventGenerator.php:215
+#, php-format
+msgctxt "console"
+msgid "Database event [%s] is too long! Must be less or equal 128 characters"
+msgstr ""
+"Event basis data [%s] terlalu panjang! Harus kurang dari atau sama dengan "
+"128 karakter"
+
+#: Console/Command/DatabaseEventGenerator.php:225
+#, php-format
+msgctxt "console"
+msgid "Database event [%s] exist"
+msgstr "Database event [%s] tersedia"
+
+#: Console/Command/DatabaseEventGenerator.php:255
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect database event directory"
+msgstr "%s Tidak dapat mendeteksi direktori basis data acara"
+
+#: Console/Command/DatabaseEventGenerator.php:292
+#, php-format
+msgctxt "console"
+msgid "Database Event Name : %s"
+msgstr "Nama Event Basis Data: %s"
+
+#: Console/Command/DatabaseEventGenerator.php:305
+#, php-format
+msgctxt "console"
+msgid "DatabaseEvent Class : %s"
+msgstr "Kelas DatabaseEvent : %s"
+
+#: Console/Command/DatabaseEventGenerator.php:317
+#, php-format
+msgctxt "console"
+msgid "DatabaseEvent File  : %s"
+msgstr "Berkas DatabaseEvent  : %s"
+
+#: Console/Command/DatabaseEventGenerator.php:364
+#, php-format
+msgctxt "console"
+msgid "%s Could not save databaseEvent!"
+msgstr "%s Tidak dapat menyimpan databaseEvent!"
+
+#: Console/Command/DatabaseEventGenerator.php:375
+#, php-format
+msgctxt "console"
+msgid "%s DatabaseEvent successfully created!"
+msgstr "%s DatabaseEvent berhasil dibuat!"
+
+#: Console/Command/EntityGenerator.php:79
+msgctxt "console"
+msgid "Generate entity class."
+msgstr "Hasilkan kelas entitas."
+
+#: Console/Command/EntityGenerator.php:90
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create %s object.\n"
+"\n"
+"Entity will use prefix namespace with %s\n"
+msgstr ""
+"%s membantu Anda membuat objek %s.\n"
+"\n"
+"Entitas akan menggunakan awalan namespace dengan %s\n"
+
+#: Console/Command/EntityGenerator.php:173
+msgctxt "console"
+msgid "Please enter entity name"
+msgstr "Mohon masukkan nama entitas"
+
+#: Console/Command/EntityGenerator.php:179
+msgctxt "console"
+msgid "Please enter valid entity name!"
+msgstr "Mohon masukkan nama entitas yang sah!"
+
+#: Console/Command/EntityGenerator.php:188
+#, php-format
+msgctxt "console"
+msgid "Entity [%s] is invalid! class name contain reserved keyword!"
+msgstr "Entitas [%s] tidak sah! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/EntityGenerator.php:199
+#, php-format
+msgctxt "console"
+msgid "Table name [%s] is too long! Must be less or equal 64 characters"
+msgstr ""
+"Nama tabel [%s] terlalu panjang! Harus kurang dari atau sama dengan 64 "
+"karakter"
+
+#: Console/Command/EntityGenerator.php:209
+#, php-format
+msgctxt "console"
+msgid "Entity [%s] exist"
+msgstr "Entitas [%s] tersedia"
+
+#: Console/Command/EntityGenerator.php:239
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect entity directory"
+msgstr "%s Tidak dapat mendeteksi direktori entitas"
+
+#: Console/Command/EntityGenerator.php:276
+#, php-format
+msgctxt "console"
+msgid "Entity Name  : %s"
+msgstr "Nama Entitas  : %s"
+
+#: Console/Command/EntityGenerator.php:288
+#, php-format
+msgctxt "console"
+msgid "Table Name  : %s"
+msgstr "Nama Tabel  : %s"
+
+#: Console/Command/EntityGenerator.php:301
+#, php-format
+msgctxt "console"
+msgid "Entity Class : %s"
+msgstr "Kelas Entitas : %s"
+
+#: Console/Command/EntityGenerator.php:313
+#, php-format
+msgctxt "console"
+msgid "Entity File  : %s"
+msgstr "Berkas Entitas  : %s"
+
+#: Console/Command/EntityGenerator.php:361
+#, php-format
+msgctxt "console"
+msgid "%s Could not save entity!"
+msgstr "%s Tidak dapat menyimpan entitas!"
+
+#: Console/Command/EntityGenerator.php:372
+#, php-format
+msgctxt "console"
+msgid "%s Entity successfully created!"
+msgstr "%s Entitas berhasil dibuat!"
+
+#: Console/Command/MiddlewareGenerator.php:79
+msgctxt "console"
+msgid "Generate middleware class."
+msgstr "Hasilkan kelas middleware."
+
+#: Console/Command/MiddlewareGenerator.php:90
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create %s object.\n"
+"\n"
+"Middleware will use prefix namespace with %s\n"
+msgstr ""
+"%s membantu Anda membuat objek %s.\n"
+"\n"
+"Middleware akan menggunakan awalan namespace dengan %s\n"
+
+#: Console/Command/MiddlewareGenerator.php:174
+msgctxt "console"
+msgid "Please enter middleware class name"
+msgstr "Mohon masukkan nama kelas middleware"
+
+#: Console/Command/MiddlewareGenerator.php:183
+msgctxt "console"
+msgid "Please enter valid middleware class name!"
+msgstr "Silakan masukkan nama kelas middleware yang sah!"
+
+#: Console/Command/MiddlewareGenerator.php:193
+#, php-format
+msgctxt "console"
+msgid "Middleware [%s] is invalid! class name contain reserved keyword!"
+msgstr "Middleware [%s] tidak sah! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/MiddlewareGenerator.php:204
+#, php-format
+msgctxt "console"
+msgid "Middleware [%s] exist"
+msgstr "Middleware [%s] tersedia"
+
+#: Console/Command/MiddlewareGenerator.php:236
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect middleware directory"
+msgstr "%s Tidak dapat mendeteksi direktori middleware"
+
+#: Console/Command/MiddlewareGenerator.php:272
+#, php-format
+msgctxt "console"
+msgid "Middleware Name  : %s"
+msgstr "Nama Middleware  : %s"
+
+#: Console/Command/MiddlewareGenerator.php:286
+#, php-format
+msgctxt "console"
+msgid "Middleware Class : %s"
+msgstr "Kelas Middleware: %s"
+
+#: Console/Command/MiddlewareGenerator.php:298
+#, php-format
+msgctxt "console"
+msgid "Middleware File  : %s"
+msgstr "Berkas Middleware  : %s"
+
+#: Console/Command/MiddlewareGenerator.php:348
+#, php-format
+msgctxt "console"
+msgid "%s Could not save middleware!"
+msgstr "%s Tidak dapat menyimpan middleware!"
+
+#: Console/Command/MiddlewareGenerator.php:359
+#, php-format
+msgctxt "console"
+msgid "%s Middleware successfully created!"
+msgstr "%s Middleware berhasil dibuat!"
+
+#: Console/Command/ModuleGenerator.php:79
+msgctxt "console"
+msgid "Generate module class."
+msgstr "Hasilkan kelas modul."
+
+#: Console/Command/ModuleGenerator.php:90
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create %s object.\n"
+"\n"
+"Module will use prefix namespace with %s\n"
+"Module only support single class name.\n"
+msgstr ""
+"%s membantu Anda membuat objek %s.\n"
+"\n"
+"Modul akan menggunakan awalan namespace dengan %s\n"
+"Modul hanya mendukung nama kelas tunggal.\n"
+
+#: Console/Command/ModuleGenerator.php:174
+msgctxt "console"
+msgid "Please enter module class name"
+msgstr "Mohon masukkan nama kelas modul"
+
+#: Console/Command/ModuleGenerator.php:181
+msgctxt "console"
+msgid "Please enter valid module class name!"
+msgstr "Mohon masukkan nama kelas modul yang sah!"
+
+#: Console/Command/ModuleGenerator.php:192
+#, php-format
+msgctxt "console"
+msgid "Module [%s] is invalid! class name contain reserved keyword!"
+msgstr "Modul [%s] tidak sah! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/ModuleGenerator.php:203
+#, php-format
+msgctxt "console"
+msgid ""
+"Module [%s] is invalid! Module only contain single class name, not "
+"namespaced!"
+msgstr ""
+"Modul [%s] tidak sah! Modul hanya boleh berupa nama kelas tunggal, bukan "
+"bermuatan namespace!"
+
+#: Console/Command/ModuleGenerator.php:214
+#, php-format
+msgctxt "console"
+msgid "Module [%s] is too long! Must be less or equal 128 characters"
+msgstr ""
+"Modul [%s] terlalu panjang! Harus kurang dari atau sama dengan 128 karakter"
+
+#: Console/Command/ModuleGenerator.php:224
+#, php-format
+msgctxt "console"
+msgid "Module [%s] exist"
+msgstr "Modul [%s] tersedia"
+
+#: Console/Command/ModuleGenerator.php:254
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect module directory"
+msgstr "%s Tidak dapat mendeteksi direktori modul"
+
+#: Console/Command/ModuleGenerator.php:293
+#, php-format
+msgctxt "console"
+msgid "Module Name  : %s"
+msgstr "Name Modul  : %s"
+
+#: Console/Command/ModuleGenerator.php:307
+#, php-format
+msgctxt "console"
+msgid "Module Class : %s"
+msgstr "Kelas Modul : %s"
+
+#: Console/Command/ModuleGenerator.php:319
+#, php-format
+msgctxt "console"
+msgid "Module Namespace : %s"
+msgstr "Namespace Modul : %s"
+
+#: Console/Command/ModuleGenerator.php:331
+#, php-format
+msgctxt "console"
+msgid "Module File  : %s"
+msgstr "Berkas Modul  : %s"
+
+#: Console/Command/ModuleGenerator.php:381
+#, php-format
+msgctxt "console"
+msgid "%s Could not save module!"
+msgstr "%s Tidak dapat menyimpan modul!"
+
+#: Console/Command/ModuleGenerator.php:392
+#, php-format
+msgctxt "console"
+msgid "%s Module successfully created!"
+msgstr "%s Modul berhasil dibuat!"
+
+#: Console/Command/SchedulerAction.php:38
+msgctxt "console"
+msgid "List or run scheduler."
+msgstr "Daftar atau jalankan penjadwal."
+
+#: Console/Command/SchedulerAction.php:45
+msgctxt "console"
+msgid "Run the pending schedulers"
+msgstr "Jalankan penjadwal yang tertunda"
+
+#: Console/Command/SchedulerAction.php:51
+#, php-format
+msgctxt "console"
+msgid "The %s help you to list & run scheduler"
+msgstr "%s membantu anda untuk membuat daftar & menjalankan penjadwal"
+
+#: Console/Command/SchedulerAction.php:78
+msgctxt "console"
+msgid "Object scheduler is not valid"
+msgstr "Object penjadwal tidak sah"
+
+#: Console/Command/SchedulerAction.php:102
+msgctxt "console"
+msgid "No task in queue"
+msgstr "Tidak ada tugas dalam antrian"
+
+#: Console/Command/SchedulerAction.php:112
+#, php-format
+msgctxt "console"
+msgid "Executing %s task"
+msgid_plural "Executing %s tasks"
+msgstr[0] "Mengeksekusi %s tugas"
+
+#: Console/Command/SchedulerAction.php:131
+msgctxt "console"
+msgid "scheduler in queue to run"
+msgid_plural "schedulers in queue to run"
+msgstr[0] "penjadwal dalam antrian untuk dijalankan"
+
+#: Console/Command/SchedulerAction.php:144
+#: Console/Command/SchedulerAction.php:190
+#, php-format
+msgctxt "console"
+msgid "run every %s seconds"
+msgstr "dijalankan setiap %s detik"
+
+#: Console/Command/SchedulerAction.php:152
+#: Console/Command/SchedulerAction.php:198
+#, php-format
+msgctxt "console"
+msgid "next executed time %s"
+msgstr "waktu eksekusi berikutnya %s"
+
+#: Console/Command/SchedulerAction.php:177
+msgctxt "console"
+msgid "scheduler skipped"
+msgid_plural "schedulers skipped"
+msgstr[0] "penjadwal dilewati"
+
+#: Console/Command/SchedulerGenerator.php:79
+msgctxt "console"
+msgid "Generate scheduler class."
+msgstr "Hasilkan kelas penjadwal."
+
+#: Console/Command/SchedulerGenerator.php:90
+#, php-format
+msgctxt "console"
+msgid ""
+"The %s help you to create %s object.\n"
+"\n"
+"Scheduler will use prefix namespace with %s\n"
+"Scheduler only support single class name.\n"
+"\n"
+msgstr ""
+"%s membantu Anda membuat objek %s.\n"
+"\n"
+"Penjadwal akan menggunakan awalan namespace dengan %s\n"
+"Penjadwal hanya mendukung nama kelas tunggal.\n"
+"\n"
+
+#: Console/Command/SchedulerGenerator.php:174
+msgctxt "console"
+msgid "Please enter scheduler class name"
+msgstr "Mohon masukkan nama kelas penjadwal"
+
+#: Console/Command/SchedulerGenerator.php:181
+msgctxt "console"
+msgid "Please enter valid scheduler class name!"
+msgstr "Mohon masukkan nama kelas penjadwal yang sah!"
+
+#: Console/Command/SchedulerGenerator.php:192
+#, php-format
+msgctxt "console"
+msgid "Scheduler [%s] is invalid! class name contain reserved keyword!"
+msgstr "Penjadwal [%s] tidak valid! nama kelas berisi kata kunci bawaan!"
+
+#: Console/Command/SchedulerGenerator.php:203
+#, php-format
+msgctxt "console"
+msgid ""
+"Scheduler [%s] is invalid! Scheduler only contain single class name, not "
+"namespaced!"
+msgstr ""
+"Penjadwal [%s] tidak sah! Penjadwal hanya boleh berupa nama kelas tunggal, "
+"bukan bermuatan namespace!"
+
+#: Console/Command/SchedulerGenerator.php:214
+#, php-format
+msgctxt "console"
+msgid "Scheduler [%s] is too long! Must be less or equal 128 characters"
+msgstr ""
+"Penjadwal [%s] terlalu panjang! Harus kurang dari atau sama dengan 128 "
+"karakter"
+
+#: Console/Command/SchedulerGenerator.php:225
+#, php-format
+msgctxt "console"
+msgid "Scheduler [%s] exist"
+msgstr "Penjadwal [%s] tersedia"
+
+#: Console/Command/SchedulerGenerator.php:258
+#, php-format
+msgctxt "console"
+msgid "%s Could not detect scheduler directory"
+msgstr "%s Tidak dapat mendeteksi direktori penjadwal"
+
+#: Console/Command/SchedulerGenerator.php:300
+#, php-format
+msgctxt "console"
+msgid "Scheduler Name     : %s"
+msgstr "Nama Penjadwal     : %s"
+
+#: Console/Command/SchedulerGenerator.php:312
+#, php-format
+msgctxt "console"
+msgid "Scheduler Identity : %s"
+msgstr "Identitas Penjadwal : %s"
+
+#: Console/Command/SchedulerGenerator.php:325
+#, php-format
+msgctxt "console"
+msgid "Scheduler Class : %s"
+msgstr "Kelas Penjadwal : %s"
+
+#: Console/Command/SchedulerGenerator.php:337
+#, php-format
+msgctxt "console"
+msgid "Scheduler File  : %s"
+msgstr "Berkas Penjadwal  : %s"
+
+#: Console/Command/SchedulerGenerator.php:386
+#, php-format
+msgctxt "console"
+msgid "%s Could not save scheduler!"
+msgstr "%s Tidak dapat menyimpan penjadwal!"
+
+#: Console/Command/SchedulerGenerator.php:397
+#, php-format
+msgctxt "console"
+msgid "%s Scheduler successfully created!"
+msgstr "%s Scheduler berhasil dibuat!"
+
+#: Console/Command/Traits/WriterHelperTrait.php:143
+#, php-format
+msgctxt "console"
+msgid "Time %s secs; Memory Usage: %s; Memory Peak Usage: %s"
+msgstr "Waktu %s detik; Penggunaan Memori: %s; Penggunaan Puncak Memori: %s"
+
+#: Templates/Template.php:208
+msgctxt "template"
+msgid "version"
+msgstr "versi"
+
+#: Templates/Template.php:209
+msgctxt "template"
+msgid "unknown"
+msgstr "tak diketahui"

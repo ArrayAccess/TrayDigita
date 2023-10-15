@@ -80,23 +80,22 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
                 //'app:generate:db-event'
             ])
             ->setDescription(
-                $this->translate('Generate database event class.')
+                $this->translateContext('Generate database event class.', 'console')
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_NONE,
-                    $this->translate('Print generated class file only')
+                    $this->translateContext('Print generated class file only', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<EOT
-The %s help you to create %s object.
-
-Database Event will use prefix namespace with %s
-Database Event only support single class name.
-
-EOT),
+                    $this->translateContext(
+                        "The %s help you to create %s object.\n\n"
+                            . "Database Event will use prefix namespace with %s\n"
+                            . "Database Event only support single class name.",
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     'databaseEvent',
                     sprintf(
@@ -176,13 +175,13 @@ EOT),
     {
         $io = new SymfonyStyle($input, $output);
         return $io->ask(
-            $this->translate('Please enter database event class name'),
+            $this->translateContext('Please enter database event class name', 'console'),
             null,
             function ($name) {
                 $definitions = $this->filterNames($name);
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid database event class name!')
+                        $this->translateContext('Please enter valid database event class name!', 'console')
                     );
                 }
                 $databaseEventName = $definitions['identity'];
@@ -190,8 +189,9 @@ EOT),
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Event [%s] is invalid! class name contain reserved keyword!'
+                            $this->translateContext(
+                                'Event [%s] is invalid! class name contain reserved keyword!',
+                                'console'
                             ),
                             $className
                         )
@@ -200,8 +200,9 @@ EOT),
                 if (count(explode('\\', $className)) > 1) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Event [%s] is invalid! Database event only contain single class name, not namespaced!'
+                            $this->translateContext(
+                                'Event [%s] is invalid! Database event only contain single class name, not namespaced!',
+                                'console'
                             ),
                             $className
                         )
@@ -210,8 +211,9 @@ EOT),
                 if (strlen($databaseEventName) > 128) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Database event [%s] is too long! Must be less or equal 128 characters'
+                            $this->translateContext(
+                                'Database event [%s] is too long! Must be less or equal 128 characters',
+                                'console'
                             ),
                             $databaseEventName
                         )
@@ -220,7 +222,7 @@ EOT),
                 if ($this->isFileExists($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate('Database event [%s] exist'),
+                            $this->translateContext('Database event [%s] exist', 'console'),
                             $this->databaseEventNamespace . $className
                         )
                     );
@@ -249,8 +251,9 @@ EOT),
         if (!$this->databaseEventDir) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Could not detect database event directory'
+                    $this->translateContext(
+                        '%s Could not detect database event directory',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -262,8 +265,9 @@ EOT),
         if (!$named && !$input->isInteractive()) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s generator only support in interactive mode'
+                    $this->translateContext(
+                        '%s generator only support in interactive mode',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -284,8 +288,9 @@ EOT),
         }
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Database Event Name : %s'
+                $this->translateContext(
+                    'Database Event Name : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -296,8 +301,9 @@ EOT),
         $className = $this->databaseEventNamespace . $named['className'];
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'DatabaseEvent Class : %s'
+                $this->translateContext(
+                    'DatabaseEvent Class : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -307,8 +313,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'DatabaseEvent File  : %s'
+                $this->translateContext(
+                    'DatabaseEvent File  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -319,7 +326,7 @@ EOT),
         /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext('Are you sure to continue (Yes/No)?', 'console'),
             null,
             function ($e) {
                 $e = !is_string($e) ? '' : $e;
@@ -331,7 +338,10 @@ EOT),
                 };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid answer! (Yes / No)')
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
                     );
                 }
                 return $ask;
@@ -350,8 +360,9 @@ EOT),
             if (!$status) {
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            '%s Could not save databaseEvent!'
+                        $this->translateContext(
+                            '%s Could not save databaseEvent!',
+                            'console'
                         ),
                         '<fg=red;options=bold>[X]</>'
                     )
@@ -360,8 +371,9 @@ EOT),
             }
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s DatabaseEvent successfully created!'
+                    $this->translateContext(
+                        '%s DatabaseEvent successfully created!',
+                        'console'
                     ),
                     '<fg=green;options=bold>[√]</>'
                 )
@@ -371,7 +383,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<comment>%s</comment>',
-                $this->translate('Operation cancelled!')
+                $this->translateContext('Operation cancelled!', 'console')
             )
         );
         return self::SUCCESS;

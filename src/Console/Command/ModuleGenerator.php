@@ -76,23 +76,22 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
             ->setName('app:generate:module')
             ->setAliases(['generate-module'])
             ->setDescription(
-                $this->translate('Generate module class.')
+                $this->translateContext('Generate module class.', 'console')
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_NONE,
-                    $this->translate('Print generated class file only')
+                    $this->translateContext('Print generated class file only', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<EOT
-The %s help you to create %s object.
-
-Module will use prefix namespace with %s
-Module only support single class name.
-
-EOT),
+                    $this->translateContext(
+                        "The %s help you to create %s object.\n\n"
+                        . "Module will use prefix namespace with %s\n"
+                        . "Module only support single class name.\n",
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     'module',
                     sprintf(
@@ -172,13 +171,16 @@ EOT),
     {
         $io = new SymfonyStyle($input, $output);
         return $io->ask(
-            $this->translate('Please enter module class name'),
+            $this->translateContext('Please enter module class name', 'console'),
             null,
             function ($name) {
                 $definitions = $this->filterNames($name);
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid module class name!')
+                        $this->translateContext(
+                            'Please enter valid module class name!',
+                            'console'
+                        )
                     );
                 }
                 $moduleName = $definitions['identity'];
@@ -186,8 +188,9 @@ EOT),
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Module [%s] is invalid! class name contain reserved keyword!'
+                            $this->translateContext(
+                                'Module [%s] is invalid! class name contain reserved keyword!',
+                                'console'
                             ),
                             $className
                         )
@@ -196,8 +199,9 @@ EOT),
                 if (count(explode('\\', $className)) > 1) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Module [%s] is invalid! Module only contain single class name, not namespaced!'
+                            $this->translateContext(
+                                'Module [%s] is invalid! Module only contain single class name, not namespaced!',
+                                'console'
                             ),
                             $className
                         )
@@ -206,8 +210,9 @@ EOT),
                 if (strlen($moduleName) > 128) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Module [%s] is too long! Must be less or equal 128 characters'
+                            $this->translateContext(
+                                'Module [%s] is too long! Must be less or equal 128 characters',
+                                'console'
                             ),
                             $moduleName
                         )
@@ -216,7 +221,7 @@ EOT),
                 if ($this->isFileExists($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate('Module [%s] exist'),
+                            $this->translateContext('Module [%s] exist', 'console'),
                             $this->moduleNamespace . $className
                         )
                     );
@@ -245,8 +250,9 @@ EOT),
         if (!$this->moduleDir) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Could not detect module directory'
+                    $this->translateContext(
+                        '%s Could not detect module directory',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -258,8 +264,9 @@ EOT),
         if (!$named && !$input->isInteractive()) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s generator only support in interactive mode'
+                    $this->translateContext(
+                        '%s generator only support in interactive mode',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -282,8 +289,9 @@ EOT),
         }
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Module Name  : %s'
+                $this->translateContext(
+                    'Module Name  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -295,8 +303,9 @@ EOT),
         $className = $namespace . '\\' . $named['className'];
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Module Class : %s'
+                $this->translateContext(
+                    'Module Class : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -306,8 +315,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Module Namespace : %s'
+                $this->translateContext(
+                    'Module Namespace : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -317,8 +327,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Module File  : %s'
+                $this->translateContext(
+                    'Module File  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -329,7 +340,10 @@ EOT),
         /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext(
+                'Are you sure to continue (Yes/No)?',
+                'console'
+            ),
             null,
             function ($e) {
                     $e = !is_string($e) ? '' : $e;
@@ -341,7 +355,10 @@ EOT),
                     };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid answer! (Yes / No)')
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
                     );
                 }
                     return $ask;
@@ -360,8 +377,9 @@ EOT),
             if (!$status) {
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            '%s Could not save module!'
+                        $this->translateContext(
+                            '%s Could not save module!',
+                            'console'
                         ),
                         '<fg=red;options=bold>[X]</>'
                     )
@@ -370,8 +388,9 @@ EOT),
             }
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Module successfully created!'
+                    $this->translateContext(
+                        '%s Module successfully created!',
+                        'console'
                     ),
                     '<fg=green;options=bold>[√]</>'
                 )
@@ -381,7 +400,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<comment>%s</comment>',
-                $this->translate('Operation cancelled!')
+                $this->translateContext('Operation cancelled!', 'console')
             )
         );
         return self::SUCCESS;
@@ -418,7 +437,7 @@ class $baseClassName extends AbstractModule
 
     /**
      * @method doInit() called when kernel loaded init
-     * @see BaseKernel::init() 
+     * @see BaseKernel::init()
      * @return void
      */
     protected function doInit(): void

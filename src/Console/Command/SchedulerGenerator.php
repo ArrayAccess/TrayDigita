@@ -76,23 +76,22 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
             ->setName('app:generate:scheduler')
             ->setAliases(['generate-scheduler'])
             ->setDescription(
-                $this->translate('Generate scheduler class.')
+                $this->translateContext('Generate scheduler class.', 'console')
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_NONE,
-                    $this->translate('Print generated class file only')
+                    $this->translateContext('Print generated class file only', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<EOT
-The %s help you to create %s object.
-
-Scheduler will use prefix namespace with %s
-Scheduler only support single class name.
-
-EOT),
+                    $this->translateContext(
+                        "The %s help you to create %s object.\n\n"
+                        . "Scheduler will use prefix namespace with %s\n"
+                        . "Scheduler only support single class name.\n\n",
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     'scheduler',
                     sprintf(
@@ -172,13 +171,16 @@ EOT),
     {
         $io = new SymfonyStyle($input, $output);
         return $io->ask(
-            $this->translate('Please enter scheduler class name'),
+            $this->translateContext('Please enter scheduler class name', 'console'),
             null,
             function ($name) {
                 $definitions = $this->filterNames($name);
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid scheduler class name!')
+                        $this->translateContext(
+                            'Please enter valid scheduler class name!',
+                            'console'
+                        )
                     );
                 }
                 $schedulerName = $definitions['identity'];
@@ -186,8 +188,9 @@ EOT),
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Scheduler [%s] is invalid! class name contain reserved keyword!'
+                            $this->translateContext(
+                                'Scheduler [%s] is invalid! class name contain reserved keyword!',
+                                'console'
                             ),
                             $className
                         )
@@ -196,8 +199,9 @@ EOT),
                 if (count(explode('\\', $className)) > 1) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Scheduler [%s] is invalid! Scheduler only contain single class name, not namespaced!'
+                            $this->translateContext(
+                                'Scheduler [%s] is invalid! Scheduler only contain single class name, not namespaced!',
+                                'console'
                             ),
                             $className
                         )
@@ -206,8 +210,9 @@ EOT),
                 if (strlen($schedulerName) > 128) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Scheduler [%s] is too long! Must be less or equal 128 characters'
+                            $this->translateContext(
+                                'Scheduler [%s] is too long! Must be less or equal 128 characters',
+                                'console'
                             ),
                             $schedulerName
                         )
@@ -216,7 +221,10 @@ EOT),
                 if ($this->isFileExists($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate('Scheduler [%s] exist'),
+                            $this->translateContext(
+                                'Scheduler [%s] exist',
+                                'console'
+                            ),
                             $this->schedulerNamespace . $className
                         )
                     );
@@ -246,8 +254,9 @@ EOT),
         if (!$this->schedulerDir) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Could not detect scheduler directory'
+                    $this->translateContext(
+                        '%s Could not detect scheduler directory',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -259,8 +268,9 @@ EOT),
         if (!$named && !$input->isInteractive()) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s generator only support in interactive mode'
+                    $this->translateContext(
+                        '%s generator only support in interactive mode',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -286,8 +296,9 @@ EOT),
         }
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Scheduler Name     : %s'
+                $this->translateContext(
+                    'Scheduler Name     : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -297,8 +308,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Scheduler Identity : %s'
+                $this->translateContext(
+                    'Scheduler Identity : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -309,8 +321,9 @@ EOT),
         $className = $this->schedulerNamespace . $named['className'];
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Scheduler Class : %s'
+                $this->translateContext(
+                    'Scheduler Class : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -320,8 +333,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Scheduler File  : %s'
+                $this->translateContext(
+                    'Scheduler File  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -332,7 +346,7 @@ EOT),
         /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext('Are you sure to continue (Yes/No)?', 'console'),
             null,
             function ($e) {
                     $e = !is_string($e) ? '' : $e;
@@ -344,7 +358,10 @@ EOT),
                     };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid answer! (Yes / No)')
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
                     );
                 }
                     return $ask;
@@ -365,8 +382,9 @@ EOT),
             if (!$status) {
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            '%s Could not save scheduler!'
+                        $this->translateContext(
+                            '%s Could not save scheduler!',
+                            'console'
                         ),
                         '<fg=red;options=bold>[X]</>'
                     )
@@ -375,8 +393,9 @@ EOT),
             }
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Scheduler successfully created!'
+                    $this->translateContext(
+                        '%s Scheduler successfully created!',
+                        'console'
                     ),
                     '<fg=green;options=bold>[√]</>'
                 )
@@ -386,7 +405,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<comment>%s</comment>',
-                $this->translate('Operation cancelled!')
+                $this->translateContext('Operation cancelled!', 'console')
             )
         );
         return self::SUCCESS;

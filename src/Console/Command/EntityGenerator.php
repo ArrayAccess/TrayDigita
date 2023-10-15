@@ -76,22 +76,21 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
             ->setName('app:generate:entity')
             ->setAliases(['generate-entity'])
             ->setDescription(
-                $this->translate('Generate entity class.')
+                $this->translateContext('Generate entity class.', 'console')
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_NONE,
-                    $this->translate('Print generated class file only')
+                    $this->translateContext('Print generated class file only', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<EOT
-The %s help you to create %s object.
-
-Entity will use prefix namespace with %s
-
-EOT),
+                    $this->translateContext(
+                        "The %s help you to create %s object.\n\n"
+                        . "Entity will use prefix namespace with %s\n",
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     'entity',
                     sprintf(
@@ -171,13 +170,13 @@ EOT),
     {
         $io = new SymfonyStyle($input, $output);
         return $io->ask(
-            $this->translate('Please enter entity name'),
+            $this->translateContext('Please enter entity name', 'console'),
             null,
             function ($name) {
                 $definitions = $this->filterNames($name);
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid entity name!')
+                        $this->translateContext('Please enter valid entity name!', 'console')
                     );
                 }
                 $tableName = $definitions['tableName'];
@@ -185,8 +184,9 @@ EOT),
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Entity [%s] is invalid! class name contain reserved keyword!'
+                            $this->translateContext(
+                                'Entity [%s] is invalid! class name contain reserved keyword!',
+                                'console'
                             ),
                             $className
                         )
@@ -195,8 +195,9 @@ EOT),
                 if (strlen($tableName) > 64) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Table name [%s] is too long! Must be less or equal 64 characters'
+                            $this->translateContext(
+                                'Table name [%s] is too long! Must be less or equal 64 characters',
+                                'console'
                             ),
                             $tableName
                         )
@@ -205,7 +206,7 @@ EOT),
                 if ($this->isFileExists($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate('Entity [%s] exist'),
+                            $this->translateContext('Entity [%s] exist', 'console'),
                             $this->entityNamespace . $className
                         )
                     );
@@ -234,8 +235,9 @@ EOT),
         if (!$this->entityDir) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Could not detect entity directory'
+                    $this->translateContext(
+                        '%s Could not detect entity directory',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -247,8 +249,9 @@ EOT),
         if (!$named && !$input->isInteractive()) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s generator only support in interactive mode'
+                    $this->translateContext(
+                        '%s generator only support in interactive mode',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -269,8 +272,9 @@ EOT),
         }
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Entity Name  : %s'
+                $this->translateContext(
+                    'Entity Name  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -280,8 +284,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Table Name  : %s'
+                $this->translateContext(
+                    'Table Name  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -292,8 +297,9 @@ EOT),
         $className = $this->entityNamespace . $named['className'];
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Entity Class : %s'
+                $this->translateContext(
+                    'Entity Class : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -303,8 +309,9 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Entity File  : %s'
+                $this->translateContext(
+                    'Entity File  : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -315,7 +322,7 @@ EOT),
         /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext('Are you sure to continue (Yes/No)?', 'console'),
             null,
             function ($e) {
                 $e = !is_string($e) ? '' : $e;
@@ -327,7 +334,10 @@ EOT),
                 };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid answer! (Yes / No)')
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
                     );
                 }
                 return $ask;
@@ -347,8 +357,9 @@ EOT),
             if (!$status) {
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            '%s Could not save entity!'
+                        $this->translateContext(
+                            '%s Could not save entity!',
+                            'console'
                         ),
                         '<fg=red;options=bold>[X]</>'
                     )
@@ -357,8 +368,9 @@ EOT),
             }
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Entity successfully created!'
+                    $this->translateContext(
+                        '%s Entity successfully created!',
+                        'console'
                     ),
                     '<fg=green;options=bold>[√]</>'
                 )
@@ -368,7 +380,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<comment>%s</comment>',
-                $this->translate('Operation cancelled!')
+                $this->translateContext('Operation cancelled!', 'console')
             )
         );
         return self::SUCCESS;

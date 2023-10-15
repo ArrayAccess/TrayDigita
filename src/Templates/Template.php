@@ -205,8 +205,8 @@ final class Template extends AbstractTemplate
         return sprintf(
             '%s | %s : %s',
             $this->getName(),
-            $this->translate('version'),
-            $this->getVersion()??$this->translate('unknown')
+            $this->translateContext('version', 'template'),
+            $this->getVersion()??$this->translateContext('unknown', 'template')
         );
     }
 }

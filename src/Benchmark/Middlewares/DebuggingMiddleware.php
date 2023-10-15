@@ -198,13 +198,13 @@ class DebuggingMiddleware extends AbstractMiddleware
                 $body
                 .sprintf(
                     "\n<!-- (%s : %s ms / %s: %s) ~ (+waterfall ~ %s : %s ms / %s: %s) -->",
-                    $this->translate('rendered time', context: 'benchmark'),
+                    $this->translateContext('rendered time', 'benchmark'),
                     $profiler->convertMicrotime($performanceOrigin),
-                    $this->translate('memory usage', context: 'benchmark'),
+                    $this->translateContext('memory usage', 'benchmark'),
                     $memoryOrigin,
-                    $this->translate('rendered time', context: 'benchmark'),
+                    $this->translateContext('rendered time', 'benchmark'),
                     $profiler->convertMicrotime($performanceEnd),
-                    $this->translate('memory usage', context: 'benchmark'),
+                    $this->translateContext('memory usage', 'benchmark'),
                     Consolidation::sizeFormat(memory_get_usage(), 3),
                 )
             )
@@ -252,14 +252,14 @@ class DebuggingMiddleware extends AbstractMiddleware
             "\n<!-- %s -->",
             sprintf(
                 '(%s: %s ms / %s: %s / %s: %s)',
-                $this->translate('rendered time', context: 'benchmark'),
+                $this->translateContext('rendered time', 'benchmark'),
                 round(
                     (microtime(true) * 1000 - $startTime * 1000),
                     4
                 ),
-                $this->translate('peak memory usage', context: 'benchmark'),
+                $this->translateContext('peak memory usage', 'benchmark'),
                 Consolidation::sizeFormat(memory_get_peak_usage(), 3),
-                $this->translate('memory usage', context: 'benchmark'),
+                $this->translateContext('memory usage', 'benchmark'),
                 Consolidation::sizeFormat(memory_get_usage(), 3)
             )
         );

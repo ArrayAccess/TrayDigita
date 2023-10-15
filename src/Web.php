@@ -46,6 +46,7 @@ use function printf;
 use function realpath;
 use function strlen;
 use function substr;
+use function var_dump;
 use const DIRECTORY_SEPARATOR;
 use const PHP_SAPI;
 use const PHP_VERSION_ID;
@@ -216,7 +217,8 @@ final class Web
             /**
              * @var Kernel $kernel
              */
-            $kernel = Decorator::init();
+            $kernel = Decorator::kernel();
+            $kernel->init();
             $request = ServerRequest::fromGlobals(
                 Decorator::service(ServerRequestFactoryInterface::class),
                 Decorator::service(StreamFactoryInterface::class)
@@ -254,6 +256,7 @@ final class Web
             $title = $e->getTitle();
             $errorDescription = $e->getDescription();
         }
+
         if (!headers_sent()) {
             header('Content-Type: text/html', true, $code);
             $root = preg_quote(dirname(__DIR__), '~');

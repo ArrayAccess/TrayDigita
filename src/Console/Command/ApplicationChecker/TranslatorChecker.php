@@ -21,7 +21,10 @@ class TranslatorChecker extends AbstractChecker
         if (!$container?->has(TranslatorInterface::class)) {
             $this->writeDanger(
                 $output,
-                $this->translate('Can not get translator object from container')
+                $this->translateContext(
+                    'Can not get translator object from container',
+                    'console'
+                )
             );
             return Command::FAILURE;
         }
@@ -33,7 +36,10 @@ class TranslatorChecker extends AbstractChecker
         if (!$translator instanceof TranslatorInterface) {
             $this->writeDanger(
                 $output,
-                $this->translate('Translator is not valid object from container')
+                $this->translateContext(
+                    'Translator is not valid object from container',
+                    'console'
+                )
             );
             return Command::FAILURE;
         }
@@ -42,7 +48,7 @@ class TranslatorChecker extends AbstractChecker
             $output,
             sprintf(
                 '%s [<info>%s</info>]',
-                $this->translate('Translator object is set'),
+                $this->translateContext('Translator object is set', 'console'),
                 $translator::class
             ),
             true
@@ -52,12 +58,12 @@ class TranslatorChecker extends AbstractChecker
             count($translator->getAdapters()) === 0 ?
                 sprintf(
                     '<comment>%s</comment>',
-                    $this->translate('No Adapter Registered')
+                    $this->translateContext('No Adapter Registered', 'console')
                 )
                 : sprintf(
                     '<info>%s</info>',
                     sprintf(
-                        $this->translate('Registered Adapters (%d)'),
+                        $this->translateContext('Registered Adapters (%d)', 'console'),
                         count($translator->getAdapters())
                     )
                 ),
@@ -81,7 +87,7 @@ class TranslatorChecker extends AbstractChecker
             $output,
             sprintf(
                 '<info>%s</info> [<comment>%s</comment>]',
-                $this->translate('Current Language'),
+                $this->translateContext('Current Language', 'console'),
                 $translator->getLanguage()
             ),
             OutputInterface::VERBOSITY_VERBOSE

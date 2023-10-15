@@ -73,14 +73,11 @@ abstract class AbstractController implements ControllerInterface
      * @template M as ModuleInterface
      * @psalm-param class-string<M> $moduleClassName
      * @psalm-return ?M
-     * @throws Throwable
      */
     public function getModule(string $moduleClassName): ?ModuleInterface
     {
-        return ContainerHelper::decorate(
-            Modules::class,
-            $this->getContainer()
-        )?->get($moduleClassName);
+        return ContainerHelper::service(Modules::class, $this->getContainer())
+            ?->get($moduleClassName);
     }
 
     /**

@@ -76,32 +76,33 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
             ->setName('app:generate:controller')
             ->setAliases(['generate-controller'])
             ->setDescription(
-                $this->translate(
-                    'Generate controller class.'
+                $this->translateContext(
+                    'Generate controller class.',
+                    context: 'console'
                 )
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_NONE,
-                    $this->translate('Print generated class file only')
+                    $this->translateContext('Print generated class file only', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<EOT
-The %s help you to create controller object.
-
-Controller will use prefix namespace with %s 
-
-Character slash %s, hyphen %s and underscore %s
-Will converted into namespace separator
-EOT),
+                    $this
+                        ->translateContext(
+                            "The %s help you to create controller object.\n"
+                            . "Controller will use prefix namespace with %s\n"
+                            . "Character slash %s, hyphen %s and underscore %s\n"
+                            . "Will converted into namespace separator",
+                            'console'
+                        ),
                     '<info>%command.name%</info>',
                     sprintf('<comment>%s</comment>', $namespace),
                     '[ <comment>/</comment> ]',
                     '[ <comment>-</comment> ]',
                     '[ <comment>_</comment> ]'
-                )
+                ),
             );
     }
 
@@ -156,20 +157,21 @@ EOT),
     {
         $io = new SymfonyStyle($input, $output);
         return $io->ask(
-            $this->translate('Please enter controller name'),
+            $this->translateContext('Please enter controller name', 'console'),
             null,
             function ($name) {
                 $className = $this->filterName($name);
                 if ($className === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate('Please enter valid controller name!')
+                        $this->translateContext('Please enter valid controller name!', 'console')
                     );
                 }
                 if (count(explode('\\', $className)) > 5) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Controller [%s] is too long! Must be less or equal 5 namespaces'
+                            $this->translateContext(
+                                'Controller [%s] is too long! Must be less or equal 5 namespaces',
+                                'console'
                             ),
                             $className
                         )
@@ -178,8 +180,9 @@ EOT),
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate(
-                                'Controller [%s] is invalid! class name contain reserved keyword!'
+                            $this->translateContext(
+                                'Controller [%s] is invalid! class name contain reserved keyword!',
+                                'console'
                             ),
                             $className
                         )
@@ -188,7 +191,7 @@ EOT),
                 if ($this->isFileExists($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(
-                            $this->translate('Controller [%s] exist'),
+                            $this->translateContext('Controller [%s] exist', 'console'),
                             $this->controllerNameSpace . $className
                         )
                     );
@@ -217,8 +220,9 @@ EOT),
         if (!$this->controllerDir) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Could not detect controller directory'
+                    $this->translateContext(
+                        '%s Could not detect controller directory',
+                        'console'
                     ),
                     '<fg=red;options=bold>[X]</>'
                 )
@@ -230,7 +234,10 @@ EOT),
         if (!$name && !$input->isInteractive()) {
             $output->writeln(
                 sprintf(
-                    $this->translate('%s generator only support in interactive mode'),
+                    $this->translateContext(
+                        '%s generator only support in interactive mode',
+                        'console'
+                    ),
                     '<fg=red;options=bold>[X]</>'
                 )
             );
@@ -250,7 +257,7 @@ EOT),
         }
         $output->writeln(
             sprintf(
-                $this->translate('Controller Name  : %s'),
+                $this->translateContext('Controller Name  : %s', 'console'),
                 sprintf(
                     '<comment>%s</comment>',
                     $name
@@ -260,8 +267,9 @@ EOT),
         $className = $this->controllerNameSpace . $name;
         $output->writeln(
             sprintf(
-                $this->translate(
-                    'Controller Class : %s'
+                $this->translateContext(
+                    'Controller Class : %s',
+                    'console'
                 ),
                 sprintf(
                     '<comment>%s</comment>',
@@ -271,7 +279,7 @@ EOT),
         );
         $output->writeln(
             sprintf(
-                $this->translate('Controller File  : %s'),
+                $this->translateContext('Controller File  : %s', 'console'),
                 sprintf(
                     '<comment>%s</comment>',
                     $fileName
@@ -281,7 +289,7 @@ EOT),
         /** @noinspection DuplicatedCode */
         $io = new SymfonyStyle($input, $output);
         $answer = !$input->isInteractive() || $io->ask(
-            $this->translate('Are you sure to continue (Yes/No)?'),
+            $this->translateContext('Are you sure to continue (Yes/No)?', 'console'),
             null,
             function ($e) {
                     $e = !is_string($e) ? '' : $e;
@@ -293,8 +301,9 @@ EOT),
                     };
                 if ($ask === null) {
                     throw new InteractiveArgumentException(
-                        $this->translate(
-                            'Please enter valid answer! (Yes / No)'
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
                         )
                     );
                 }
@@ -312,8 +321,9 @@ EOT),
             if (!$status) {
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            '%s Could not save controller!'
+                        $this->translateContext(
+                            '%s Could not save controller!',
+                            'console'
                         ),
                         '<fg=red;options=bold>[X]</>'
                     )
@@ -322,8 +332,9 @@ EOT),
             }
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        '%s Controller successfully created!'
+                    $this->translateContext(
+                        '%s Controller successfully created!',
+                        'console'
                     ),
                     '<fg=green;options=bold>[√]</>'
                 )
@@ -333,7 +344,7 @@ EOT),
         $output->writeln(
             sprintf(
                 '<comment>%s</comment>',
-                $this->translate('Operation cancelled!')
+                $this->translateContext('Operation cancelled!', 'console')
             )
         );
         return self::SUCCESS;

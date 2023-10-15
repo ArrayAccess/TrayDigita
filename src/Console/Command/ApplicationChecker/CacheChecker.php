@@ -27,8 +27,9 @@ class CacheChecker extends AbstractChecker
         if (!$container?->has(CacheItemPoolInterface::class)) {
             $this->writeDanger(
                 $output,
-                $this->translate(
-                    'Can not get cache object from container'
+                $this->translateContext(
+                    'Can not get cache object from container',
+                    'console'
                 )
             );
             return Command::FAILURE;
@@ -38,8 +39,9 @@ class CacheChecker extends AbstractChecker
             if (!$cache instanceof CacheItemPoolInterface) {
                 $this->writeDanger(
                     $output,
-                    $this->translate(
-                        'Cache is not valid object from container'
+                    $this->translateContext(
+                        'Cache is not valid object from container',
+                        'console'
                     ),
                 );
                 return Command::FAILURE;
@@ -47,15 +49,18 @@ class CacheChecker extends AbstractChecker
         } catch (Throwable $error) {
             $this->writeDanger(
                 $output,
-                $this->translate('Cache object error')
+                $this->translateContext('Cache object error', 'console')
             );
             $this->writeIndent(
                 $output,
                 sprintf(
                     '<comment>%s</comment> [<comment>%s</comment>] <fg=red>%s</>',
-                    $this->translate('Error:'),
+                    $this->translateContext('Error:', 'console'),
                     $error::class,
-                    $error->getMessage()?:$this->translate('Unknown Error')
+                    $error->getMessage()?:$this->translateContext(
+                        'Unknown Error',
+                        'console'
+                    )
                 ),
                 OutputInterface::VERBOSITY_VERBOSE
             );
@@ -65,8 +70,9 @@ class CacheChecker extends AbstractChecker
         $this->write(
             $output,
             sprintf(
-                $this->translate(
-                    'Cache object is set [%s]'
+                $this->translateContext(
+                    'Cache object is set [%s]',
+                    'console'
                 ),
                 sprintf(
                     '<info>%s</info>',
@@ -85,9 +91,12 @@ class CacheChecker extends AbstractChecker
                 $output,
                 sprintf(
                     '<comment>%s</comment> [<comment>%s</comment>] <fg=red>%s</>',
-                    $this->translate('Error:'),
+                    $this->translateContext('Error:', 'console'),
                     $error::class,
-                    $error->getMessage()?:$this->translate('Unknown Error')
+                    $error->getMessage()?:$this->translateContext(
+                        'Unknown Error',
+                        'console'
+                    )
                 ),
                 OutputInterface::VERBOSITY_VERBOSE
             );
@@ -99,7 +108,7 @@ class CacheChecker extends AbstractChecker
             $output,
             sprintf(
                 '<info>- %s</info> [%s]',
-                $this->translate('Adapter'),
+                $this->translateContext('Adapter', 'console'),
                 $adapter::class
             ),
             OutputInterface::VERBOSITY_VERBOSE
@@ -108,7 +117,7 @@ class CacheChecker extends AbstractChecker
             $output,
             sprintf(
                 '<info>- %s</info> (%s)',
-                $this->translate('Default Lifetime'),
+                $this->translateContext('Default Lifetime', 'console'),
                 $cache->getDefaultLifetime()
             ),
             OutputInterface::VERBOSITY_VERBOSE
@@ -124,7 +133,7 @@ class CacheChecker extends AbstractChecker
                 $output,
                 sprintf(
                     '<info>- %s</info> [%s]',
-                    $this->translate('Namespace'),
+                    $this->translateContext('Namespace', 'console'),
                     $namespace
                 ),
                 OutputInterface::VERBOSITY_VERBOSE

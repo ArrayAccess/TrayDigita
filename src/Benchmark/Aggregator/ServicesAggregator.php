@@ -37,7 +37,7 @@ class ServicesAggregator extends AbstractAggregator
         }
         $this->translated = true;
         return $this->name = ContainerHelper::use(TranslatorInterface::class)
-            ?->translate('Service', context: 'benchmark')??$this->name;
+            ?->translateContext('Service', 'benchmark')??$this->name;
     }
 
     public function addAcceptedGroup(string $name): void

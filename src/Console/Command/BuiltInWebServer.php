@@ -86,20 +86,29 @@ final class BuiltInWebServer extends Command
             ->setName('app:server')
             ->setAliases(['server'])
             ->setDescription(
-                $this->translate('Create temporary php builtin web server.')
+                $this->translateContext(
+                    'Create temporary php builtin web server.',
+                    'console'
+                )
             )->setDefinition([
                 new InputOption(
                     'port',
                     'p',
                     InputOption::VALUE_OPTIONAL,
-                    $this->translate('Port number that used for listening server'),
+                    $this->translateContext(
+                        'Port number that used for listening server',
+                        'console'
+                    ),
                     'auto'
                 ),
                 new InputOption(
                     'host',
                     'H',
                     InputOption::VALUE_OPTIONAL,
-                    $this->translate('Host that used to listening server.'),
+                    $this->translateContext(
+                        'Host that used to listening server.',
+                        'console'
+                    ),
                     '127.0.0.1',
                     [
                         '127.0.0.1',
@@ -111,33 +120,31 @@ final class BuiltInWebServer extends Command
                     'index-file',
                     'i',
                     InputOption::VALUE_OPTIONAL,
-                    $this->translate('Public index.php file.')
+                    $this->translateContext('Public index.php file.', 'console')
                 )
             ])->setHelp(
                 sprintf(
-                    $this->translate(<<<'EOT'
-The %s help you to create temporary php builtin web server like:
-
-    %s
-
-You can use %s
-
-Host accept local %s
-Port accept range between %s
-EOT),
+                    $this->translateContext(
+                        "The %s help you to create temporary php builtin web server like:\n\n"
+                        . "    %s\n\n"
+                        . "You can use %s\n\n"
+                        . "Host accept local %s\n"
+                        . "Port accept range between %s",
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     '<info>php %command.full_name% --host=the_host --port=numeric_port</info>',
                     sprintf(
                         '<info>cd /path/to/public && php -S [(string) hostname/IP]:[(integer) %s] index.php</info>',
-                        $this->translate('port number')
+                        $this->translateContext('port number', 'console')
                     ),
                     sprintf(
                         '<comment>IPv4 & localhost</comment> [%s: <comment>127.0.0.1</comment>]',
-                        $this->translate('default')
+                        $this->translateContext('default', 'console')
                     ),
                     sprintf(
                         '<comment>1024 - 49151</comment> [%s: <comment>8000 or auto</comment>]',
-                        $this->translate('default')
+                        $this->translateContext('default', 'console')
                     )
                 )
             );
@@ -160,12 +167,15 @@ EOT),
                 $output->writeln(sprintf(
                     '<error>%s</error>',
                     sprintf(
-                        $this->translate('Command %s ERROR!!'),
+                        $this->translateContext('Command %s Error!', 'console'),
                         $this->getName()
                     )
                 ));
                 $output->writeln(
-                    $this->translate('Port is Invalid! option port must be numeric.')
+                    $this->translateContext(
+                        'Port is Invalid! option port must be numeric.',
+                        'console'
+                    )
                 );
                 return self::INVALID;
             }
@@ -175,19 +185,28 @@ EOT),
                 $output->writeln(sprintf(
                     '<error>%s</error>',
                     sprintf(
-                        $this->translate('Command %s ERROR!!'),
+                        $this->translateContext('Command %s Error!', 'console'),
                         $this->getName()
                     )
                 ));
                 $output->writeln(
                     sprintf(
-                        'Port is Invalid! option port should not use: <info>%s</info>',
-                        $port
+                        $this->translateContext(
+                            'Port is Invalid! option port should not use: %s',
+                            'console'
+                        ),
+                        sprintf(
+                            '<info>%s</info>',
+                            $port
+                        )
                     )
                 );
                 $output->writeln(
                     sprintf(
-                        $this->translate('Typically this port used by %s application.'),
+                        $this->translateContext(
+                            'Typically this port used by %s application.',
+                            'console'
+                        ),
                         sprintf(
                             '<options=bold>%s</>',
                             self::BLACKLIST_PORT[$port]
@@ -201,14 +220,15 @@ EOT),
                 $output->writeln(sprintf(
                     '<error>%s</error>',
                     sprintf(
-                        $this->translate('Command %s ERROR!!'),
+                        $this->translateContext('Command %s Error!', 'console'),
                         $this->getName()
                     )
                 ));
                 $output->writeln(
                     sprintf(
-                        $this->translate(
-                            'Port is out of range! option port must be between: %s to %s'
+                        $this->translateContext(
+                            'Port is out of range! option port must be between: %s to %s',
+                            'console'
                         ),
                         sprintf(
                             '<info>%d</info>',
@@ -233,13 +253,14 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
             $output->writeln(
-                $this->translate(
-                    'Option host is invalid. Host only accept "localhost" and local IP address.'
+                $this->translateContext(
+                    'Option host is invalid. Host only accept "localhost" and local IP address.',
+                    'console'
                 )
             );
             return self::INVALID;
@@ -249,14 +270,15 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        'Option host is invalid. IP %s is not a local IP address.'
+                    $this->translateContext(
+                        'Option host is invalid. IP %s is not a local IP address.',
+                        'console'
                     ),
                     $host
                 )
@@ -315,13 +337,14 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
             $output->writeln(
-                $this->translate(
-                    'Could not detect public root file.'
+                $this->translateContext(
+                    'Could not detect public root file.',
+                    'console'
                 )
             );
             return self::FAILURE;
@@ -331,13 +354,14 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
             $output->writeln(
-                $this->translate(
-                    'Public root file is not in application directory!'
+                $this->translateContext(
+                    'Public root file is not in application directory!',
+                    'console'
                 )
             );
             return self::INVALID;
@@ -347,13 +371,14 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
             $output->writeln(
-                $this->translate(
-                    'Could not detect php binary executable file.'
+                $this->translateContext(
+                    'Could not detect php binary executable file.',
+                    'console'
                 )
             );
             return self::FAILURE;
@@ -363,12 +388,12 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
             $output->writeln(
-                $this->translate('Function [exec] is not exist')
+                $this->translateContext('Function [exec] is not exist', 'console')
             );
             return self::FAILURE;
         }
@@ -393,7 +418,7 @@ EOT),
         $progressBar->setFormat(
             sprintf(
                 '%s [%%message%%] [%%bar%%] %%elapsed:6s%%',
-                $this->translate('Checking')
+                $this->translateContext('Checking', 'console')
             )
         );
         $usedPort = null;
@@ -401,7 +426,7 @@ EOT),
             $progressBar->setMessage(
                 sprintf(
                     "%s : $p",
-                    $this->translate('Port')
+                    $this->translateContext('Port', 'console')
                 )
             );
             $progressBar->advance();
@@ -429,7 +454,7 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));
@@ -437,16 +462,18 @@ EOT),
                 $port === 'auto'
                     ? sprintf(
                         sprintf(
-                            $this->translate(
-                                'Can not determine port that can be used after doing %s tests'
+                            $this->translateContext(
+                                'Can not determine port that can be used after doing %s tests',
+                                'console'
                             ),
                             '<comment>%d</comment>'
                         ),
                         count($ports)
                     ) : sprintf(
                         sprintf(
-                            $this->translate(
-                                'Can not listening %s with port %s'
+                            $this->translateContext(
+                                'Can not listening %s with port %s',
+                                'console'
                             ),
                             '<comment>%s</comment>',
                             '<comment>%d</comment>'
@@ -501,7 +528,7 @@ EOT),
         $output->writeln('');
         $output->writeln(
             sprintf(
-                $this->translate('Press %s to exit.'),
+                $this->translateContext('Press %s to exit.', 'console'),
                 '<options=bold>Ctrl+C</>'
             )
         );
@@ -528,7 +555,7 @@ EOT),
             $output->writeln(sprintf(
                 '<error>%s</error>',
                 sprintf(
-                    $this->translate('Command %s ERROR!!'),
+                    $this->translateContext('Command %s Error!', 'console'),
                     $this->getName()
                 )
             ));

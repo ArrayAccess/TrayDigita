@@ -53,15 +53,16 @@ class ApplicationCheck extends Command implements ContainerAllocatorInterface, M
             ->setName('app:check')
             ->setAliases([])
             ->setDescription(
-                $this->translate('Check & validate application.')
+                $this->translateContext('Check & validate application.', 'console')
             )
             ->setDefinition([])
             ->setHelp(
                 sprintf(
-                    $this->translate(<<<'EOT'
-The %s help you to validate application.
-This command show information about installed application services.
-EOT),
+                    $this->translateContext(
+                        "The %s help you to validate application.\n"
+                            . "This command show information about installed application services.",
+                        'console'
+                    ),
                     '<info>%command.name%</info>'
                 )
             );
@@ -91,7 +92,7 @@ EOT),
             $manager = $this->getManager();
             $output->writeln(sprintf(
                 "<info>%s</info>",
-                $this->translate('Application Check')
+                $this->translateContext('Application Check', 'console')
             ));
             $output->writeln('');
 

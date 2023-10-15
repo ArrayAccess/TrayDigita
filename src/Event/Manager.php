@@ -201,16 +201,18 @@ class Manager implements ManagerInterface
         return false;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function detach(
         string $eventName,
         $eventCallback = null,
         ?int $priority = null
     ): int {
-        $deleted = 0;
         if (!isset($this->events[$eventName])) {
             return 0;
         }
-
+        $deleted = 0;
         $id = null;
         if ($eventCallback) {
             $callable = $this->generateCallableId($eventCallback);
@@ -239,6 +241,34 @@ class Manager implements ManagerInterface
         return $deleted;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function detachByEventNameId(
+        string $eventName,
+        string $id,
+        ?int $priority = null
+    ): int {
+        if (!isset($this->events[$eventName])) {
+            return 0;
+        }
+        $deleted = 0;
+        foreach ($this->events[$eventName] as $priorityId => $eventCallback) {
+            if ($priority !== null && $priorityId !== $priority) {
+                continue;
+            }
+            if (!isset($eventCallback[$id])) {
+                continue;
+            }
+            $deleted += count($eventCallback[$id]);
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function detachAll(string ...$eventNames): int
     {
         $total = 0;

@@ -281,7 +281,7 @@ class Waterfall implements ContainerAllocatorInterface
                 $this->createOpenTag(
                     'span',
                     [],
-                    $this->translate('Memory', context: 'benchmark'),
+                    $this->translateContext('Memory', 'benchmark'),
                     true
                 )
                 . $this->createOpenTag(
@@ -295,9 +295,9 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate(
+                                'title' => $this->translateContext(
                                     'Memory usage',
-                                    context: 'benchmark'
+                                    'benchmark'
                                 )
                             ]
                         ),
@@ -311,9 +311,9 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate(
+                                'title' => $this->translateContext(
                                     'Real memory usage',
-                                    context: 'benchmark'
+                                    'benchmark'
                                 )
                             ]
                         ),
@@ -327,9 +327,9 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate(
+                                'title' => $this->translateContext(
                                     'Peak memory usage',
-                                    context: 'benchmark'
+                                    'benchmark'
                                 )
                             ]
                         ),
@@ -343,9 +343,9 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate(
+                                'title' => $this->translateContext(
                                     'Real Peak memory usage',
-                                    context: 'benchmark'
+                                    'benchmark'
                                 )
                             ]
                         ),
@@ -362,9 +362,9 @@ class Waterfall implements ContainerAllocatorInterface
                                     'info'
                                 ],
                                 [
-                                    'title' => $this->translate(
+                                    'title' => $this->translateContext(
                                         'Benchmark memory usage',
-                                        context: 'benchmark'
+                                        'benchmark'
                                     )
                                 ]
                             ),
@@ -395,7 +395,7 @@ class Waterfall implements ContainerAllocatorInterface
                 $this->createOpenTag(
                     'span',
                     [],
-                    $this->translate('Duration', context: 'benchmark'),
+                    $this->translateContext('Duration', 'benchmark'),
                     true
                 )
                 . $this->createOpenTag(
@@ -409,7 +409,7 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate('Total duration', context: 'benchmark')
+                                'title' => $this->translateContext('Total duration', 'benchmark')
                             ]
                         ),
                         round(((microtime(true) * 1000) - $float), 2) .' ms',
@@ -422,7 +422,7 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate('Benchmark duration', context: 'benchmark')
+                                'title' => $this->translateContext('Benchmark duration', 'benchmark')
                             ]
                         ),
                         round($profilerDurations, 2) . ' ms',
@@ -435,7 +435,7 @@ class Waterfall implements ContainerAllocatorInterface
                                 'info'
                             ],
                             [
-                                'title' => $this->translate('Application rendering duration', context: 'benchmark')
+                                'title' => $this->translateContext('Application rendering duration', 'benchmark')
                             ]
                         ),
                         round($firstRender, 2) . ' ms',
@@ -451,7 +451,7 @@ class Waterfall implements ContainerAllocatorInterface
         $html .= $this->columnRow(
             'item',
             [
-                'title' => $this->translate('Total Benchmark', context: 'benchmark')
+                'title' => $this->translateContext('Total Benchmark', 'benchmark')
             ],
             (
                 $this->createOpenTag('span', [], 'Total', true)
@@ -478,9 +478,9 @@ class Waterfall implements ContainerAllocatorInterface
             ['item', 'active'],
             [
                 'data-target' => 'all',
-                'title' => $this->translate('Benchmarks', context: 'benchmark')
+                'title' => $this->translateContext('Benchmarks', 'benchmark')
             ],
-            $this->translate('Benchmarks', context: 'benchmark'),
+            $this->translateContext('Benchmarks', 'benchmark'),
             true
         );
         foreach ($this->getProfiler()->getAggregators() as $key => $aggregator) {
@@ -538,7 +538,7 @@ class Waterfall implements ContainerAllocatorInterface
                 'input',
                 [
                     'type' => 'search',
-                    'placeholder' => $this->translate('Filter', context: 'benchmark'),
+                    'placeholder' => $this->translateContext('Filter', 'benchmark'),
                     'autocomplete' => 'off',
                     'name' => 'waterfall-search',
                     'class' => [
@@ -627,7 +627,7 @@ class Waterfall implements ContainerAllocatorInterface
                     $this->columnRow(
                         ['item'],
                         [],
-                        $this->translate('NO BENCHMARKS', context: 'benchmark'),
+                        $this->translateContext('NO BENCHMARKS', 'benchmark'),
                         true
                     ),
                     true,
@@ -805,17 +805,17 @@ class Waterfall implements ContainerAllocatorInterface
             ['item', 'item-group'],
             [
                 'title' => !$aggregator ? sprintf(
-                    $this->translate('Total Groups: %d', context: 'benchmark'),
+                    $this->translateContext('Total Groups: %d', 'benchmark'),
                     $groupCount
-                ) : sprintf($this->translate(
+                ) : sprintf($this->translateContext(
                     'Group : %s',
-                    context: 'benchmark'
+                    'benchmark'
                 ), $aggregator->getGroupName())
             ],
             $this->createOpenTag(
                 'span',
                 [],
-                $this->translate('Group', context: 'benchmark'),
+                $this->translateContext('Group', 'benchmark'),
                 true
             ). (
             !$aggregator
@@ -834,14 +834,14 @@ class Waterfall implements ContainerAllocatorInterface
             ['item', 'item-memory'],
             [
                 'title' => sprintf(
-                    $this->translate('Total Memory: %s', context: 'benchmark'),
+                    $this->translateContext('Total Memory: %s', 'benchmark'),
                     Consolidation::sizeFormat($memoryUsage, 2)
                 )
             ],
             $this->createOpenTag(
                 'span',
                 [],
-                $this->translate('Memory', context: 'benchmark'),
+                $this->translateContext('Memory', 'benchmark'),
                 true
             ),
             true,
@@ -852,9 +852,9 @@ class Waterfall implements ContainerAllocatorInterface
             ['item', 'item-duration'],
             [
                 'title' => sprintf(
-                    $this->translate(
+                    $this->translateContext(
                         'Total Benchmarks Duration: %s',
-                        context: 'benchmark'
+                        'benchmark'
                     ),
                     round($theDurations, 2) .' ms'
                 )
@@ -862,7 +862,7 @@ class Waterfall implements ContainerAllocatorInterface
             $this->createOpenTag(
                 'span',
                 [],
-                $this->translate('Duration', context: 'benchmark'),
+                $this->translateContext('Duration', 'benchmark'),
                 true
             ),
             true,
@@ -875,7 +875,7 @@ class Waterfall implements ContainerAllocatorInterface
             $this->createOpenTag(
                 'span',
                 [],
-                $this->translate('Waterfall', context: 'benchmark'),
+                $this->translateContext('Waterfall', 'benchmark'),
                 true
             ),
             true,

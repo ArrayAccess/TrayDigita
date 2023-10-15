@@ -28,7 +28,7 @@ class MiddlewareAggregator extends AbstractAggregator
         }
         $this->translated = true;
         return $this->name = ContainerHelper::use(TranslatorInterface::class)
-            ?->translate('Middleware', context: 'benchmark')??$this->name;
+            ?->translateContext('Middleware', 'benchmark')??$this->name;
     }
 
     public function accepted(RecordInterface $record): bool

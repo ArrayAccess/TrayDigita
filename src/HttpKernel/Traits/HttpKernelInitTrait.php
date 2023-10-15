@@ -584,30 +584,32 @@ trait HttpKernelInitTrait
                 RoutingMiddleware::class,
                 $container
             )??new RoutingMiddleware($container, $this->getHttpKernel()->getRouter());
+            try {
+                $debugMiddleware = ContainerHelper::resolveCallable(
+                    DebuggingMiddleware::class,
+                    $container
+                );
+            } catch (Throwable) {
+                $debugMiddleware = new DebuggingMiddleware($container);
+            }
             $manager->dispatch('kernel.initConfig', $this);
         } finally {
             $manager->dispatch('kernel.afterInitConfig', $this);
-        }
-
-        // registering debug bar
-        if ($environment->get('profiling') === true
-            && $environment->get('debugBar') === true
-        ) {
-            try {
-                $httpKernel->addMiddleware(
-                    ContainerHelper::resolveCallable(DebuggingMiddleware::class, $container)
-                );
-            } catch (Throwable) {
-            }
         }
 
         // do register namespace first
         $this->registerNameSpace();
         // do register providers
         $this->registerProviders();
+
+        /*! MIDDLEWARE */
         // add routing middleware on before module
         // to make routing executed on last
         $httpKernel->addMiddleware($routing);
+        // registering debug middleware
+        $httpKernel->addMiddleware($debugMiddleware);
+
+        /*! APPS */
         // do register modules
         $this->registerModules();
         // do register schedulers

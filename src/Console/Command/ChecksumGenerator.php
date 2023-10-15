@@ -55,16 +55,18 @@ class ChecksumGenerator extends Command
             ->setName('app:generate:checksums')
             ->setAliases(['generate-checksums'])
             ->setDescription(
-                $this->translate(
-                    'Create list of core file checksums.'
+                $this->translateContext(
+                    'Create list of core file checksums.',
+                    'console'
                 )
             )->setDefinition([
                 new InputOption(
                     'print',
                     'p',
                     InputOption::VALUE_OPTIONAL,
-                    description: $this->translate(
-                        'Display checksums on terminal without writing to disk'
+                    description: $this->translateContext(
+                        'Display checksums on terminal without writing to disk',
+                        'console'
                     ),
                     default: false,
                     suggestedValues: ['sha1', 'md5']
@@ -72,9 +74,10 @@ class ChecksumGenerator extends Command
             ])
             ->setHelp(
                 sprintf(
-                    $this->translate(<<<'EOT'
-The %s creating checksum files on %s directory.
-EOT),
+                    $this->translateContext(
+                        'The %s creating checksum files on %s directory.',
+                        'console'
+                    ),
                     '<info>%command.name%</info>',
                     '<comment>checksum</comment>'
                 )
@@ -114,8 +117,9 @@ EOT),
         if (!$quiet && !$printOnly) {
             $output->writeln(
                 sprintf(
-                    $this->translate(
-                        'Files will be put in directory: %s'
+                    $this->translateContext(
+                        'Files will be put in directory: %s',
+                        'console'
                     ),
                     sprintf(
                         '<comment>%s</comment>',
@@ -125,7 +129,10 @@ EOT),
             );
             $answer = $input->isInteractive()
                 ? $io->ask(
-                    $this->translate('Are you sure to continue (Yes/No)?'),
+                    $this->translateContext(
+                        'Are you sure to continue (Yes/No)?',
+                        'console'
+                    ),
                     null,
                     static function ($e) {
                         $e = !is_string($e) ? '' : $e;
@@ -137,7 +144,10 @@ EOT),
                         };
                         if ($ask === null) {
                             throw new InteractiveArgumentException(
-                                $this->translate('Please enter valid answer! (Yes / No)')
+                                $this->translateContext(
+                                    'Please enter valid answer! (Yes / No)',
+                                    'console'
+                                )
                             );
                         }
                         return $ask;
@@ -147,7 +157,7 @@ EOT),
                 $output->writeln(
                     sprintf(
                         '<comment>%s</comment>',
-                        $this->translate('Operation cancelled!')
+                        $this->translateContext('Operation cancelled!', 'console')
                     )
                 );
                 return self::SUCCESS;
@@ -258,7 +268,7 @@ EOT),
                 '%s calculate %s files',
                 sprintf(
                     '<info>%s</info>',
-                    $this->translate('Done!')
+                    $this->translateContext('Done!', 'console')
                 ),
                 sprintf(
                     '<comment>%d</comment>',
@@ -270,7 +280,7 @@ EOT),
             $output->writeln(
                 sprintf(
                     '%s: <comment>%s</comment>',
-                    $this->translate('Source'),
+                    $this->translateContext('Source', 'console'),
                     $srcDirectory
                 )
             );

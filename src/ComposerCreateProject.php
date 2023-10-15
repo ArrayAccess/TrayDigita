@@ -3,15 +3,18 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita;
 
+use DirectoryIterator;
 use Exception;
 use function chmod;
 use function class_exists;
+use function copy;
 use function dirname;
 use function file_exists;
 use function file_get_contents;
 use function file_put_contents;
 use function getcwd;
 use function in_array;
+use function is_dir;
 use function is_link;
 use function preg_match;
 use function random_bytes;
@@ -244,7 +247,7 @@ TWIG,
             'app/Views/errors/404.twig' => <<<'TWIG'
 {% extends "base.twig" %}
 {% if title is not defined %}
-    {% set title = translate('404 page not found') %}
+    {% set title = __('404 page not found') %}
 {% endif %}
 {% block body %}
     <div id="content" class="container page-error error-404">
@@ -252,7 +255,7 @@ TWIG,
             <h1 class="page-title">404</h1>
         </header>
         <div class="content">
-            {{ translate('The page you requested was not found.') }}
+            {{ __('The page you requested was not found.') }}
         </div>
     </div>
 {% endblock %}
@@ -262,7 +265,7 @@ TWIG,
 {% block body %}
 <div class="exception">
     <h1 class="title-error-code">500</h1>
-    <h2>{{ translate('Internal Server Error') }}</h2>
+    <h2>{{ __('Internal Server Error') }}</h2>
     <code>{{ exception.getMessage()|protect_path }}</code>
     {% if (displayErrorDetails ?? null) %}
         <pre>{{ exception.getTraceAsString()|protect_path }}</pre>
@@ -415,6 +418,29 @@ PHP
                 );
                 chmod($path, 0744);
             }
+        }
+        $langDir = $installDir . '/app/Languages';
+        $consoleIO->write(
+            '<info>Copying language files</info>',
+            true,
+            $consoleIO::VERBOSE
+        );
+        foreach (new DirectoryIterator(__DIR__.'/Lang') as $directory) {
+            if ($directory->isDot()) {
+                continue;
+            }
+            if ($directory->isDir()) {
+                continue;
+            }
+            $ext = $directory->getExtension();
+            if ($ext !== 'po' && $ext !== 'pot' && $ext !== 'mo') {
+                continue;
+            }
+            $baseName = $directory->getBasename();
+            if (file_exists($langDir . DIRECTORY_SEPARATOR . $baseName)) {
+                continue;
+            }
+            copy($directory, $langDir . DIRECTORY_SEPARATOR . $baseName);
         }
         // */
     }
