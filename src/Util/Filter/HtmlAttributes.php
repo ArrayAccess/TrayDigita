@@ -10,11 +10,14 @@ use function explode;
 use function htmlspecialchars;
 use function implode;
 use function in_array;
+use function intval;
 use function is_bool;
 use function is_iterable;
+use function is_numeric;
 use function is_scalar;
 use function is_string;
 use function json_encode;
+use function preg_match;
 use function sprintf;
 use function strtolower;
 use function trim;
@@ -49,7 +52,7 @@ class HtmlAttributes
         "controls" => "controls",
         "coords" => "coords",
         "data" => "data",
-        "data-*" => "data-*",
+        // "data-*" => "data-*",
         "datetime" => "datetime",
         "default" => "default",
         "defer" => "defer",
@@ -194,20 +197,70 @@ class HtmlAttributes
         "wrap" => "wrap"
     ];
 
+    const ATTRIBUTES_BOOLEAN_TRUE_TYPES = [
+        "checked" => "",
+        "readonly" => "",
+        "selected" => "",
+        "disabled" => ""
+    ];
+
+    const ATTRIBUTES_NUMERIC_TYPES = [
+        'width' => true,
+        'height' => true,
+        'size' => true,
+        "high" => true,
+    ];
+
+    const ATTRIBUTES_INTEGER_TYPES = [
+        'rowspan' => true,
+        'rows' => true,
+        'cols' => true,
+        'colspan' => true,
+        'maxlength' => true,
+        'minlength' => true,
+    ];
+
     const NO_ATTRIBUTES = [
         'class',
         'id'
     ];
 
-    public static function buildAttributes(array $attributes): string
+    public static function buildAttributes(array $attributes) : string
+    {
+        return implode(' ', self::buildAttributesArray($attributes));
+    }
+
+    /**
+     * Returning build attribute lists
+     *
+     * @param array $attributes
+     * @return array<string>
+     */
+    public static function buildAttributesArray(array $attributes): array
     {
         $attr = [];
         foreach ($attributes as $key => $value) {
             if (!is_string($key) || ($key = trim($key)) === '') {
                 continue;
             }
+            // trim
+            $key = trim($key);
+            // attribute key does not allow whitespace
+            // skip!
+            if (preg_match('~\s~i', $key)) {
+                continue;
+            }
+            $lowerKey = strtolower($key);
             if (is_bool($value)) {
-                $value = $value ? 'true' : 'false';
+                if (isset(self::ATTRIBUTES_BOOLEAN_TRUE_TYPES[$lowerKey])) {
+                    // skip if false
+                    if (!$value) {
+                        continue;
+                    }
+                    $value = self::ATTRIBUTES_BOOLEAN_TRUE_TYPES[$lowerKey];
+                } else {
+                    $value = $value ? 'true' : 'false';
+                }
             } elseif ($value instanceof Stringable
                 || is_scalar($value)
             ) {
@@ -215,9 +268,9 @@ class HtmlAttributes
             } /** @noinspection PhpConditionAlreadyCheckedInspection */ elseif ($value instanceof JsonSerializable) {
                 $value = json_encode($value, JSON_UNESCAPED_SLASHES);
             } elseif ($value === null) {
-                $value = '';
+                // null is true
+                $value = self::ATTRIBUTES_BOOLEAN_TRUE_TYPES[$lowerKey] ?? '';
             }
-            $lowerKey = strtolower($key);
             if ($lowerKey === 'class') {
                 $values = [];
                 $value = is_string($value)
@@ -232,9 +285,22 @@ class HtmlAttributes
                 $values = array_filter($values);
                 $value = implode(' ', $values);
             }
+
             if (!is_string($value)) {
                 continue;
             }
+
+            // filter!
+            if (isset(self::ATTRIBUTES_NUMERIC_TYPES[$lowerKey])) {
+                $value = is_numeric($value) ? $value : '';
+            } elseif (isset(self::ATTRIBUTES_INTEGER_TYPES[$lowerKey])) {
+                if (is_numeric($value)) {
+                    $value = (string) intval($value);
+                } else {
+                    $value = '';
+                }
+            }
+
             $key = self::HTML_ATTRIBUTES[$lowerKey]??$key;
             if ($value === '') {
                 if (in_array($key, self::NO_ATTRIBUTES)) {
@@ -254,6 +320,6 @@ class HtmlAttributes
             }
         }
 
-        return implode(' ', $attr);
+        return $attr;
     }
 }

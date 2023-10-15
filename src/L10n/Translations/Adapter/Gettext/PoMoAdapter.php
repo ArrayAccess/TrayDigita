@@ -48,9 +48,26 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
      */
     private array $translations = [];
 
+    /**
+     * Set ignore context
+     *
+     * @var bool
+     */
+    private bool $ignoreContext = true;
+
     public function __construct()
     {
         $this->reader = new GettextReader(new TranslationFactory());
+    }
+
+    public function isIgnoreContext(): bool
+    {
+        return $this->ignoreContext;
+    }
+
+    public function setIgnoreContext(bool $ignoreContext): void
+    {
+        $this->ignoreContext = $ignoreContext;
     }
 
     public function getName() : string
@@ -265,6 +282,9 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
     ) : ?EntryInterface {
         $translations = $this->getTranslationLanguage($language, $domain);
         $entry = $translations?->entry(self::generateId($context, $original));
+        if ($entry === null && $context && $this->isIgnoreContext()) {
+            $entry = $translations?->entry(self::generateId(null, $original));
+        }
         return $entry??null;
     }
 

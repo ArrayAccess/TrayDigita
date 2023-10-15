@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\HttpKernel\Traits;
 
 use ArrayAccess\TrayDigita\Benchmark\Injector\ManagerProfiler;
+use ArrayAccess\TrayDigita\Benchmark\Middlewares\DebuggingMiddleware;
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Container;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
@@ -586,6 +587,18 @@ trait HttpKernelInitTrait
             $manager->dispatch('kernel.initConfig', $this);
         } finally {
             $manager->dispatch('kernel.afterInitConfig', $this);
+        }
+
+        // registering debug bar
+        if ($environment->get('profiling') === true
+            && $environment->get('debugBar') === true
+        ) {
+            try {
+                $httpKernel->addMiddleware(
+                    ContainerHelper::resolveCallable(DebuggingMiddleware::class, $container)
+                );
+            } catch (Throwable) {
+            }
         }
 
         // do register namespace first

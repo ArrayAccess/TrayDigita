@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\Container\ContainerWrapper;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -24,20 +25,25 @@ abstract class AbstractMiddleware implements MiddlewareInterface, ManagerIndicat
      */
     protected int $priority = self::DEFAULT_PRIORITY;
 
+    /**
+     * @var ContainerInterface
+     */
     protected ContainerInterface $container;
 
+    /**
+     * @var ?ManagerInterface
+     */
     protected ?ManagerInterface $manager;
+
+    /**
+     * @var ?ServerRequestInterface
+     */
+    protected ?ServerRequestInterface $request = null;
 
     public function __construct(ContainerInterface $container)
     {
         $this->container = ContainerWrapper::maybeContainerOrCreate($container);
-        try {
-            $this->manager = $this->container->has(ManagerInterface::class)
-                ? $this->container->get(ManagerInterface::class)
-                : null;
-        } catch (Throwable) {
-            $this->manager = null;
-        }
+        $this->manager = ContainerHelper::use(ManagerInterface::class, $container);
     }
 
     public function getManager(): ?ManagerInterface
@@ -53,6 +59,9 @@ abstract class AbstractMiddleware implements MiddlewareInterface, ManagerIndicat
         return $this->container;
     }
 
+    /**
+     * @return int
+     */
     public function getPriority() : int
     {
         return $this->priority;
@@ -68,6 +77,7 @@ abstract class AbstractMiddleware implements MiddlewareInterface, ManagerIndicat
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $manager = $this->getManager();
+        $this->request = $request;
         try {
             $manager->dispatch(
                 'middleware.beforeProcess',

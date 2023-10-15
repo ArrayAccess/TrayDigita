@@ -1,5 +1,4 @@
 <?php
-/** @noinspection ALL */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Benchmark;
@@ -12,7 +11,12 @@ use ArrayAccess\TrayDigita\Benchmark\Interfaces\GroupInterface;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\ProfilerInterface;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\SeverityInterface;
+use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
+use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
+use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Util\Filter\HtmlAttributes;
+use Psr\Container\ContainerInterface;
 use function array_filter;
 use function array_map;
 use function array_unique;
@@ -20,8 +24,8 @@ use function array_unshift;
 use function count;
 use function html_entity_decode;
 use function htmlentities;
-use function htmlspecialchars;
 use function implode;
+use function is_array;
 use function is_float;
 use function is_scalar;
 use function is_string;
@@ -30,35 +34,54 @@ use function memory_get_peak_usage;
 use function memory_get_usage;
 use function microtime;
 use function number_format;
-use function preg_match;
 use function reset;
 use function round;
 use function spl_object_hash;
 use function sprintf;
 use function uasort;
 use function ucfirst;
-use const ARRAY_FILTER_USE_KEY;
 use const JSON_UNESCAPED_SLASHES;
 
-class Waterfall
+class Waterfall implements ContainerAllocatorInterface
 {
-    const UNKNOWN_SEVERITY_CLASSNAME = 'waterfall-profiler-severity-unknown';
+    use TranslatorTrait,
+        ContainerAllocatorTrait;
+
+    const UNKNOWN_SEVERITY_CLASSNAME = 'severity-unknown';
 
     const SEVERITY_HTML_CLASS_NAMES = [
-        SeverityInterface::CRITICAL => 'waterfall-profiler-severity-critical',
-        SeverityInterface::WARNING => 'waterfall-profiler-severity-warning',
-        SeverityInterface::NOTICE => 'waterfall-profiler-severity-notice',
-        SeverityInterface::INFO => 'waterfall-profiler-severity-info',
-        SeverityInterface::NONE => 'waterfall-profiler-severity-none',
+        SeverityInterface::CRITICAL => 'severity-critical',
+        SeverityInterface::WARNING => 'severity-warning',
+        SeverityInterface::NOTICE => 'severity-notice',
+        SeverityInterface::INFO => 'severity-info',
+        SeverityInterface::NONE => 'severity-none',
     ];
+
+    protected string $prefix = 'waterfall-profiler-';
+
+    protected array $severityHtmlClassesName = [];
+
+    /**
+     * @var string
+     */
+    protected string $unknownSeverityClassName;
 
     private ProfilerInterface $profiler;
 
     private ?MetadataFormatterInterface $formatter = null;
 
-    public function __construct(ProfilerInterface $profiler)
-    {
+    public function __construct(
+        ProfilerInterface $profiler,
+        ContainerInterface $container = null
+    ) {
         $this->profiler = $profiler;
+        if ($container) {
+            $this->setContainer($container);
+        }
+        $this->unknownSeverityClassName = $this->prefix . self::UNKNOWN_SEVERITY_CLASSNAME;
+        foreach (self::SEVERITY_HTML_CLASS_NAMES as $severityName => $severityClass) {
+            $this->severityHtmlClassesName[$severityName] = $this->prefix . $severityClass;
+        }
     }
 
     public function getFormatter(): ?MetadataFormatterInterface
@@ -84,37 +107,22 @@ class Waterfall
      *
      * @return string
      */
-    public static function getSeverityHtmlClassName(
+    public function getSeverityHtmlClassName(
         int $type
     ) : string {
-        return self::SEVERITY_HTML_CLASS_NAMES[$type]??self::UNKNOWN_SEVERITY_CLASSNAME;
+        return $this->severityHtmlClassesName[$type]??$this->unknownSeverityClassName;
     }
 
-    private function filterAttribute(array $attributes) : array
+    private function filterAttribute(array $attributes) : string
     {
-        $attributes = array_filter(
-            $attributes,
-            static fn ($e) => is_string($e) && preg_match('~^[a-z](?:[a-z0-9_-]*[a-z0-9])?$~i', $e),
-            ARRAY_FILTER_USE_KEY
-        );
         if (isset($attributes['class'])) {
+            if (!is_array($attributes['class'])) {
+                $attributes['class'] = [$attributes['class']];
+            }
             $attributes['class'] = implode(' ', $this->filterClass($attributes['class']));
         }
         $attributes = array_filter($attributes, 'is_scalar');
-        $attribute  = [];
-        foreach ($attributes as $key => $v) {
-            $v = (string) $v;
-            if ($v === '') {
-                $attribute[] = $key;
-                continue;
-            }
-            $attribute[] = sprintf(
-                '%s="%s"',
-                htmlspecialchars($key),
-                htmlspecialchars($v)
-            );
-        }
-        return $attribute;
+        return HtmlAttributes::buildAttributes($attributes);
     }
 
     private function createOpenTag(
@@ -128,7 +136,7 @@ class Waterfall
         return sprintf(
             '<%s%s>%s',
             $tag,
-            !empty($attributes) ? " " .implode(' ', $attributes) : '',
+            $attributes ? " " .$attributes : '',
             $content !== '' ? ($encode ? htmlentities(html_entity_decode($content)) : $content) : ''
         ) . ($closeTag ? $this->closeTag($tag) : '');
     }
@@ -136,10 +144,11 @@ class Waterfall
     private function filterClass(array $classes) : array
     {
         $classes = array_unique(array_filter($classes, static fn ($e) => is_string($e) && $e !== ''));
+        $prefix = $this->prefix;
         return array_map(
-            static fn ($e) => str_starts_with($e, 'waterfall-profiler-')
+            static fn ($e) => str_starts_with($e, $prefix)
                 ? $e
-                : "waterfall-profiler-$e",
+                : "$prefix$e",
             $classes
         );
     }
@@ -235,7 +244,7 @@ class Waterfall
         // just start
         $html = $this->createOpenTag('div', $this->appendAttributeClass(
             'section-wrapper',
-            ['data-waterfall-profiler-status' => 'closed']
+            ["data-{$this->prefix}status" => 'closed']
         ));
 
         /* ----------------------------------------------------------------
@@ -269,7 +278,12 @@ class Waterfall
             'item',
             [],
             (
-                $this->createOpenTag('span', [], 'Memory', true)
+                $this->createOpenTag(
+                    'span',
+                    [],
+                    $this->translate('Memory', context: 'benchmark'),
+                    true
+                )
                 . $this->createOpenTag(
                     'span',
                     [],
@@ -281,7 +295,10 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Memory usage'
+                                'title' => $this->translate(
+                                    'Memory usage',
+                                    context: 'benchmark'
+                                )
                             ]
                         ),
                         Consolidation::sizeFormat($memory_get_usage, 2),
@@ -294,7 +311,10 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Real memory usage'
+                                'title' => $this->translate(
+                                    'Real memory usage',
+                                    context: 'benchmark'
+                                )
                             ]
                         ),
                         Consolidation::sizeFormat($memory_get_real_usage, 2),
@@ -307,7 +327,10 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Peak memory usage'
+                                'title' => $this->translate(
+                                    'Peak memory usage',
+                                    context: 'benchmark'
+                                )
                             ]
                         ),
                         Consolidation::sizeFormat($memory_get_peak_usage, 2),
@@ -320,7 +343,10 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Real Peak memory usage'
+                                'title' => $this->translate(
+                                    'Real Peak memory usage',
+                                    context: 'benchmark'
+                                )
                             ]
                         ),
                         Consolidation::sizeFormat($memory_get_real_peak_usage, 2),
@@ -336,7 +362,10 @@ class Waterfall
                                     'info'
                                 ],
                                 [
-                                    'title' => 'Benchmark memory usage'
+                                    'title' => $this->translate(
+                                        'Benchmark memory usage',
+                                        context: 'benchmark'
+                                    )
                                 ]
                             ),
                             Consolidation::sizeFormat($benchmarkMemoryUsage, 2),
@@ -363,7 +392,12 @@ class Waterfall
             'item',
             [],
             (
-                $this->createOpenTag('span', [], 'Duration', true)
+                $this->createOpenTag(
+                    'span',
+                    [],
+                    $this->translate('Duration', context: 'benchmark'),
+                    true
+                )
                 . $this->createOpenTag(
                     'span',
                     [],
@@ -375,7 +409,7 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Total duration'
+                                'title' => $this->translate('Total duration', context: 'benchmark')
                             ]
                         ),
                         round(((microtime(true) * 1000) - $float), 2) .' ms',
@@ -388,7 +422,7 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Benchmark duration'
+                                'title' => $this->translate('Benchmark duration', context: 'benchmark')
                             ]
                         ),
                         round($profilerDurations, 2) . ' ms',
@@ -401,7 +435,7 @@ class Waterfall
                                 'info'
                             ],
                             [
-                                'title' => 'Application rendering duration'
+                                'title' => $this->translate('Application rendering duration', context: 'benchmark')
                             ]
                         ),
                         round($firstRender, 2) . ' ms',
@@ -417,7 +451,7 @@ class Waterfall
         $html .= $this->columnRow(
             'item',
             [
-                'title' => 'Total Benchmark'
+                'title' => $this->translate('Total Benchmark', context: 'benchmark')
             ],
             (
                 $this->createOpenTag('span', [], 'Total', true)
@@ -444,9 +478,9 @@ class Waterfall
             ['item', 'active'],
             [
                 'data-target' => 'all',
-                'title' => 'Benchmarks'
+                'title' => $this->translate('Benchmarks', context: 'benchmark')
             ],
-            'Benchmarks',
+            $this->translate('Benchmarks', context: 'benchmark'),
             true
         );
         foreach ($this->getProfiler()->getAggregators() as $key => $aggregator) {
@@ -504,7 +538,7 @@ class Waterfall
                 'input',
                 [
                     'type' => 'search',
-                    'placeholder' => 'Filter',
+                    'placeholder' => $this->translate('Filter', context: 'benchmark'),
                     'autocomplete' => 'off',
                     'name' => 'waterfall-search',
                     'class' => [
@@ -593,7 +627,7 @@ class Waterfall
                     $this->columnRow(
                         ['item'],
                         [],
-                        'NO BENCHMARKS',
+                        $this->translate('NO BENCHMARKS', context: 'benchmark'),
                         true
                     ),
                     true,
@@ -660,7 +694,7 @@ class Waterfall
                     $info = $this->createOpenTag(
                         'div',
                         $this->appendAttributeClass(
-                            ['info-section', self::getSeverityHtmlClassName($severity)],
+                            ['info-section', $this->getSeverityHtmlClassName($severity)],
                             ['data-info-id' => $key],
                         ),
                         $info,
@@ -730,7 +764,7 @@ class Waterfall
                     $this->appendAttributeClass(
                         [
                             'waterfall-bar',
-                            self::getSeverityHtmlClassName($severity)
+                            $this->getSeverityHtmlClassName($severity)
                         ],
                         [
                             'style' => sprintf(
@@ -771,14 +805,17 @@ class Waterfall
             ['item', 'item-group'],
             [
                 'title' => !$aggregator ? sprintf(
-                    'Total Groups: %d',
+                    $this->translate('Total Groups: %d', context: 'benchmark'),
                     $groupCount
-                ) : sprintf('Group : %s', $aggregator->getGroupName())
+                ) : sprintf($this->translate(
+                    'Group : %s',
+                    context: 'benchmark'
+                ), $aggregator->getGroupName())
             ],
             $this->createOpenTag(
                 'span',
                 [],
-                'Group',
+                $this->translate('Group', context: 'benchmark'),
                 true
             ). (
             !$aggregator
@@ -797,11 +834,16 @@ class Waterfall
             ['item', 'item-memory'],
             [
                 'title' => sprintf(
-                    'Total Memory: %s',
+                    $this->translate('Total Memory: %s', context: 'benchmark'),
                     Consolidation::sizeFormat($memoryUsage, 2)
                 )
             ],
-            $this->createOpenTag('span', [], 'Memory', true),
+            $this->createOpenTag(
+                'span',
+                [],
+                $this->translate('Memory', context: 'benchmark'),
+                true
+            ),
             true,
             false
         );
@@ -810,11 +852,19 @@ class Waterfall
             ['item', 'item-duration'],
             [
                 'title' => sprintf(
-                    'Total Benchmarks Duration: %s',
+                    $this->translate(
+                        'Total Benchmarks Duration: %s',
+                        context: 'benchmark'
+                    ),
                     round($theDurations, 2) .' ms'
                 )
             ],
-            $this->createOpenTag('span', [], 'Duration', true),
+            $this->createOpenTag(
+                'span',
+                [],
+                $this->translate('Duration', context: 'benchmark'),
+                true
+            ),
             true,
             false
         );
@@ -822,7 +872,12 @@ class Waterfall
         $html .= $this->columnRow(
             ['item', 'item-waterfall'],
             [],
-            $this->createOpenTag('span', [], 'Waterfall', true),
+            $this->createOpenTag(
+                'span',
+                [],
+                $this->translate('Waterfall', context: 'benchmark'),
+                true
+            ),
             true,
             false,
         );
@@ -840,13 +895,16 @@ class Waterfall
             $html,
             JSON_UNESCAPED_SLASHES
         );
+        $scriptId = $this->prefix . 'waterfall-toolbar-script';
+        $toolbarId = $this->prefix . 'waterfall-toolbar';
         // @codingStandardsIgnoreStart
         return <<<HTML
-<script id="waterfall-profiler-waterfall-toolbar-script">
+<script id="$scriptId">
 ;(function (w) {
     const doc = w.document;
+    let toolbarId = "$toolbarId";
     function load_water_fall() {
-        if (doc.getElementById('#waterfall-profiler-waterfall-toolbar')) {
+        if (doc.getElementById('#' + toolbarId)) {
             return;
         }
         let div = document.createElement('div');
@@ -862,25 +920,26 @@ class Waterfall
             getItem: () => {},
             setItem: () => {},
         };
-        div.id = 'waterfall-profiler-waterfall-toolbar';
+
+        div.id = toolbarId;
         div.style.zIndex = '2147483647';
         div.innerHTML = $html;
 
-        let wrapper = div.querySelector('.waterfall-profiler-section-wrapper');
-        let changeName = 'waterfall-profiler-open-status';
+        let wrapper = div.querySelector('.{$this->prefix}section-wrapper');
+        let changeName = '{$this->prefix}open-status';
         let isResizing = false,
             offsetTop = 0,
             yetResizing = false;
         if (!wrapper) {
             return;
         }
-            
+
         let closeCommand = wrapper.querySelector('[data-command=close]'),
             openCommand = wrapper.querySelector('[data-command=open]'),
             minimizeCommand = wrapper.querySelector('[data-command=minimize]'),
             maximizeCommand = wrapper.querySelector('[data-command=maximize]'),
-            profilerSelector = wrapper.querySelectorAll('.waterfall-profiler-item[data-target]'),
-            headerSection = wrapper.querySelector('.waterfall-profiler-header-section .waterfall-profiler-selector-header');
+            profilerSelector = wrapper.querySelectorAll('.{$this->prefix}item[data-target]'),
+            headerSection = wrapper.querySelector('.{$this->prefix}header-section .{$this->prefix}selector-header');
         if (!headerSection
             || ! closeCommand
             || ! minimizeCommand
@@ -890,33 +949,41 @@ class Waterfall
         ) {
             return;
         }
-        const searchSection = wrapper.querySelector('.waterfall-profiler-search input');
+
+        const dataStatus = 'data-{$this->prefix}status';
+        const selectorInfoSection = '.{$this->prefix}info-section';
+        const searchSection = wrapper.querySelector('.{$this->prefix}search input');
+        const selectorHasInfo = '.{$this->prefix}item-has-info';
+        const activeStatus = '{$this->prefix}active';
+        const hiddenStatus = '{$this->prefix}hidden';
+        const visibleStatus = '{$this->prefix}visible';
+        const resizeClass = '{$this->prefix}resize';
         let headerHeight = 28;
         doc.body.style.marginBottom = headerHeight + 'px';
         let tabs = wrapper.querySelectorAll('[data-tab]');
         if (storage.getItem(changeName) === 'opened'
             || storage.getItem(changeName) === 'maximized'
         ) {
-            wrapper.setAttribute('data-waterfall-profiler-status', 'opened');
+            wrapper.setAttribute(dataStatus, 'opened');
             doc.body.style.marginBottom = (window.getComputedStyle(wrapper).height||250) + 'px';
         }
         document.body.append(div);
         div = null;
         const
             changeStatus = function (status) {
-                wrapper.setAttribute('data-waterfall-profiler-status', status);
+                wrapper.setAttribute(dataStatus, status);
                 wrapper.removeAttribute('style');
                 offsetTop = 0;
                 isResizing = false;
                 storage.setItem(changeName, status);
                 if (status === 'closed') {
-                    wrapper.querySelectorAll('.waterfall-profiler-item-has-info').forEach(function (e) {
-                        let info = e.parentNode.querySelector('.waterfall-profiler-info-section');
+                    wrapper.querySelectorAll(selectorHasInfo).forEach(function (e) {
+                        let info = e.parentNode.querySelector(selectorInfoSection);
                         if (!info) {
                             return;
                         }
-                        e.classList.remove('waterfall-profiler-active');
-                        info.classList.remove('waterfall-profiler-active');
+                        e.classList.remove(activeStatus);
+                        info.classList.remove(activeStatus);
                     });
                     doc.body.style.marginBottom = headerHeight + 'px';
                 } else if (status === 'opened') {
@@ -927,21 +994,21 @@ class Waterfall
 
             },
             isAllowResize = function () {
-                return wrapper.getAttribute('data-waterfall-profiler-status') === 'opened';
+                return wrapper.getAttribute(dataStatus) === 'opened';
             };
-        wrapper.querySelectorAll('.waterfall-profiler-item-has-info').forEach(function (e) {
-            let info = e.parentNode.querySelector('.waterfall-profiler-info-section');
+        wrapper.querySelectorAll(selectorHasInfo).forEach(function (e) {
+            let info = e.parentNode.querySelector(selectorInfoSection);
             if (!info) {
                 return;
             }
             e.addEventListener('click', function () {
-                let hasActive = e.classList.contains('waterfall-profiler-active');
+                let hasActive = e.classList.contains(activeStatus);
                 if (hasActive) {
-                    e.classList.remove('waterfall-profiler-active');
-                    info.classList.remove('waterfall-profiler-active');
+                    e.classList.remove(activeStatus);
+                    info.classList.remove(activeStatus);
                 } else {
-                    e.classList.add('waterfall-profiler-active');
-                    info.classList.add('waterfall-profiler-active');
+                    e.classList.add(activeStatus);
+                    info.classList.add(activeStatus);
                 }
             });
         });
@@ -963,23 +1030,23 @@ class Waterfall
          */
          function restoreHide() {
            wrapper
-            .querySelectorAll('.waterfall-profiler-tab .waterfall-profiler-item-section')
+            .querySelectorAll('.{$this->prefix}tab .{$this->prefix}item-section')
             .forEach(function (e) {
-                e.classList.remove('waterfall-profiler-hidden');
-                e.classList.add('waterfall-profiler-visible');
+                e.classList.remove(hiddenStatus);
+                e.classList.add(hiddenStatus);
             });
         }
         searchSection.addEventListener('keyup', function (e) {
-            let selector = wrapper.querySelector('.waterfall-profiler-tab.waterfall-profiler-active');
+            let selector = wrapper.querySelector('.{$this->prefix}tab.' + activeStatus);
                 selector = selector
-                    ? selector.querySelectorAll('.waterfall-profiler-item-section')
+                    ? selector.querySelectorAll('.{$this->prefix}item-section')
                     : null;
             function clearHidden()
             {
                 if (selector) {
                     selector.forEach(function (e) {
-                        e.classList.remove('waterfall-profiler-hidden');
-                        e.classList.add('waterfall-profiler-visible');
+                        e.classList.remove(hiddenStatus);
+                        e.classList.add(visibleStatus);
                     });
                 }
             }
@@ -1000,18 +1067,18 @@ class Waterfall
             }
     
             selector.forEach(function (e) {
-                let text = e.querySelector('.waterfall-profiler-item-name');
+                let text = e.querySelector('.{$this->prefix}item-name');
                 if (!text) {
-                    e.classList.add('waterfall-profiler-hidden');
+                    e.classList.add(hiddenStatus);
                     return;
                 }
                 text = text.textContent;
                 if (text.toLowerCase().includes(value)) {
-                    e.classList.remove('waterfall-profiler-hidden');
-                    e.classList.add('waterfall-profiler-visible');
+                    e.classList.remove(hiddenStatus);
+                    e.classList.add(visibleStatus);
                 } else {
-                    e.classList.add('waterfall-profiler-hidden');
-                    e.classList.remove('waterfall-profiler-visible');
+                    e.classList.add(hiddenStatus);
+                    e.classList.remove(visibleStatus);
                 }
             });
         });
@@ -1034,22 +1101,22 @@ class Waterfall
             }
             selector.addEventListener('click', function (e) {
                 e.preventDefault();
-                if (wrapper.getAttribute('data-waterfall-profiler-status') === 'closed') {
+                if (wrapper.getAttribute(dataStatus) === 'closed') {
                     changeStatus('opened');
                 }
-                tab.classList.add('waterfall-profiler-active');
-                selector.classList.add('waterfall-profiler-active');
+                tab.classList.add(activeStatus);
+                selector.classList.add(activeStatus);
                 profilerSelector.forEach(function (a) {
                     if (selector === a) {
                         return;
                     }
-                    a.classList.remove('waterfall-profiler-active');
+                    a.classList.remove(activeStatus);
                 });
                 tabs.forEach(function (a) {
                     if (a === tab) {
                         return;
                     }
-                    a.classList.remove('waterfall-profiler-active');
+                    a.classList.remove(activeStatus);
                 });
                 restoreHide();
                 let evt = new KeyboardEvent('keyup', {key: 'Shift', code: 'ShiftLeft'});
@@ -1072,8 +1139,8 @@ class Waterfall
             if (!isResizing) {
                 return;
             }
-            if (!wrapper.classList.contains('waterfall-profiler-resize')) {
-                wrapper.classList.add('waterfall-profiler-resize');
+            if (!wrapper.classList.contains(resizeClass)) {
+                wrapper.classList.add(resizeClass);
             }
             bounding = wrapper.getBoundingClientRect();
             posNow = (e.clientY - bounding.top); 
@@ -1088,7 +1155,7 @@ class Waterfall
     
         doc.addEventListener('mouseup', function () {
             // stop resizing
-            wrapper.classList.remove('waterfall-profiler-resize');
+            wrapper.classList.remove(resizeClass);
             if (!isResizing || ! yetResizing) {            
                 yetResizing = false;
                 isResizing = false;
@@ -1115,12 +1182,16 @@ HTML;
         // @codingStandardsIgnoreEnd
     }
 
+    /**
+     * @noinspection CssInvalidHtmlTagReference
+     * @noinspection CssUnresolvedCustomProperty
+     */
     private function renderCSS(bool $darkMode) : string
     {
         $html = $darkMode
-            ? <<<'HTML'
-<style id="waterfall-profiler-waterfall-toolbar-style-color">
-html .waterfall-profiler-section-wrapper {
+            ? <<<HTML
+<style id="{$this->prefix}waterfall-toolbar-style-color">
+html .{$this->prefix}section-wrapper {
     --waterfall-toolbar-color: #fff;
     --waterfall-toolbar-bg: #292a2d;
 }
@@ -1129,14 +1200,14 @@ HTML
             : '';
 
         // @codingStandardsIgnoreStart
-        $html .= <<<'HTML'
-<style id="waterfall-profiler-waterfall-toolbar-style">
-/*# sourceURL=/waterfall-profiler.css */
+        $html .= <<<HTML
+<style id="{$this->prefix}waterfall-toolbar-style">
+/*# sourceURL=/{$this->prefix}style.css */
 :root {
     --waterfall-toolbar-color: #555;
     --waterfall-toolbar-bg: #fafafa;
 }
-.waterfall-profiler-section-wrapper {
+.{$this->prefix}section-wrapper {
     position: fixed;
     z-index: 2147483647;
     left:0;
@@ -1163,22 +1234,22 @@ HTML
     /* background-color: #292a2d;
     color: #dcdddd; */
 }
-.waterfall-profiler-section-wrapper.waterfall-profiler-resize {
+.{$this->prefix}section-wrapper.{$this->prefix}resize {
     transition: none;
 }
-.waterfall-profiler-section-wrapper code,
-.waterfall-profiler-section-wrapper pre,
-.waterfall-profiler-section-wrapper kbd {
+.{$this->prefix}section-wrapper code,
+.{$this->prefix}section-wrapper pre,
+.{$this->prefix}section-wrapper kbd {
     font-size: .8em;
     font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
-.waterfall-profiler-section-wrapper code {
+.{$this->prefix}section-wrapper code {
     color: inherit;
     white-space: nowrap;
     padding: initial;
     background: transparent;
 }
-.waterfall-profiler-section-wrapper pre {
+.{$this->prefix}section-wrapper pre {
     word-break: break-word;
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -1192,7 +1263,7 @@ HTML
     background: transparent;
 }
 
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=opened]::before {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=opened]::before {
     content: '';
     background-color: transparent;
     position: absolute;
@@ -1202,15 +1273,15 @@ HTML
     z-index: 9999;
     cursor: ns-resize;
 }
-.waterfall-profiler-section-wrapper,
-.waterfall-profiler-section-wrapper::before,
-.waterfall-profiler-section-wrapper::after,
-.waterfall-profiler-section-wrapper *,
-.waterfall-profiler-section-wrapper *::before,
-.waterfall-profiler-section-wrapper *::after {
+.{$this->prefix}section-wrapper,
+.{$this->prefix}section-wrapper::before,
+.{$this->prefix}section-wrapper::after,
+.{$this->prefix}section-wrapper *,
+.{$this->prefix}section-wrapper *::before,
+.{$this->prefix}section-wrapper *::after {
     box-sizing:border-box;
 }
-.waterfall-profiler-content-section {
+.{$this->prefix}content-section {
     position: relative;
     height:100%;
     width:100%;
@@ -1218,40 +1289,40 @@ HTML
     opacity: 1;
     transform: translateY(0);
 }
-.waterfall-profiler-tab,
-.waterfall-profiler-section {
+.{$this->prefix}tab,
+.{$this->prefix}section {
     height: 100%;
     position:relative;
     width: 100%;
 }
-.waterfall-profiler-column.waterfall-profiler-tab {
+.{$this->prefix}column.{$this->prefix}tab {
     display: none;
 }
-.waterfall-profiler-column.waterfall-profiler-tab.waterfall-profiler-active,
-.waterfall-profiler-column {
+.{$this->prefix}column.{$this->prefix}tab.{$this->prefix}active,
+.{$this->prefix}column {
     display: flex;
     flex-wrap: wrap;
     flex-basis: 100%;
     align-content: flex-start;
 }
 
-.waterfall-profiler-column.waterfall-profiler-item,
-.waterfall-profiler-column.waterfall-profiler-header {
+.{$this->prefix}column.{$this->prefix}item,
+.{$this->prefix}column.{$this->prefix}header {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: stretch;
 }
-.waterfall-profiler-column.waterfall-profiler-item.waterfall-profiler-has-info {
+.{$this->prefix}column.{$this->prefix}item.{$this->prefix}has-info {
     flex-basis: 100%;
     width: 100%;
     flex-direction: column;
 }
-.waterfall-profiler-column .waterfall-profiler-item-has-info {
+.{$this->prefix}column .{$this->prefix}item-has-info {
     cursor: pointer;
 }
-.waterfall-profiler-info-section {
+.{$this->prefix}info-section {
     display:none;
     padding: 1em;
     border-top: 1px solid rgba(0,0,0, .1);
@@ -1259,14 +1330,14 @@ HTML
     flex-direction: column;
     /* background-color: #fff; */
 }
-.waterfall-profiler-info-section.waterfall-profiler-active {
+.{$this->prefix}info-section.{$this->prefix}active {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     align-content: stretch;
     justify-content: space-between;
 }
-.waterfall-profiler-info-section .waterfall-profiler-info-item {
+.{$this->prefix}info-section .{$this->prefix}info-item {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -1277,56 +1348,56 @@ HTML
     padding: 1em 0;
     border-bottom: 1px dotted rgba(0,0,0, .15);
 }
-.waterfall-profiler-info-section .waterfall-profiler-info-item:last-child {
+.{$this->prefix}info-section .{$this->prefix}info-item:last-child {
     border:0;
 }
-.waterfall-profiler-info-section .waterfall-profiler-info-item .waterfall-profiler-info-data {
+.{$this->prefix}info-section .{$this->prefix}info-item .{$this->prefix}info-data {
     flex-basis: 100%;
     white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
 }
-.waterfall-profiler-info-section .waterfall-profiler-info-item .waterfall-profiler-info-name {
+.{$this->prefix}info-section .{$this->prefix}info-item .{$this->prefix}info-name {
     /*flex-basis: 200px;*/
     font-weight: 500;
     flex: 0 0 200px;
 }
-.waterfall-profiler-row {
+.{$this->prefix}row {
     display: flex;
     flex-basis: 100%;
 }
-.waterfall-profiler-header-section .waterfall-profiler-column.waterfall-profiler-header {
+.{$this->prefix}header-section .{$this->prefix}column.{$this->prefix}header {
     display: flex;
     justify-content: space-between;
     flex-direction: row;
 }
-.waterfall-profiler-header-section .waterfall-profiler-column.waterfall-profiler-header .waterfall-profiler-row {
+.{$this->prefix}header-section .{$this->prefix}column.{$this->prefix}header .{$this->prefix}row {
     justify-content: flex-start;
     flex-basis: auto;
 }
-.waterfall-profiler-header-section .waterfall-profiler-column.waterfall-profiler-header {
+.{$this->prefix}header-section .{$this->prefix}column.{$this->prefix}header {
     border-top: 1px solid rgba(0,0,0,.15);
 }
-.waterfall-profiler-header-section .waterfall-profiler-column.waterfall-profiler-header .waterfall-profiler-row.waterfall-profiler-row-square {
+.{$this->prefix}header-section .{$this->prefix}column.{$this->prefix}header .{$this->prefix}row.{$this->prefix}row-square {
     flex-basis: 100%;
     align-self: stretch;
     width: 30px;
     text-align: center;
 }
-.waterfall-profiler-item.waterfall-profiler-row {
+.{$this->prefix}item.{$this->prefix}row {
     padding: 0.6em;
     /* border-left: 1px solid #eee; */
     border-left: 1px solid rgba(0,0,0,.06);
 }
 
-.waterfall-profiler-item.waterfall-profiler-no-padding,
-.waterfall-profiler-item.waterfall-profiler-row.waterfall-profiler-no-padding {
+.{$this->prefix}item.{$this->prefix}no-padding,
+.{$this->prefix}item.{$this->prefix}row.{$this->prefix}no-padding {
     padding:0;
 }
-.waterfall-profiler-item.waterfall-profiler-row.waterfall-profiler-no-border {
+.{$this->prefix}item.{$this->prefix}row.{$this->prefix}no-border {
     border:0;
 }
-.waterfall-profiler-column.waterfall-profiler-header {
+.{$this->prefix}column.{$this->prefix}header {
     font-weight: bold;
     top:0;
     position: sticky;
@@ -1335,7 +1406,7 @@ HTML
     background-color: rgba(0,0,0,.05);
 }
 
-.waterfall-profiler-column.waterfall-profiler-header .waterfall-profiler-row {
+.{$this->prefix}column.{$this->prefix}header .{$this->prefix}row {
     border-color: rgba(0,0,0,.15);
     font-size:.9em;
     letter-spacing: 1px;
@@ -1343,27 +1414,27 @@ HTML
     justify-content: space-between;
 }
 
-.waterfall-profiler-item {
+.{$this->prefix}item {
     overflow-x:hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     display:block;
 }
-/*.waterfall-profiler-item[class*=profiler-item-] {*/
+/*.{$this->prefix}item[class*=profiler-item-] {*/
 /*    flex: 0 0 100%;*/
 /*}*/
-.waterfall-profiler-item.waterfall-profiler-item-name {
+.{$this->prefix}item.{$this->prefix}item-name {
     max-width: 200px;
 }
-.waterfall-profiler-item.waterfall-profiler-item-group {
+.{$this->prefix}item.{$this->prefix}item-group {
     max-width: 150px;
 }
-.waterfall-profiler-item.waterfall-profiler-item-duration,
-.waterfall-profiler-item.waterfall-profiler-item-memory {
+.{$this->prefix}item.{$this->prefix}item-duration,
+.{$this->prefix}item.{$this->prefix}item-memory {
     max-width: 100px;
     text-align: right;
 }
-.waterfall-profiler-waterfall-bar {
+.{$this->prefix}waterfall-bar {
     position: relative;
     background: rgba(0,0, 0, .3);
     padding: 0 3px;
@@ -1372,61 +1443,61 @@ HTML
     display: inline-block;
     vertical-align: middle;
 }
-.waterfall-profiler-content {
+.{$this->prefix}content {
     /*height: calc(100% - 58px);*/
     height: calc(100% - 92px);
     position: relative;
     z-index: 900;
     overflow: auto;
 }
-.waterfall-profiler-section-wrapper .waterfall-profiler-hidden {
+.{$this->prefix}section-wrapper .{$this->prefix}hidden {
     display: none !important;
 }
-.waterfall-profiler-content .waterfall-profiler-item.waterfall-profiler-visible:nth-child(even) {
+.{$this->prefix}content .{$this->prefix}item.{$this->prefix}visible:nth-child(even) {
     background: rgba(200, 200, 200, .15);
 }
-.waterfall-profiler-content > .waterfall-profiler-item:hover,
-.waterfall-profiler-content > .waterfall-profiler-item.waterfall-profiler-active {
+.{$this->prefix}content > .{$this->prefix}item:hover,
+.{$this->prefix}content > .{$this->prefix}item.{$this->prefix}active {
     background: rgba(200, 200, 200, .35);
 }
-.waterfall-profiler-content > .waterfall-profiler-item:hover .waterfall-profiler-item.waterfall-profiler-row {
+.{$this->prefix}content > .{$this->prefix}item:hover .{$this->prefix}item.{$this->prefix}row {
     border-left-color: rgba(0,0,0,.1);
 }
-.waterfall-profiler-severity-none,
-.waterfall-profiler-waterfall-bar.waterfall-profiler-severity-none {
+.{$this->prefix}severity-none,
+.{$this->prefix}waterfall-bar.{$this->prefix}severity-none {
     background-color: #379956;
     color: #fff;
 }
 
-.waterfall-profiler-severity-info,
-.waterfall-profiler-waterfall-bar.waterfall-profiler-severity-info {
+.{$this->prefix}severity-info,
+.{$this->prefix}waterfall-bar.{$this->prefix}severity-info {
     background-color: #60beae;
     color: #fff;
 }
-.waterfall-profiler-severity-warning,
-.waterfall-profiler-waterfall-bar.waterfall-profiler-severity-warning {
+.{$this->prefix}severity-warning,
+.{$this->prefix}waterfall-bar.{$this->prefix}severity-warning {
     background-color: #f4b575;
     color: #fff;
 }
-.waterfall-profiler-severity-critical,
-.waterfall-profiler-waterfall-bar.waterfall-profiler-severity-critical {
+.{$this->prefix}severity-critical,
+.{$this->prefix}waterfall-bar.{$this->prefix}severity-critical {
     background-color: #f5757b;
     color: #fff;
 }
-.waterfall-profiler-severity-notice,
-.waterfall-profiler-waterfall-bar.waterfall-profiler-severity-notice {
+.{$this->prefix}severity-notice,
+.{$this->prefix}waterfall-bar.{$this->prefix}severity-notice {
     background-color: #2e77ae;
     color: #fff;
 }
-.waterfall-profiler-header,
-.waterfall-profiler-resize {
+.{$this->prefix}header,
+.{$this->prefix}resize {
     user-select: none;
     -moz-user-select: none;
 }
-.waterfall-profiler-header.waterfall-profiler-search {
+.{$this->prefix}header.{$this->prefix}search {
     padding: .4em 1em;
 }
-.waterfall-profiler-header.waterfall-profiler-search input {
+.{$this->prefix}header.{$this->prefix}search input {
     padding: .4em .8em;
     width: 200px;
     outline:none;
@@ -1439,49 +1510,49 @@ HTML
     color: var(--waterfall-toolbar-color, #555);
 }
 
-.waterfall-profiler-item[data-target],
-.waterfall-profiler-item[data-command]{
+.{$this->prefix}item[data-target],
+.{$this->prefix}item[data-command]{
     cursor: pointer;
     user-select: none;
     -moz-user-select: none;
 }
-.waterfall-profiler-item[data-command]:hover,
-.waterfall-profiler-item[data-target]:hover,
-.waterfall-profiler-item[data-target].waterfall-profiler-active {
+.{$this->prefix}item[data-command]:hover,
+.{$this->prefix}item[data-target]:hover,
+.{$this->prefix}item[data-target].{$this->prefix}active {
     background: rgba(200, 200, 200, .35);
 }
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=maximized] .waterfall-profiler-row-square[data-command=maximize],
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=opened] .waterfall-profiler-row-square[data-command=minimize],
-.waterfall-profiler-section-wrapper .waterfall-profiler-row-square[data-command=open],
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=closed] .waterfall-profiler-row-square[data-command=close],
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=closed] .waterfall-profiler-row-square[data-command=minimize] {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=maximized] .{$this->prefix}row-square[data-command=maximize],
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=opened] .{$this->prefix}row-square[data-command=minimize],
+.{$this->prefix}section-wrapper .{$this->prefix}row-square[data-command=open],
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=closed] .{$this->prefix}row-square[data-command=close],
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=closed] .{$this->prefix}row-square[data-command=minimize] {
     display: none;
 }
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=closed] .waterfall-profiler-row-square[data-command=open] {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=closed] .{$this->prefix}row-square[data-command=open] {
     display: flex;
 }
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=closed] .waterfall-profiler-content-section {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=closed] .{$this->prefix}content-section {
     visibility: hidden;
     opacity: 0;
     transform: translateY(100%);
 }
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=closed] {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=closed] {
     height: 30px;
 }
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=opened] {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=opened] {
     /*max-height: 300px;*/
     height: 250px;
     min-height: 30px;
 }
-.waterfall-profiler-section-wrapper[data-waterfall-profiler-status=maximized] {
+.{$this->prefix}section-wrapper[data-{$this->prefix}status=maximized] {
     height: 100vh;
     max-height: 100vh;
 }
-.waterfall-profiler-section-wrapper .waterfall-profiler-no-padding.waterfall-profiler-selector-header > div {
+.{$this->prefix}section-wrapper .{$this->prefix}no-padding.{$this->prefix}selector-header > div {
     line-height: 28px;
     padding: 0 .6em;
 }
-.waterfall-profiler-icon {
+.{$this->prefix}icon {
     width: 20px;
     display: flex;
     align-items: stretch;
@@ -1489,23 +1560,23 @@ HTML
     flex-direction: row;
     padding: 0 2px;
 }
-.waterfall-profiler-icon svg {
+.{$this->prefix}icon svg {
     width: auto;
 }
-.waterfall-profiler-info {
+.{$this->prefix}info {
     padding: 4px 5px 5px;
     margin: .3em;
     border-radius: 3px;
     background: rgba(0,0,0, .1);
     color: var(--waterfall-toolbar-color, #555);
 }
-.waterfall-profiler-content.waterfall-profiler-empty {
+.{$this->prefix}content.{$this->prefix}empty {
     height: 100%;
     letter-spacing: 1px;
     font-weight: bold;
 }
 
-.waterfall-profiler-content.waterfall-profiler-empty .waterfall-profiler-item {
+.{$this->prefix}content.{$this->prefix}empty .{$this->prefix}item {
     text-align: center;
     position: absolute;
     width: 100%;
@@ -1513,20 +1584,20 @@ HTML
     margin-top: -2em;
     border-width: 0;
 }
-.waterfall-profiler-content.waterfall-profiler-empty .waterfall-profiler-item:hover {
+.{$this->prefix}content.{$this->prefix}empty .{$this->prefix}item:hover {
     background-color: transparent;
 }
-.waterfall-profiler-header-section .waterfall-profiler-selector-header {
+.{$this->prefix}header-section .{$this->prefix}selector-header {
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     touch-action: pan-x;
     scrollbar-width: none;
 }
-.waterfall-profiler-header-section .waterfall-profiler-selector-header::-webkit-scrollbar {
+.{$this->prefix}header-section .{$this->prefix}selector-header::-webkit-scrollbar {
     display:none;
 }
-.waterfall-profiler-header-section .waterfall-profiler-column.waterfall-profiler-header .waterfall-profiler-selector-header > .waterfall-profiler-row {
+.{$this->prefix}header-section .{$this->prefix}column.{$this->prefix}header .{$this->prefix}selector-header > .{$this->prefix}row {
     display: inline-block;
     flex-basis: unset;
     justify-content: unset;

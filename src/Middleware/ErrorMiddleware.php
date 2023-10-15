@@ -47,8 +47,6 @@ class ErrorMiddleware extends AbstractMiddleware
 
     private static ?ErrorMiddleware $middlewareInstance = null;
 
-    private ?ServerRequestInterface $request = null;
-
     private ?Throwable $exceptionHandled = null;
 
     private ?ShutdownHandlerInterface $shutdownHandler = null;

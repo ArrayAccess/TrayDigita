@@ -5,6 +5,8 @@ namespace ArrayAccess\TrayDigita\Benchmark\Aggregator;
 
 use ArrayAccess\TrayDigita\Benchmark\Aggregate\AbstractAggregator;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface;
+use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 
 class KernelAggregator extends AbstractAggregator
 {
@@ -16,6 +18,18 @@ class KernelAggregator extends AbstractAggregator
         'httpKernel' => true,
         'kernel' => true,
     ];
+
+    private bool $translated = false;
+
+    public function getName(): string
+    {
+        if ($this->translated) {
+            return $this->name;
+        }
+        $this->translated = true;
+        return $this->name = ContainerHelper::use(TranslatorInterface::class)
+            ?->translate('Kernel', context: 'benchmark')??$this->name;
+    }
 
     public function accepted(RecordInterface $record): bool
     {
