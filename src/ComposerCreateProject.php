@@ -442,6 +442,11 @@ PHP
             }
             copy($directory->getRealPath(), $langDir . DIRECTORY_SEPARATOR . $baseName);
         }
+        $consoleIO->write(
+            '<info>Done</info>',
+            true,
+            $consoleIO::VERBOSE
+        );
         // */
     }
 }
