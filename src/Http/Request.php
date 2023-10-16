@@ -111,7 +111,7 @@ class Request extends Message implements RequestInterface
         return $obj;
     }
 
-    public function getUri()
+    public function getUri(): UriInterface
     {
         return $this->uri;
     }

@@ -144,7 +144,7 @@ class Message implements MessageInterface
         return isset($this->headerNames[strtolower($name)]);
     }
 
-    public function getHeader($name)
+    public function getHeader($name) : array
     {
         $header = strtolower($name);
 
