@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-16 05:06+0700\n"
-"PO-Revision-Date: 2023-10-16 06:07+0700\n"
+"POT-Creation-Date: 2023-10-17 01:16+0700\n"
+"PO-Revision-Date: 2023-10-17 01:16+0700\n"
 "Last-Translator: \n"
 "Language-Team: ArrayAccess\n"
 "Language: id\n"
@@ -239,130 +239,130 @@ msgctxt "console"
 msgid "Namespace"
 msgstr "Namespace"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:61
+#: Console/Command/ApplicationChecker/ConfigChecker.php:62
 msgctxt "console"
 msgid "Config environment is not set"
 msgstr "Environmen konfig belum ditentukan"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:71
+#: Console/Command/ApplicationChecker/ConfigChecker.php:72
 #, php-format
 msgctxt "console"
 msgid "Debugging - error display [%s]"
 msgstr "Debugging - tampilan kesalahan [%s]"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:73
-#: Console/Command/ApplicationChecker/ConfigChecker.php:84
-#: Console/Command/ApplicationChecker/ConfigChecker.php:95
-msgctxt "console"
-msgid "Enabled"
-msgstr "Diaktifkan"
-
 #: Console/Command/ApplicationChecker/ConfigChecker.php:74
 #: Console/Command/ApplicationChecker/ConfigChecker.php:85
 #: Console/Command/ApplicationChecker/ConfigChecker.php:96
 msgctxt "console"
+msgid "Enabled"
+msgstr "Diaktifkan"
+
+#: Console/Command/ApplicationChecker/ConfigChecker.php:75
+#: Console/Command/ApplicationChecker/ConfigChecker.php:86
+#: Console/Command/ApplicationChecker/ConfigChecker.php:97
+msgctxt "console"
 msgid "Disabled"
 msgstr "Dinonaktifkan"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:82
+#: Console/Command/ApplicationChecker/ConfigChecker.php:83
 #, php-format
 msgctxt "console"
 msgid "Benchmark debug bar [%s]"
 msgstr "Benchmark debug bar [%s]"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:93
+#: Console/Command/ApplicationChecker/ConfigChecker.php:94
 #, php-format
 msgctxt "console"
 msgid "Benchmark profiling [%s]"
 msgstr "Profiling benchmark [%s]"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:119
+#: Console/Command/ApplicationChecker/ConfigChecker.php:120
 #, php-format
 msgctxt "console"
 msgid "Benchmarks records (%d)"
 msgstr "Rekaman benchmark (%d)"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:129
+#: Console/Command/ApplicationChecker/ConfigChecker.php:130
 msgctxt "console"
 msgid "Benchmarks group"
 msgstr "Grup benchmark"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:190
+#: Console/Command/ApplicationChecker/ConfigChecker.php:191
 msgctxt "console"
 msgid "App directory is not exists"
 msgstr "Direktori App tidak ada"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:196
+#: Console/Command/ApplicationChecker/ConfigChecker.php:197
 msgctxt "console"
 msgid "Required Applications directory"
 msgstr "Direktori Aplikasi yang diperlukan"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:208
+#: Console/Command/ApplicationChecker/ConfigChecker.php:209
 msgctxt "console"
 msgid "Storage directory is not writable"
 msgstr "Direktori penyimpanan tidak dapat ditulisi"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:223
+#: Console/Command/ApplicationChecker/ConfigChecker.php:224
 msgctxt "console"
 msgid "directory"
 msgstr "direktori"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:250
+#: Console/Command/ApplicationChecker/ConfigChecker.php:251
 #, php-format
 msgctxt "console"
 msgid "Configuration file is not a valid file (%s)"
 msgstr "Berkas konfigurasi bukan berkas yang sah (%s)"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:254
+#: Console/Command/ApplicationChecker/ConfigChecker.php:255
 #, php-format
 msgctxt "console"
 msgid "Configuration file is invalid (%s)"
 msgstr "Berkas konfigurasi tidak sah (%s)"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:258
+#: Console/Command/ApplicationChecker/ConfigChecker.php:259
 #, php-format
 msgctxt "console"
 msgid "Configuration file is empty (%s)"
 msgstr "Berkas konfigurasi kosong (%s)"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:262
+#: Console/Command/ApplicationChecker/ConfigChecker.php:263
 #, php-format
 msgctxt "console"
 msgid "Configuration file does not exists (%s)"
 msgstr "Berkas konfigurasi tidak tersedia (%s)"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:274
-#: Console/Command/ApplicationChecker/ConfigChecker.php:354
+#: Console/Command/ApplicationChecker/ConfigChecker.php:275
+#: Console/Command/ApplicationChecker/ConfigChecker.php:355
 msgctxt "console"
 msgid "Configuration"
 msgstr "Konfigurasi"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:286
+#: Console/Command/ApplicationChecker/ConfigChecker.php:287
 msgctxt "console"
 msgid "Configuration file is not exists on container"
 msgstr "Berkas konfigurasi tidak tersedia di container"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:296
+#: Console/Command/ApplicationChecker/ConfigChecker.php:297
 msgctxt "console"
 msgid "Configuration file does not contain database configuration"
 msgstr "Berkas konfigurasi tidak berisi konfigurasi basis data"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:313
+#: Console/Command/ApplicationChecker/ConfigChecker.php:314
 msgctxt "console"
 msgid "Configuration file does not contain valid database configuration"
 msgstr "Berkas konfigurasi tidak berisi konfigurasi basis data yang sah"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:325
+#: Console/Command/ApplicationChecker/ConfigChecker.php:326
 msgctxt "console"
 msgid "Configuration file does not contain security configuration"
 msgstr "Berkas konfigurasi tidak terdapat konfigurasi keamanan"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:336
+#: Console/Command/ApplicationChecker/ConfigChecker.php:337
 msgctxt "console"
 msgid "Configuration file does not contain valid security configuration"
 msgstr "Berkas konfigurasi tidak berisi konfigurasi keamanan yang sah"
 
-#: Console/Command/ApplicationChecker/ConfigChecker.php:346
+#: Console/Command/ApplicationChecker/ConfigChecker.php:347
 msgctxt "console"
 msgid "Configuration file is exist & valid"
 msgstr "Berkas konfigurasi tersedia & sah"
@@ -467,27 +467,27 @@ msgctxt "console"
 msgid "Current Language"
 msgstr "Bahasa Saat Ini"
 
-#: Console/Command/BuiltInWebServer.php:90
+#: Console/Command/BuiltInWebServer.php:91
 msgctxt "console"
 msgid "Create temporary php builtin web server."
 msgstr "Buat server web sementara bawaan php."
 
-#: Console/Command/BuiltInWebServer.php:99
+#: Console/Command/BuiltInWebServer.php:100
 msgctxt "console"
 msgid "Port number that used for listening server"
 msgstr "Nomor port yang digunakan untuk server"
 
-#: Console/Command/BuiltInWebServer.php:109
+#: Console/Command/BuiltInWebServer.php:110
 msgctxt "console"
 msgid "Host that used to listening server."
 msgstr "Host yang digunakan untuk server."
 
-#: Console/Command/BuiltInWebServer.php:123
+#: Console/Command/BuiltInWebServer.php:124
 msgctxt "console"
 msgid "Public index.php file."
 msgstr "Berkas public index.php."
 
-#: Console/Command/BuiltInWebServer.php:128
+#: Console/Command/BuiltInWebServer.php:129
 #, php-format
 msgctxt "console"
 msgid ""
@@ -509,22 +509,22 @@ msgstr ""
 "Menerima host local %s\n"
 "Menerima port antara %s"
 
-#: Console/Command/BuiltInWebServer.php:139
+#: Console/Command/BuiltInWebServer.php:140
 msgctxt "console"
 msgid "port number"
 msgstr "nomor port"
 
-#: Console/Command/BuiltInWebServer.php:143
-#: Console/Command/BuiltInWebServer.php:147
+#: Console/Command/BuiltInWebServer.php:144
+#: Console/Command/BuiltInWebServer.php:148
 msgctxt "console"
 msgid "default"
 msgstr "default"
 
-#: Console/Command/BuiltInWebServer.php:170
-#: Console/Command/BuiltInWebServer.php:188
-#: Console/Command/BuiltInWebServer.php:223
-#: Console/Command/BuiltInWebServer.php:256
-#: Console/Command/BuiltInWebServer.php:273
+#: Console/Command/BuiltInWebServer.php:171
+#: Console/Command/BuiltInWebServer.php:189
+#: Console/Command/BuiltInWebServer.php:224
+#: Console/Command/BuiltInWebServer.php:257
+#: Console/Command/BuiltInWebServer.php:274
 #: Console/Command/BuiltInWebServer.php:340
 #: Console/Command/BuiltInWebServer.php:357
 #: Console/Command/BuiltInWebServer.php:374
@@ -536,37 +536,37 @@ msgctxt "console"
 msgid "Command %s Error!"
 msgstr "Perintah %s Bermasalah!"
 
-#: Console/Command/BuiltInWebServer.php:176
+#: Console/Command/BuiltInWebServer.php:177
 msgctxt "console"
 msgid "Port is Invalid! option port must be numeric."
 msgstr "Port Tidak Sah! opsi port harus berupa angka."
 
-#: Console/Command/BuiltInWebServer.php:195
+#: Console/Command/BuiltInWebServer.php:196
 #, php-format
 msgctxt "console"
 msgid "Port is Invalid! option port should not use: %s"
 msgstr "Port Tidak Sah! opsi port tidak boleh menggunakan: %s"
 
-#: Console/Command/BuiltInWebServer.php:207
+#: Console/Command/BuiltInWebServer.php:208
 #, php-format
 msgctxt "console"
 msgid "Typically this port used by %s application."
 msgstr "Biasanya port ini digunakan oleh aplikasi %s."
 
-#: Console/Command/BuiltInWebServer.php:230
+#: Console/Command/BuiltInWebServer.php:231
 #, php-format
 msgctxt "console"
 msgid "Port is out of range! option port must be between: %s to %s"
 msgstr "Port berada di luar jangkauan! opsi port harus antara: %s hingga %s"
 
-#: Console/Command/BuiltInWebServer.php:262
+#: Console/Command/BuiltInWebServer.php:263
 msgctxt "console"
 msgid ""
 "Option host is invalid. Host only accept \"localhost\" and local IP address."
 msgstr ""
 "Opsi host tidak sah. Host hanya menerima “localhost” dan alamat IP lokal."
 
-#: Console/Command/BuiltInWebServer.php:280
+#: Console/Command/BuiltInWebServer.php:281
 #, php-format
 msgctxt "console"
 msgid "Option host is invalid. IP %s is not a local IP address."
@@ -650,7 +650,7 @@ msgstr "Berkas akan diletakkan pada direktori: %s"
 #: Console/Command/DatabaseChecker.php:1397
 #: Console/Command/DatabaseEventGenerator.php:329
 #: Console/Command/EntityGenerator.php:325
-#: Console/Command/MiddlewareGenerator.php:311
+#: Console/Command/MiddlewareGenerator.php:323
 #: Console/Command/ModuleGenerator.php:344
 #: Console/Command/SchedulerGenerator.php:349
 msgctxt "console"
@@ -664,7 +664,7 @@ msgstr "Apakah anda yakin ingin melanjutkan (Yes/No)?"
 #: Console/Command/DatabaseChecker.php:1412
 #: Console/Command/DatabaseEventGenerator.php:342
 #: Console/Command/EntityGenerator.php:338
-#: Console/Command/MiddlewareGenerator.php:326
+#: Console/Command/MiddlewareGenerator.php:338
 #: Console/Command/ModuleGenerator.php:359
 #: Console/Command/SchedulerGenerator.php:362
 msgctxt "console"
@@ -678,7 +678,7 @@ msgstr "Mohon masukkan jawaban yang benar! (Yes/No)"
 #: Console/Command/DatabaseChecker.php:1426
 #: Console/Command/DatabaseEventGenerator.php:386
 #: Console/Command/EntityGenerator.php:383
-#: Console/Command/MiddlewareGenerator.php:370
+#: Console/Command/MiddlewareGenerator.php:382
 #: Console/Command/ModuleGenerator.php:403
 #: Console/Command/SchedulerGenerator.php:408
 msgctxt "console"
@@ -775,7 +775,7 @@ msgstr "%s Tidak dapat mendeteksi direktori perintah"
 #: Console/Command/ControllerGenerator.php:238
 #: Console/Command/DatabaseEventGenerator.php:269
 #: Console/Command/EntityGenerator.php:253
-#: Console/Command/MiddlewareGenerator.php:250
+#: Console/Command/MiddlewareGenerator.php:262
 #: Console/Command/ModuleGenerator.php:268
 #: Console/Command/SchedulerGenerator.php:272
 #, php-format
@@ -1528,49 +1528,59 @@ msgctxt "console"
 msgid "Please enter valid middleware class name!"
 msgstr "Silakan masukkan nama kelas middleware yang sah!"
 
-#: Console/Command/MiddlewareGenerator.php:193
+#: Console/Command/MiddlewareGenerator.php:191
+#, php-format
+msgctxt "console"
+msgid ""
+"Middleware [%s] is invalid! Middleware only contain single class name, not "
+"namespaced!"
+msgstr ""
+"Middleware [%s] tidak sah! middleware hanya boleh berupa nama kelas tunggal, "
+"bukan bermuatan namespace!"
+
+#: Console/Command/MiddlewareGenerator.php:205
 #, php-format
 msgctxt "console"
 msgid "Middleware [%s] is invalid! class name contain reserved keyword!"
 msgstr "Middleware [%s] tidak sah! nama kelas berisi kata kunci bawaan!"
 
-#: Console/Command/MiddlewareGenerator.php:204
+#: Console/Command/MiddlewareGenerator.php:216
 #, php-format
 msgctxt "console"
 msgid "Middleware [%s] exist"
 msgstr "Middleware [%s] tersedia"
 
-#: Console/Command/MiddlewareGenerator.php:236
+#: Console/Command/MiddlewareGenerator.php:248
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect middleware directory"
 msgstr "%s Tidak dapat mendeteksi direktori middleware"
 
-#: Console/Command/MiddlewareGenerator.php:272
+#: Console/Command/MiddlewareGenerator.php:284
 #, php-format
 msgctxt "console"
 msgid "Middleware Name  : %s"
 msgstr "Nama Middleware  : %s"
 
-#: Console/Command/MiddlewareGenerator.php:286
+#: Console/Command/MiddlewareGenerator.php:298
 #, php-format
 msgctxt "console"
 msgid "Middleware Class : %s"
 msgstr "Kelas Middleware: %s"
 
-#: Console/Command/MiddlewareGenerator.php:298
+#: Console/Command/MiddlewareGenerator.php:310
 #, php-format
 msgctxt "console"
 msgid "Middleware File  : %s"
 msgstr "Berkas Middleware  : %s"
 
-#: Console/Command/MiddlewareGenerator.php:348
+#: Console/Command/MiddlewareGenerator.php:360
 #, php-format
 msgctxt "console"
 msgid "%s Could not save middleware!"
 msgstr "%s Tidak dapat menyimpan middleware!"
 
-#: Console/Command/MiddlewareGenerator.php:359
+#: Console/Command/MiddlewareGenerator.php:371
 #, php-format
 msgctxt "console"
 msgid "%s Middleware successfully created!"
