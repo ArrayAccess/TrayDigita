@@ -10,12 +10,9 @@ use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Kernel\Kernel;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use Composer\Autoload\ClassLoader;
-use Composer\InstalledVersions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use ReflectionClass;
 use RuntimeException;
 use Throwable;
 use function basename;
@@ -25,17 +22,12 @@ use function define;
 use function defined;
 use function dirname;
 use function explode;
-use function file_exists;
-use function file_get_contents;
 use function header;
 use function headers_sent;
 use function in_array;
 use function interface_exists;
-use function is_array;
-use function is_dir;
 use function is_file;
 use function is_string;
-use function json_decode;
 use function ob_end_clean;
 use function ob_get_length;
 use function ob_get_level;
@@ -45,21 +37,10 @@ use function preg_quote;
 use function preg_replace;
 use function printf;
 use function realpath;
-use function strlen;
-use function substr;
-use function var_dump;
 use const DIRECTORY_SEPARATOR;
 use const PHP_SAPI;
 use const PHP_VERSION_ID;
 use const TD_INDEX_FILE;
-
-// phpcs:disable PSR1.Files.SideEffects
-if (!class_exists('Throwable')
-    && !interface_exists('Throwable')
-) {
-    /** @noinspection PhpIgnoredClassAliasDeclaration */
-    class_alias('Exception', 'Throwable');
-}
 
 final class Web
 {
@@ -101,60 +82,15 @@ final class Web
                 );
             }
 
-            $classLoaderExists = false;
-            $vendor = null;
-            if (!class_exists(ClassLoader::class)
-                && file_exists(dirname(__DIR__, 3) . '/autoload.php')
-                && file_exists(dirname(__DIR__, 3) . '/composer/ClassLoader.php')
-            ) {
-                /** @noinspection PhpIncludeInspection */
-                $vendor = dirname(__DIR__, 3);
-                /** @noinspection PhpIncludeInspection */
-                require $vendor . '/autoload.php';
+            if (!class_exists(PossibleRoot::class)) {
+                require_once __DIR__ .'/PossibleRoot.php';
             }
 
-            if (class_exists(ClassLoader::class)) {
-                $classLoaderExists = true;
-                $exists = false;
-                $ref = new ReflectionClass(ClassLoader::class);
-                if (class_exists(InstalledVersions::class)) {
-                    $package = InstalledVersions::getRootPackage()['install_path']??null;
-                    $package = is_string($package) ? realpath($package) : null;
-                    if ($package && is_dir($package)) {
-                        $root = $package;
-                    }
-                }
-                if (empty($root)) {
-                    $vendor = $vendor ?: dirname($ref->getFileName(), 2);
-                    $v = $vendor;
-                    $c = 3;
-                    do {
-                        $v = dirname($v);
-                    } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-                    $root = $exists ? $v : dirname($vendor);
-                    $vendor = substr($vendor, strlen($root) + 1);
-                }
-            } else {
-                $root = dirname(__DIR__);
-                $vendor = 'vendor';
-                if (!file_exists("$root/$vendor/autoload.php")) {
-                    if (is_file($root . '/composer.json')) {
-                        $config = json_decode(file_get_contents($root . '/composer.json'), true);
-                        $config = is_array($config) ? $config : [];
-                        $config = isset($config['config']) ? $config['config'] : [];
-                        $vendorDir = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
-                        if ($vendorDir && is_dir("$root/$vendorDir")) {
-                            $vendor = $vendorDir;
-                        }
-                    }
-                }
-
-                // CHECK COMPOSER AUTOLOADER
-                if (!file_exists("$root/$vendor/autoload.php")) {
-                    throw new RuntimeException(
-                        "Composer autoloader is not exists"
-                    );
-                }
+            $root = PossibleRoot::getPossibleRootDirectory();
+            if (!$root) {
+                throw new RuntimeException(
+                    "Could not detect root directory"
+                );
             }
 
             $publicFile = null;
@@ -219,11 +155,6 @@ final class Web
                 define('TD_APP_DIRECTORY', dirname($publicDir) . DIRECTORY_SEPARATOR . 'app');
             }
 
-            if (!$classLoaderExists) {
-                // INCLUDE COMPOSER AUTOLOADER
-                require "$root/$vendor/autoload.php";
-            }
-
             /**
              * @var Kernel $kernel
              */
@@ -245,13 +176,25 @@ final class Web
     }
 
     /**
-     * @param Throwable $e
+     * @param $e
      * @param $kernel
+     * @param $sentHeader
      * @return void
      * @noinspection PhpMissingReturnTypeInspection
+     * @noinspection PhpMissingParamTypeInspection
      */
-    public static function showError(Throwable $e, $kernel = null)
+    public static function showError($e, $kernel = null, $sentHeader = true)
     {
+        if (!class_exists('Throwable')
+            && !interface_exists('Throwable')
+        ) {
+            /** @noinspection PhpIgnoredClassAliasDeclaration */
+            class_alias('Exception', 'Throwable');
+        }
+
+        if (!$e instanceof Throwable) {
+            return;
+        }
         $level = ob_get_level();
         if ($level && ob_get_length()) {
             do {
@@ -261,28 +204,40 @@ final class Web
         $code = 500;
         $title = '500 Internal Server Error';
         $errorDescription = 'Internal Server Error';
-        if ($e instanceof RequestSpecializedCodeException) {
+        if (class_exists(RequestSpecializedCodeException::class)
+            && $e instanceof RequestSpecializedCodeException
+        ) {
             $code = $e->getCode();
             $title = $e->getTitle();
             $errorDescription = $e->getDescription();
         }
 
-        if (!headers_sent()) {
+        if ($sentHeader && !headers_sent()) {
             header('Content-Type: text/html', true, $code);
-            $root = preg_quote(dirname(__DIR__), '~');
-            $file = preg_replace("~{$root}[\\\/]~m", '', $e->getFile());
-            $message = preg_replace("~{$root}[\\\/]~m", '', $e->getMessage());
-            $trace = preg_replace("~{$root}[\\\/]~m", '', $e->getTraceAsString());
-            $line = $e->getLine();
-            $enable = false;
-            if (class_exists(ContainerHelper::class) && isset($kernel)
-                && $kernel instanceof KernelInterface
-            ) {
-                $config = ContainerHelper::use(Config::class, $kernel->getHttpKernel()->getContainer());
-                $config = $config->get('environment');
-                $enable = $config instanceof Config && $config->get('displayErrorDetails') === true;
-            }
-            $additionalText = !$enable ? '' : <<<HTML
+        }
+
+        if (!class_exists(PossibleRoot::class)) {
+            require_once __DIR__ .'/PossibleRoot.php';
+        }
+        $root = PossibleRoot::getPossibleRootDirectory();
+        if (!$root && isset($_SERVER['DOCUMENT_ROOT'])) {
+            $root = realpath($_SERVER['DOCUMENT_ROOT']);
+        }
+        $root = is_string($root) ? $root : dirname(__DIR__);
+        $root = preg_quote($root, '~');
+        $file = preg_replace("~{$root}[\\\/]~m", '', $e->getFile());
+        $message = preg_replace("~{$root}[\\\/]~m", '', $e->getMessage());
+        $trace = preg_replace("~{$root}[\\\/]~m", '', $e->getTraceAsString());
+        $line = $e->getLine();
+        $enable = false;
+        if (class_exists(ContainerHelper::class) && isset($kernel)
+            && $kernel instanceof KernelInterface
+        ) {
+            $config = ContainerHelper::use(Config::class, $kernel->getHttpKernel()->getContainer());
+            $config = $config->get('environment');
+            $enable = $config instanceof Config && $config->get('displayErrorDetails') === true;
+        }
+        $additionalText = ! $enable ? "<p><code>$message</code></p>" : <<<HTML
 <p><code>$message</code></p>
 <p><code>$file:($line)</code></p>
 <pre>$trace</pre>
@@ -334,6 +289,5 @@ HTML;
 </body>
 </html>
 HTML;
-        }
     }
 }

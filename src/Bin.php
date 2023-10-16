@@ -10,33 +10,24 @@ use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use Composer\Autoload\ClassLoader;
-use Composer\InstalledVersions;
 use Exception;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use ReflectionClass;
 use Throwable;
 use function chdir;
 use function class_exists;
 use function define;
 use function defined;
-use function dirname;
-use function file_exists;
-use function file_get_contents;
 use function getcwd;
 use function getenv;
 use function in_array;
 use function ini_get;
 use function ini_set;
-use function is_array;
 use function is_dir;
 use function is_file;
 use function is_string;
-use function json_decode;
 use function printf;
 use function realpath;
-use function strlen;
-use function substr;
 use const DIRECTORY_SEPARATOR;
 use const PHP_SAPI;
 use const PHP_VERSION;
@@ -89,71 +80,25 @@ final class Bin
         }
 
         $cwd = getcwd();
-        $classLoaderExists = false;
-        $vendor = null;
-        if (!class_exists(ClassLoader::class)
-            && file_exists(dirname(__DIR__, 3) . '/autoload.php')
-            && file_exists(dirname(__DIR__, 3) . '/composer/ClassLoader.php')
-        ) {
-            $vendor = dirname(__DIR__, 3);
-            /** @noinspection PhpIncludeInspection */
-            require $vendor . '/autoload.php';
+        if (!class_exists(PossibleRoot::class)) {
+            require_once __DIR__ .'/PossibleRoot.php';
         }
-
-        if (class_exists(ClassLoader::class)) {
-            $classLoaderExists = true;
-            if (class_exists(InstalledVersions::class)) {
-                $package = InstalledVersions::getRootPackage()['install_path']??null;
-                $package = is_string($package) ? realpath($package) : null;
-                if ($package && is_dir($package)) {
-                    $root = $package;
-                }
-            }
-
-            if (empty($root)) {
-                $exists = false;
-                $ref = new ReflectionClass(ClassLoader::class);
-                $vendor = $vendor ?: dirname($ref->getFileName(), 2);
-                $v = $vendor;
-                $c = 3;
-                do {
-                    $v = dirname($v);
-                } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-                $root = $exists ? $v : dirname($vendor);
-                $vendor = substr($vendor, strlen($root) + 1);
-            }
-        } else {
-            $root = dirname(__DIR__);
-            $vendor = 'vendor';
-            if (!file_exists("$root/$vendor/autoload.php")) {
-                if (is_file($root . '/composer.json')) {
-                    $config = json_decode(file_get_contents($root . '/composer.json'), true);
-                    $config = is_array($config) ? $config : [];
-                    $config = isset($config['config']) ? $config['config'] : [];
-                    $vendorDir = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
-                    if ($vendorDir && is_dir("$root/$vendorDir")) {
-                        $vendor = $vendorDir;
-                    }
-                }
-            }
+        $root = PossibleRoot::getPossibleRootDirectory();
+        if (!$root) {
+            echo "\n\033[0;31mCould not detect root directory!\033[0m\n";
+            exit(255);
         }
-
-        $vendorDir = $root . DIRECTORY_SEPARATOR . $vendor;
-        if (!$classLoaderExists) {
-            if (!file_exists("$vendorDir/autoload.php")) {
-                echo "\n\033[0;31mComposer vendor directory is not exist!\033[0m\n";
-                if (!is_file(TD_ROOT_COMPOSER_DIR . '/composer.json')) {
-                    echo "\033[0;31mComposer file\033[0m `composer.json` \033[0;31mis not"
-                        . " exists! Please check you application.\033[0m\n";
-                    echo "\n";
-                    exit(255);
-                }
-                echo "\n";
-                echo "\033[0;34mPlease install dependencies via \033[0m\033[0;32m`composer install`\033[0m\n";
+        if (!class_exists(ClassLoader::class)) {
+            if (!is_file($root . '/composer.json')) {
+                echo "\033[0;31mComposer file\033[0m `composer.json` \033[0;31mis not"
+                    . " exists! Please check you application.\033[0m\n";
                 echo "\n";
                 exit(255);
             }
-            require "$vendorDir/autoload.php";
+            echo "\n";
+            echo "\033[0;34mPlease install dependencies via \033[0m\033[0;32m`composer install`\033[0m\n";
+            echo "\n";
+            exit(255);
         }
 
         define('TD_ROOT_COMPOSER_DIR', $root);
