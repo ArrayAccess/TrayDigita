@@ -49,3 +49,8 @@ Read the : **[Translation](TRANSLATION.md)**
 ## Coding Standard
 
 Read the : **[Coding Standard](CODING_STANDARD.md)**
+
+## Available Modules
+
+- Media Module [https://github.com/ArrayAccess/TrayDigita-Media-Module](https://github.com/ArrayAccess/TrayDigita-Media-Module)
+- Users Module [https://github.com/ArrayAccess/TrayDigita-Users-Module](https://github.com/ArrayAccess/TrayDigita-Users-Module)
