@@ -18,6 +18,7 @@ use function array_values;
 use function class_exists;
 use function doubleval;
 use function explode;
+use function file_exists;
 use function get_class;
 use function get_object_vars;
 use function gettype;
@@ -26,6 +27,7 @@ use function in_array;
 use function ini_get;
 use function intval;
 use function is_array;
+use function is_dir;
 use function is_file;
 use function is_int;
 use function is_iterable;
@@ -39,9 +41,11 @@ use function number_format;
 use function parse_str;
 use function preg_match;
 use function preg_replace;
+use function realpath;
 use function restore_error_handler;
 use function rtrim;
 use function set_error_handler;
+use function spl_autoload_register;
 use function spl_object_hash;
 use function sprintf;
 use function str_contains;
@@ -908,5 +912,64 @@ class Consolidation
             print_r($result);
         }
         return $result;
+    }
+
+    /*! AUTOLOADER */
+    /**
+     * @var array<string, array<string, bool>>
+     */
+    private static array $registeredLoaderAutoloader = [];
+
+    private static array $registeredDirectoriesAutoloader = [];
+
+    /**
+     * Register autoloader with namespace
+     *
+     * @param string $namespace
+     * @param string $directory
+     * @param bool $prepend
+     * @return bool
+     */
+    public static function registerAutoloader(
+        string $namespace,
+        string $directory,
+        bool $prepend = false
+    ): bool {
+        static $include = null;
+        $include ??= Closure::bind(static function ($file) {
+            include_once $file;
+        }, null, null);
+        $namespace = trim($namespace, '\\');
+        if (!$namespace
+            || !is_dir($directory)
+            || !Consolidation::isValidClassName($namespace)
+        ) {
+            return false;
+        }
+
+        $namespace = $namespace . '\\';
+        $directory = realpath($directory)?:$directory;
+        if (!empty(self::$registeredLoaderAutoloader[$namespace][$directory])) {
+            return self::$registeredLoaderAutoloader[$namespace][$directory];
+        }
+        return self::$registeredLoaderAutoloader[$namespace][$directory] = spl_autoload_register(
+            static function ($className) use ($namespace, $directory, $include) {
+                if (!str_starts_with($className, $namespace)) {
+                    return;
+                }
+                $file = substr($className, strlen($namespace));
+                $file = str_replace('\\', DIRECTORY_SEPARATOR, $file);
+                $fileName = $directory .  DIRECTORY_SEPARATOR . $file. ".php";
+                if (isset(self::$registeredDirectoriesAutoloader[$fileName])) {
+                    return;
+                }
+                self::$registeredDirectoriesAutoloader[$fileName] = true;
+                if (file_exists($fileName)) {
+                    $include($fileName);
+                }
+            },
+            true,
+            $prepend
+        );
     }
 }
