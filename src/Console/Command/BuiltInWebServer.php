@@ -5,6 +5,7 @@ namespace ArrayAccess\TrayDigita\Console\Command;
 
 use ArrayAccess\TrayDigita\Exceptions\Runtime\UnsupportedRuntimeException;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
@@ -297,7 +298,7 @@ final class BuiltInWebServer extends Command
             return $this->rootDirectory;
         }
         $this->rootDirectory = ContainerHelper::use(KernelInterface::class, $this->getContainer())
-            ?->getRootDirectory();
+            ?->getRootDirectory()??PossibleRoot::getPossibleRootDirectory();
         if ($this->rootDirectory && is_dir($this->rootDirectory)) {
             return $this->rootDirectory = realpath($this->rootDirectory)?:$this->rootDirectory;
         }
@@ -330,7 +331,6 @@ final class BuiltInWebServer extends Command
         if (!$publicFile || !is_file($publicFile)) {
             $publicFile = $this->getPublicFile();
         }
-
 
         if (!$publicFile || !is_file($publicFile)) {
             $output->writeln('');

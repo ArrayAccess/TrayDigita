@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\View\ErrorRenderer;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\MaximumCallstackExceeded;
 use ArrayAccess\TrayDigita\Http\Exceptions\HttpException;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use ArrayAccess\TrayDigita\View\Interfaces\ViewInterface;
@@ -19,6 +20,7 @@ use function dirname;
 use function explode;
 use function file_exists;
 use function get_class;
+use function getcwd;
 use function highlight_string;
 use function htmlentities;
 use function htmlspecialchars;
@@ -26,16 +28,12 @@ use function implode;
 use function ini_set;
 use function is_string;
 use function json_encode;
-use function nl2br;
-use function phpinfo;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
 use function preg_replace_callback;
-use function print_r;
 use function realpath;
 use function sprintf;
-use function str_contains;
 use function str_replace;
 use function str_starts_with;
 use function trim;
@@ -54,7 +52,7 @@ class HtmlTraceAbleErrorRenderer extends AbstractErrorRenderer
         if ($displayErrorDetails) {
             try {
                 $kernel = ContainerHelper::use(KernelInterface::class, $this->getContainer());
-                $root = $kernel?->getRootDirectory();
+                $root = $kernel?->getRootDirectory()??PossibleRoot::getPossibleRootDirectory();
                 if (!$root) {
                     $ref = new ReflectionClass(ClassLoader::class);
                     $this->rootDirectory = dirname($ref->getFileName(), 3);
@@ -64,7 +62,7 @@ class HtmlTraceAbleErrorRenderer extends AbstractErrorRenderer
             } catch (Throwable) {
                 $serverParams = $request->getServerParams();
                 $this->rootDirectory = dirname(
-                    $serverParams['DOCUMENT_ROOT'] ?? dirname($serverParams['SCRIPT_FILENAME'])
+                    $serverParams['DOCUMENT_ROOT']??getcwd() // fallback cwd
                 );
             }
             return $this->exceptionDetail($exception);
@@ -272,6 +270,7 @@ HTML;
                     );
                 }
             }
+            /** @noinspection HtmlUnknownAttribute */
             $theLine .= sprintf(
                 '<span data-line="%2$d" %1$s>%2$d</span>',
                 $line === $trace['line'] ? ' class="current"' : '',
@@ -280,6 +279,7 @@ HTML;
             if (trim($lineContent) === '') {
                 $lineContent = '<br>';
             }
+            /** @noinspection HtmlUnknownAttribute */
             $theLineContent .= sprintf(
                 '<div data-line="%d" %s>%s</div>',
                 $line,
@@ -750,8 +750,8 @@ body {
 }
 .traced-content-line span[data-line],
 .traced-content-details > div[data-line] {
-    padding-top: 0rem;
-    padding-bottom: 0rem;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 .traced-content-line span.current,
 .traced-content-details .current,

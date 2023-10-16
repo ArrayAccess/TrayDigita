@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -149,9 +150,9 @@ class ConfigChecker extends AbstractChecker
             && is_dir(TD_APP_DIRECTORY)
             ? TD_APP_DIRECTORY
             : null;
-        $root = ContainerHelper::use(KernelInterface::class)
-            ->getRootDirectory();
         if (!$path || !$directory) {
+            $root = ContainerHelper::use(KernelInterface::class)
+                ?->getRootDirectory()??PossibleRoot::getPossibleRootDirectory();
             $path = new Config();
             $config->set('path', $path);
             if (!$directory) {

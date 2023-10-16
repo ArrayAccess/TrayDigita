@@ -186,6 +186,18 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
                     );
                 }
                 $className = $definitions['className'];
+                if (count(explode('\\', $className)) > 1) {
+                    $message = $this->translateContext(
+                        'Middleware [%s] is invalid! Middleware only contain single class name, not namespaced!',
+                        'console'
+                    );
+                    throw new InteractiveArgumentException(
+                        sprintf(
+                            $message,
+                            $className
+                        )
+                    );
+                }
                 if (!Consolidation::allowedClassName($className)) {
                     throw new InteractiveArgumentException(
                         sprintf(

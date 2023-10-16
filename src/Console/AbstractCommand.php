@@ -7,6 +7,7 @@ use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\UnsupportedArgumentException;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -50,8 +51,10 @@ abstract class AbstractCommand extends Command implements ContainerAllocatorInte
     /**
      * @final
      */
-    final public function __construct()
+    final public function __construct(Application $application)
     {
+        parent::setApplication($application);
+
         $this->beforeConstruct();
         $this->name = trim($this->name??'');
         $this->description = trim($this->description??'');
@@ -68,6 +71,15 @@ abstract class AbstractCommand extends Command implements ContainerAllocatorInte
             $this->description = sprintf('Command for [<info>%s</info>]', $this->getName());
         }
         $this->setDescription($this->description);
+    }
+
+    /**
+     * @param ?Application $application
+     * @return void
+     * no override
+     */
+    final public function setApplication(Application $application = null): void
+    {
     }
 
     final public function setName(string $name): static
