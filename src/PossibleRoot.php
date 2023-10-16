@@ -70,7 +70,7 @@ final class PossibleRoot
 
         if (class_exists(ClassLoader::class)) {
             if (class_exists(InstalledVersions::class)) {
-                $package = InstalledVersions::getRootPackage()['install_path']??null;
+                $package = InstalledVersions::getRootPackage()['install_path']?:null;
                 $package = is_string($package) ? realpath($package) : null;
                 if ($package && is_dir($package)) {
                     $root = $package;
@@ -102,14 +102,15 @@ final class PossibleRoot
             && is_string(TD_APP_DIRECTORY)
             && dirname(TD_APP_DIRECTORY) . '/vendor'
         ) {
+            $exists = false;
             $v = TD_APP_DIRECTORY;
             $c = 3;
             do {
                 $v = dirname($v);
             } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-            $root = ($exists??false) ? $v : dirname(TD_APP_DIRECTORY);
+            $root = $exists ? $v : dirname(TD_APP_DIRECTORY);
             $composerJson = "$root/composer.json";
-            $composerJson = realpath($composerJson)??$composerJson;
+            $composerJson = realpath($composerJson)?:$composerJson;
             if (isset(self::$composerJsonConfig[$composerJson])) {
                 $root = self::$composerJsonConfig[$composerJson];
             } else {
