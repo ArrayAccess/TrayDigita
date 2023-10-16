@@ -10,6 +10,7 @@ use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use Composer\Autoload\ClassLoader;
+use Composer\InstalledVersions;
 use Exception;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -101,16 +102,26 @@ final class Bin
 
         if (class_exists(ClassLoader::class)) {
             $classLoaderExists = true;
-            $exists = false;
-            $ref = new ReflectionClass(ClassLoader::class);
-            $vendor = $vendor?:dirname($ref->getFileName(), 2);
-            $v = $vendor;
-            $c = 3;
-            do {
-                $v = dirname($v);
-            } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-            $root = $exists ? $v : dirname($vendor);
-            $vendor = substr($vendor, strlen($root) + 1);
+            if (class_exists(InstalledVersions::class)) {
+                $package = InstalledVersions::getRootPackage()['install_path']??null;
+                $package = is_string($package) ? realpath($package) : null;
+                if ($package && is_dir($package)) {
+                    $root = $package;
+                }
+            }
+
+            if (empty($root)) {
+                $exists = false;
+                $ref = new ReflectionClass(ClassLoader::class);
+                $vendor = $vendor ?: dirname($ref->getFileName(), 2);
+                $v = $vendor;
+                $c = 3;
+                do {
+                    $v = dirname($v);
+                } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
+                $root = $exists ? $v : dirname($vendor);
+                $vendor = substr($vendor, strlen($root) + 1);
+            }
         } else {
             $root = dirname(__DIR__);
             $vendor = 'vendor';
@@ -128,26 +139,24 @@ final class Bin
         }
 
         $vendorDir = $root . DIRECTORY_SEPARATOR . $vendor;
-        define('TD_ROOT_COMPOSER_DIR', $root);
-        if (!file_exists("$vendorDir/autoload.php")) {
-            echo "\n\033[0;31mComposer vendor directory is not exist!\033[0m\n";
-            if (!is_file(TD_ROOT_COMPOSER_DIR . '/composer.json')) {
-                echo "\033[0;31mComposer file\033[0m `composer.json` \033[0;31mis not"
-                    ." exists! Please check you application.\033[0m\n";
+        if (!$classLoaderExists) {
+            if (!file_exists("$vendorDir/autoload.php")) {
+                echo "\n\033[0;31mComposer vendor directory is not exist!\033[0m\n";
+                if (!is_file(TD_ROOT_COMPOSER_DIR . '/composer.json')) {
+                    echo "\033[0;31mComposer file\033[0m `composer.json` \033[0;31mis not"
+                        . " exists! Please check you application.\033[0m\n";
+                    echo "\n";
+                    exit(255);
+                }
+                echo "\n";
+                echo "\033[0;34mPlease install dependencies via \033[0m\033[0;32m`composer install`\033[0m\n";
                 echo "\n";
                 exit(255);
             }
-            echo "\n";
-            echo "\033[0;34mPlease install dependencies via \033[0m\033[0;32m`composer install`\033[0m\n";
-            echo "\n";
-            exit(255);
+            require "$vendorDir/autoload.php";
         }
 
-        if (!$classLoaderExists) {
-            // INCLUDE COMPOSER AUTOLOADER
-            require "$root/$vendor/autoload.php";
-        }
-
+        define('TD_ROOT_COMPOSER_DIR', $root);
         // move to root
         chdir($root);
         # TD_APP_DIRECTORY='app' php bin/console
@@ -155,9 +164,9 @@ final class Bin
             $appDir = getenv('TD_APP_DIRECTORY')?: null;
             if ($appDir && is_string($appDir)) {
                 $appDir = realpath($appDir) ?: (
-                realpath($cwd . DIRECTORY_SEPARATOR . $appDir) ?: (
-                realpath(TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . $appDir) ?: null
-                )
+                    realpath($cwd . DIRECTORY_SEPARATOR . $appDir) ?: (
+                        realpath(TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . $appDir) ?: null
+                    )
                 );
             }
 

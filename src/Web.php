@@ -11,6 +11,7 @@ use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Kernel\Kernel;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Composer\Autoload\ClassLoader;
+use Composer\InstalledVersions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -116,14 +117,23 @@ final class Web
                 $classLoaderExists = true;
                 $exists = false;
                 $ref = new ReflectionClass(ClassLoader::class);
-                $vendor = $vendor?:dirname($ref->getFileName(), 2);
-                $v = $vendor;
-                $c = 3;
-                do {
-                    $v = dirname($v);
-                } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-                $root = $exists ? $v : dirname($vendor);
-                $vendor = substr($vendor, strlen($root) + 1);
+                if (class_exists(InstalledVersions::class)) {
+                    $package = InstalledVersions::getRootPackage()['install_path']??null;
+                    $package = is_string($package) ? realpath($package) : null;
+                    if ($package && is_dir($package)) {
+                        $root = $package;
+                    }
+                }
+                if (empty($root)) {
+                    $vendor = $vendor ?: dirname($ref->getFileName(), 2);
+                    $v = $vendor;
+                    $c = 3;
+                    do {
+                        $v = dirname($v);
+                    } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
+                    $root = $exists ? $v : dirname($vendor);
+                    $vendor = substr($vendor, strlen($root) + 1);
+                }
             } else {
                 $root = dirname(__DIR__);
                 $vendor = 'vendor';
@@ -138,13 +148,13 @@ final class Web
                         }
                     }
                 }
-            }
 
-            // CHECK COMPOSER AUTOLOADER
-            if (!file_exists("$root/$vendor/autoload.php")) {
-                throw new RuntimeException(
-                    "Composer autoloader is not exists"
-                );
+                // CHECK COMPOSER AUTOLOADER
+                if (!file_exists("$root/$vendor/autoload.php")) {
+                    throw new RuntimeException(
+                        "Composer autoloader is not exists"
+                    );
+                }
             }
 
             $publicFile = null;

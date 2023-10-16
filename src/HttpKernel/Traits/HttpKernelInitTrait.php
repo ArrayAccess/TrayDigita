@@ -17,6 +17,7 @@ use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
 use ArrayAccess\TrayDigita\Util\Parser\DotEnv;
 use Closure;
 use Composer\Autoload\ClassLoader;
+use Composer\InstalledVersions;
 use DateTimeZone;
 use ReflectionClass;
 use Symfony\Component\Yaml\Yaml;
@@ -127,14 +128,23 @@ trait HttpKernelInitTrait
         $this->hasInit = true;
         $root = null;
         if (class_exists(ClassLoader::class)) {
-            $ref = new ReflectionClass(ClassLoader::class);
-            $vendor = dirname($ref->getFileName(), 2);
-            $v = $vendor;
-            $c = 3;
-            do {
-                $v = dirname($v);
-            } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
-            $root = ($exists??false) ? $v : dirname($vendor);
+            if (class_exists(InstalledVersions::class)) {
+                $package = InstalledVersions::getRootPackage()['install_path']??null;
+                $package = is_string($package) ? realpath($package) : null;
+                if ($package && is_dir($package)) {
+                    $root = $package;
+                }
+            }
+            if (empty($root)) {
+                $ref = new ReflectionClass(ClassLoader::class);
+                $vendor = dirname($ref->getFileName(), 2);
+                $v = $vendor;
+                $c = 3;
+                do {
+                    $v = dirname($v);
+                } while (--$c > 0 && !($exists = file_exists($v . '/composer.json')));
+                $root = ($exists ?? false) ? $v : dirname($vendor);
+            }
         } elseif (!is_dir(dirname(TD_APP_DIRECTORY) .'/vendor')) {
             $v = TD_APP_DIRECTORY;
             $c = 3;
