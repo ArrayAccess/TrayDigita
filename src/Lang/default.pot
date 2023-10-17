@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-17 01:15+0700\n"
+"POT-Creation-Date: 2023-10-17 12:28+0700\n"
 "PO-Revision-Date: 2023-09-24 19:00+0700\n"
 "Last-Translator: ArrayAccess\n"
 "Language-Team: ArrayAccess\n"
@@ -436,33 +436,33 @@ msgid_plural "recommended extensions installed"
 msgstr[0] ""
 msgstr[1] ""
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:25
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:26
 msgctxt "console"
 msgid "Can not get translator object from container"
 msgstr ""
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:40
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:41
 msgctxt "console"
 msgid "Translator is not valid object from container"
 msgstr ""
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:51
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:52
 msgctxt "console"
 msgid "Translator object is set"
 msgstr ""
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:61
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:62
 msgctxt "console"
 msgid "No Adapter Registered"
 msgstr ""
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:66
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:67
 #, php-format
 msgctxt "console"
 msgid "Registered Adapters (%d)"
 msgstr ""
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:90
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:92
 msgctxt "console"
 msgid "Current Language"
 msgstr ""
@@ -1197,6 +1197,12 @@ msgid "Database password"
 msgstr ""
 
 #: Console/Command/DatabaseChecker.php:1695
+#: Console/Command/SchedulerAction.php:122
+#: Console/Command/SchedulerAction.php:205
+#: Console/Command/SchedulerAction.php:216
+#: Console/Command/SchedulerAction.php:227
+#: Console/Command/SchedulerAction.php:275
+#: Console/Command/SchedulerAction.php:310
 msgctxt "console"
 msgid "Unknown"
 msgstr ""
@@ -1625,67 +1631,138 @@ msgctxt "console"
 msgid "%s Module successfully created!"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:38
+#: Console/Command/SchedulerAction.php:51
 msgctxt "console"
 msgid "List or run scheduler."
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:45
+#: Console/Command/SchedulerAction.php:58
 msgctxt "console"
 msgid "Run the pending schedulers"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:51
+#: Console/Command/SchedulerAction.php:64
 #, php-format
 msgctxt "console"
 msgid "The %s help you to list & run scheduler"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:78
+#: Console/Command/SchedulerAction.php:86
 msgctxt "console"
 msgid "Object scheduler is not valid"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:102
+#: Console/Command/SchedulerAction.php:110
+#: Console/Command/SchedulerAction.php:258
 msgctxt "console"
-msgid "No task in queue"
+msgid "Id"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:111
+#: Console/Command/SchedulerAction.php:259
+msgctxt "console"
+msgid "Name"
 msgstr ""
 
 #: Console/Command/SchedulerAction.php:112
-#, php-format
+#: Console/Command/SchedulerAction.php:260
 msgctxt "console"
-msgid "Executing %s task"
-msgid_plural "Executing %s tasks"
-msgstr[0] ""
-msgstr[1] ""
-
-#: Console/Command/SchedulerAction.php:131
-msgctxt "console"
-msgid "scheduler in queue to run"
-msgid_plural "schedulers in queue to run"
-msgstr[0] ""
-msgstr[1] ""
-
-#: Console/Command/SchedulerAction.php:144
-#: Console/Command/SchedulerAction.php:190
-#, php-format
-msgctxt "console"
-msgid "run every %s seconds"
+msgid "Status"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:152
-#: Console/Command/SchedulerAction.php:198
-#, php-format
+#: Console/Command/SchedulerAction.php:113
+#: Console/Command/SchedulerAction.php:261
 msgctxt "console"
-msgid "next executed time %s"
+msgid "Last Execution"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:177
+#: Console/Command/SchedulerAction.php:114
 msgctxt "console"
-msgid "scheduler skipped"
-msgid_plural "schedulers skipped"
+msgid "Execution Time"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:118
+msgctxt "console"
+msgid "Waiting"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:137
+msgctxt "console"
+msgid "No Schedulers Waiting For Execution"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:155
+msgctxt "console"
+msgid "Are you sure to execute scheduler ?"
+msgid_plural "Are you sure to execute schedulers ?"
 msgstr[0] ""
 msgstr[1] ""
+
+#: Console/Command/SchedulerAction.php:201
+msgctxt "console"
+msgid "Success"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:202
+msgctxt "console"
+msgid "Exited"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:203
+msgctxt "console"
+msgid "Stopped"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:204
+msgctxt "console"
+msgid "Failure"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:234
+#: Console/Command/SchedulerAction.php:236
+#: Console/Command/SchedulerAction.php:283
+#: Console/Command/SchedulerAction.php:317
+#: Console/Command/SchedulerAction.php:363
+msgctxt "console"
+msgid "Skipped"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:262
+msgctxt "console"
+msgid "Next Run Date"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:284
+#: Console/Command/SchedulerAction.php:370
+msgctxt "console"
+msgid "Need To Execute"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:299
+#: Console/Command/SchedulerAction.php:377
+msgctxt "console"
+msgid "Finished"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:325
+msgctxt "console"
+msgid "No Schedulers Registered"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:340
+msgctxt "console"
+msgid "Total"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:349
+msgctxt "console"
+msgid "Using Timezone"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:356
+msgctxt "console"
+msgid "Timezone Offset"
+msgstr ""
 
 #: Console/Command/SchedulerGenerator.php:79
 msgctxt "console"
@@ -1786,6 +1863,20 @@ msgstr ""
 msgctxt "console"
 msgid "Time %s secs; Memory Usage: %s; Memory Peak Usage: %s"
 msgstr ""
+
+#: Scheduler/Scheduler.php:168
+#, php-format
+msgctxt "scheduler"
+msgid "Callback task must be contain return type or instance of: %s"
+msgstr ""
+
+#: Scheduler/Scheduler.php:445
+#, php-format
+msgctxt "scheduler"
+msgid "Scheduler is on progress with (%s) task remaining"
+msgid_plural "Scheduler is on progress with (%s) tasks remaining"
+msgstr[0] ""
+msgstr[1] ""
 
 #: Templates/Template.php:208
 msgctxt "template"

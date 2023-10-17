@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-17 01:16+0700\n"
-"PO-Revision-Date: 2023-10-17 01:16+0700\n"
+"POT-Creation-Date: 2023-10-17 12:28+0700\n"
+"PO-Revision-Date: 2023-10-17 12:28+0700\n"
 "Last-Translator: \n"
 "Language-Team: ArrayAccess\n"
 "Language: id\n"
@@ -436,33 +436,33 @@ msgid "recommended extension installed"
 msgid_plural "recommended extensions installed"
 msgstr[0] "rekomendasi ekstensi yang terpasang"
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:25
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:26
 msgctxt "console"
 msgid "Can not get translator object from container"
 msgstr "Tidak bisa mendapatkan objek penerjemah dari container"
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:40
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:41
 msgctxt "console"
 msgid "Translator is not valid object from container"
 msgstr "Penerjemah tidak valid dari container"
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:51
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:52
 msgctxt "console"
 msgid "Translator object is set"
 msgstr "Object penerjemah tidak ditentukan"
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:61
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:62
 msgctxt "console"
 msgid "No Adapter Registered"
 msgstr "Tidak Ada Adaptor Terdaftar"
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:66
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:67
 #, php-format
 msgctxt "console"
 msgid "Registered Adapters (%d)"
 msgstr "Adaptor Terdaftar (%d)"
 
-#: Console/Command/ApplicationChecker/TranslatorChecker.php:90
+#: Console/Command/ApplicationChecker/TranslatorChecker.php:92
 msgctxt "console"
 msgid "Current Language"
 msgstr "Bahasa Saat Ini"
@@ -1232,6 +1232,12 @@ msgid "Database password"
 msgstr "Kata sandi basis data"
 
 #: Console/Command/DatabaseChecker.php:1695
+#: Console/Command/SchedulerAction.php:122
+#: Console/Command/SchedulerAction.php:205
+#: Console/Command/SchedulerAction.php:216
+#: Console/Command/SchedulerAction.php:227
+#: Console/Command/SchedulerAction.php:275
+#: Console/Command/SchedulerAction.php:310
 msgctxt "console"
 msgid "Unknown"
 msgstr "Tidak diketahui"
@@ -1686,64 +1692,137 @@ msgctxt "console"
 msgid "%s Module successfully created!"
 msgstr "%s Modul berhasil dibuat!"
 
-#: Console/Command/SchedulerAction.php:38
+#: Console/Command/SchedulerAction.php:51
 msgctxt "console"
 msgid "List or run scheduler."
 msgstr "Daftar atau jalankan penjadwal."
 
-#: Console/Command/SchedulerAction.php:45
+#: Console/Command/SchedulerAction.php:58
 msgctxt "console"
 msgid "Run the pending schedulers"
 msgstr "Jalankan penjadwal yang tertunda"
 
-#: Console/Command/SchedulerAction.php:51
+#: Console/Command/SchedulerAction.php:64
 #, php-format
 msgctxt "console"
 msgid "The %s help you to list & run scheduler"
 msgstr "%s membantu anda untuk membuat daftar & menjalankan penjadwal"
 
-#: Console/Command/SchedulerAction.php:78
+#: Console/Command/SchedulerAction.php:86
 msgctxt "console"
 msgid "Object scheduler is not valid"
 msgstr "Object penjadwal tidak sah"
 
-#: Console/Command/SchedulerAction.php:102
+#: Console/Command/SchedulerAction.php:110
+#: Console/Command/SchedulerAction.php:258
 msgctxt "console"
-msgid "No task in queue"
-msgstr "Tidak ada tugas dalam antrian"
+msgid "Id"
+msgstr "Id"
+
+#: Console/Command/SchedulerAction.php:111
+#: Console/Command/SchedulerAction.php:259
+msgctxt "console"
+msgid "Name"
+msgstr "Nama"
 
 #: Console/Command/SchedulerAction.php:112
-#, php-format
+#: Console/Command/SchedulerAction.php:260
 msgctxt "console"
-msgid "Executing %s task"
-msgid_plural "Executing %s tasks"
-msgstr[0] "Mengeksekusi %s tugas"
+msgid "Status"
+msgstr "Status"
 
-#: Console/Command/SchedulerAction.php:131
+#: Console/Command/SchedulerAction.php:113
+#: Console/Command/SchedulerAction.php:261
 msgctxt "console"
-msgid "scheduler in queue to run"
-msgid_plural "schedulers in queue to run"
-msgstr[0] "penjadwal dalam antrian untuk dijalankan"
+msgid "Last Execution"
+msgstr "Eksekusi Terakhir"
 
-#: Console/Command/SchedulerAction.php:144
-#: Console/Command/SchedulerAction.php:190
-#, php-format
+#: Console/Command/SchedulerAction.php:114
 msgctxt "console"
-msgid "run every %s seconds"
-msgstr "dijalankan setiap %s detik"
+msgid "Execution Time"
+msgstr "Waktu Eksekusi"
 
-#: Console/Command/SchedulerAction.php:152
-#: Console/Command/SchedulerAction.php:198
-#, php-format
+#: Console/Command/SchedulerAction.php:118
 msgctxt "console"
-msgid "next executed time %s"
-msgstr "waktu eksekusi berikutnya %s"
+msgid "Waiting"
+msgstr "Menunggu"
 
-#: Console/Command/SchedulerAction.php:177
+#: Console/Command/SchedulerAction.php:137
 msgctxt "console"
-msgid "scheduler skipped"
-msgid_plural "schedulers skipped"
-msgstr[0] "penjadwal dilewati"
+msgid "No Schedulers Waiting For Execution"
+msgstr "Tidak Ada Penjadwal yang Menunggu Eksekusi"
+
+#: Console/Command/SchedulerAction.php:155
+msgctxt "console"
+msgid "Are you sure to execute scheduler ?"
+msgid_plural "Are you sure to execute schedulers ?"
+msgstr[0] "Apakah Anda yakin untuk menjalankan penjadwal?"
+
+#: Console/Command/SchedulerAction.php:201
+msgctxt "console"
+msgid "Success"
+msgstr "Berhasil"
+
+#: Console/Command/SchedulerAction.php:202
+msgctxt "console"
+msgid "Exited"
+msgstr "Keluar"
+
+#: Console/Command/SchedulerAction.php:203
+msgctxt "console"
+msgid "Stopped"
+msgstr "Dihentikan"
+
+#: Console/Command/SchedulerAction.php:204
+msgctxt "console"
+msgid "Failure"
+msgstr "Kegagalan"
+
+#: Console/Command/SchedulerAction.php:234
+#: Console/Command/SchedulerAction.php:236
+#: Console/Command/SchedulerAction.php:283
+#: Console/Command/SchedulerAction.php:317
+#: Console/Command/SchedulerAction.php:363
+msgctxt "console"
+msgid "Skipped"
+msgstr "Dilewati"
+
+#: Console/Command/SchedulerAction.php:262
+msgctxt "console"
+msgid "Next Run Date"
+msgstr "Tanggal Pengoperasian Berikutnya"
+
+#: Console/Command/SchedulerAction.php:284
+#: Console/Command/SchedulerAction.php:370
+msgctxt "console"
+msgid "Need To Execute"
+msgstr "Perlu Dieksekusi"
+
+#: Console/Command/SchedulerAction.php:299
+#: Console/Command/SchedulerAction.php:377
+msgctxt "console"
+msgid "Finished"
+msgstr "Diselesaikan"
+
+#: Console/Command/SchedulerAction.php:325
+msgctxt "console"
+msgid "No Schedulers Registered"
+msgstr "Tidak Ada Penjadwal Terdaftar"
+
+#: Console/Command/SchedulerAction.php:340
+msgctxt "console"
+msgid "Total"
+msgstr "Total"
+
+#: Console/Command/SchedulerAction.php:349
+msgctxt "console"
+msgid "Using Timezone"
+msgstr "Menggunakan Zona Waktu"
+
+#: Console/Command/SchedulerAction.php:356
+msgctxt "console"
+msgid "Timezone Offset"
+msgstr "Pengimbangan Zona Waktu"
 
 #: Console/Command/SchedulerGenerator.php:79
 msgctxt "console"
@@ -1854,6 +1933,19 @@ msgctxt "console"
 msgid "Time %s secs; Memory Usage: %s; Memory Peak Usage: %s"
 msgstr "Waktu %s detik; Penggunaan Memori: %s; Penggunaan Puncak Memori: %s"
 
+#: Scheduler/Scheduler.php:168
+#, php-format
+msgctxt "scheduler"
+msgid "Callback task must be contain return type or instance of: %s"
+msgstr "Callback harus berupa tipe pengembalian atau instance dari: %s"
+
+#: Scheduler/Scheduler.php:445
+#, php-format
+msgctxt "scheduler"
+msgid "Scheduler is on progress with (%s) task remaining"
+msgid_plural "Scheduler is on progress with (%s) tasks remaining"
+msgstr[0] "Penjadwal sedang berlangsung dengan (%s) tugas tersisa"
+
 #: Templates/Template.php:208
 msgctxt "template"
 msgid "version"
@@ -1863,3 +1955,33 @@ msgstr "versi"
 msgctxt "template"
 msgid "unknown"
 msgstr "tak diketahui"
+
+#~ msgctxt "console"
+#~ msgid "No task in queue"
+#~ msgstr "Tidak ada tugas dalam antrian"
+
+#, php-format
+#~ msgctxt "console"
+#~ msgid "Executing %s task"
+#~ msgid_plural "Executing %s tasks"
+#~ msgstr[0] "Mengeksekusi %s tugas"
+
+#~ msgctxt "console"
+#~ msgid "scheduler in queue to run"
+#~ msgid_plural "schedulers in queue to run"
+#~ msgstr[0] "penjadwal dalam antrian untuk dijalankan"
+
+#, php-format
+#~ msgctxt "console"
+#~ msgid "run every %s seconds"
+#~ msgstr "dijalankan setiap %s detik"
+
+#, php-format
+#~ msgctxt "console"
+#~ msgid "next executed time %s"
+#~ msgstr "waktu eksekusi berikutnya %s"
+
+#~ msgctxt "console"
+#~ msgid "scheduler skipped"
+#~ msgid_plural "schedulers skipped"
+#~ msgstr[0] "penjadwal dilewati"

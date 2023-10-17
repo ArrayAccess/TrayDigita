@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnused */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Scheduler;
@@ -112,6 +113,17 @@ final class Runner
         return $this->executedTime;
     }
 
+    public function getExecutionDuration() : ?float
+    {
+        $start = $this->getExecuteTime();
+        $end = $this->getExecutedTime();
+        if ($start === null || $end === null) {
+            return null;
+        }
+
+        return ($end - $start);
+    }
+
     public function getNormalizeStatus() : int
     {
         return match ($this->status) {
@@ -202,8 +214,10 @@ final class Runner
         try {
             $this->executeTime = $this->createTime();
             $message = $this->task->start($this);
+            $this->status = self::STATUS_SUCCESS;
             $this->executedTime = $this->createTime();
         } catch (Throwable $e) {
+            $this->status = self::STATUS_FAILURE;
             $this->executedTime ??= $this->createTime();
             $message = new Failure($e);
         } finally {
@@ -227,7 +241,7 @@ final class Runner
 
     public function isSuccess(): bool
     {
-        return $this->getStatusCode() === self::STATUS_PROGRESS;
+        return $this->getStatusCode() === self::STATUS_SUCCESS;
     }
 
     public function isSkipped(): bool

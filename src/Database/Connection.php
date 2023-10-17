@@ -10,9 +10,6 @@ use ArrayAccess\TrayDigita\Database\Wrapper\EntityManagerWrapper;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use DateTimeImmutable;
-use DateTimeInterface;
-use DateTimeZone;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
@@ -313,37 +310,6 @@ class Connection implements ContainerIndicateInterface
             // @dispatch(database.afterConfigureDriver)
             $this->dispatchAfter($driver);
         }
-    }
-
-    public function compareDateToSQLTimezone(
-        DateTimeInterface $from,
-        DateTimeInterface $to
-    ): string {
-        $seconds = ($from->getTimestamp() - $to->getTimestamp());
-        return $this->convertOffsetToSQLTimezone($seconds);
-    }
-
-    public function convertDateTimeZoneToSQLTimezone(DateTimeZone $timeZone) : string
-    {
-        return $this->convertDateToSQLTimezone(
-            (new DateTimeImmutable())->setTimezone($timeZone)
-        );
-    }
-
-    public function convertDateToSQLTimezone(DateTimeInterface $date) : string
-    {
-        return $this->convertOffsetToSQLTimezone($date->getOffset());
-    }
-
-    public function convertOffsetToSQLTimezone(int $seconds) : string
-    {
-        $hours = floor($seconds / 3600);
-        $minutes = floor($seconds / 60 % 60);
-        $hours = $hours < 10 && $hours >= 0
-            ? "+0$hours"
-            : ($hours < 0 && $hours > -10 ? "-0" . (-$hours) : "+$hours");
-        $minutes = $minutes < 10 ? "0$minutes" : $minutes;
-        return "$hours:$minutes";
     }
 
     public function getConnection() : DoctrineConnection

@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Database\Wrapper;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Traits\Service\CallStackTraceTrait;
+use ArrayAccess\TrayDigita\Util\Filter\Conversion;
 use DateTimeZone;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
@@ -95,9 +96,7 @@ final class DriverWrapper extends AbstractDriverMiddleware
         $charset = $config['charset'] ?? 'utf8';
         $timezone = $config['timezone'] ?? '+00:00';
         if ($timezone instanceof DateTimeZone) {
-            $timezone = $this
-                ->databaseConnection
-                ->convertDateTimeZoneToSQLTimezone($timezone);
+            $timezone = Conversion::convertDateTimeZoneToSQLTimezone($timezone);
         } elseif (is_string($timezone)) {
             preg_match(
                 '~^([+-])?\s*([0-9]{2})\s*:\s*([0-9]{2})$~',
@@ -110,9 +109,7 @@ final class DriverWrapper extends AbstractDriverMiddleware
             } else {
                 try {
                     $timezone = new DateTimeZone($timezone);
-                    $timezone = $this
-                        ->databaseConnection
-                        ->convertDateTimeZoneToSQLTimezone($timezone);
+                    $timezone = Conversion::convertDateTimeZoneToSQLTimezone($timezone);
                 } catch (Throwable) {
                     $timezone = '+00:00';
                 }

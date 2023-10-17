@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Console\Command\ApplicationChecker;
 
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
+use ArrayAccess\TrayDigita\L10n\Languages\Locale;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -83,12 +84,14 @@ class TranslatorChecker extends AbstractChecker
                 );
         }
 
+        $localeInfo = Locale::getInfo($translator->getLanguage());
         $this->writeIndent(
             $output,
             sprintf(
-                '<info>%s</info> [<comment>%s</comment>]',
+                '<info>%s</info> [<comment>%s</comment>]%s',
                 $this->translateContext('Current Language', 'console'),
-                $translator->getLanguage()
+                $translator->getLanguage(),
+                $localeInfo ? sprintf(' (<info>%s</info>)', $localeInfo['name']) : ''
             ),
             OutputInterface::VERBOSITY_VERBOSE
         );

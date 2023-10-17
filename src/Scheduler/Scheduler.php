@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types=1, ticks=1);
 
 namespace ArrayAccess\TrayDigita\Scheduler;
 
@@ -14,7 +14,11 @@ use ArrayAccess\TrayDigita\Scheduler\Interfaces\RecordLoaderInterface;
 use ArrayAccess\TrayDigita\Scheduler\Interfaces\SchedulerTimeInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
+use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use DateTimeImmutable;
+use DateTimeInterface;
+use Exception;
 use Psr\Container\ContainerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -23,12 +27,14 @@ use Throwable;
 use function array_shift;
 use function call_user_func;
 use function count;
+use function date;
 use function func_get_args;
 use function is_a;
 use function is_array;
 use function is_int;
 use function max;
 use function register_shutdown_function;
+use function reset;
 use function spl_object_hash;
 use function sprintf;
 use function time;
@@ -43,7 +49,8 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
     use ContainerAllocatorTrait {
         setContainer as private setContainerTrait;
     }
-    use ManagerAllocatorTrait;
+    use ManagerAllocatorTrait,
+        TranslatorTrait;
 
     /**
      * @var array<Task>
@@ -64,6 +71,11 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
      * @var array<string, Task>
      */
     private array $skipped = [];
+
+    /**
+     * @var ?array<string, Task>
+     */
+    private ?array $shouldRunning = null;
 
     private ?RecordLoaderInterface $recordLoader = null;
 
@@ -152,7 +164,10 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
         if (!$found) {
             throw new UnsupportedArgumentException(
                 sprintf(
-                    'Callback task must be contain return type or instance of: %s',
+                    $this->translateContext(
+                        'Callback task must be contain return type or instance of: %s',
+                        'scheduler'
+                    ),
                     MessageInterface::class
                 )
             );
@@ -201,7 +216,6 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
             ) {
                 $this->{'previousCode'} = $previous->getStatusCode();
             }
-
             return $this;
         })->call(
             $object,
@@ -215,7 +229,12 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
 
     public function add(Task $scheduler): void
     {
-        $this->queue[spl_object_hash($scheduler)] = $scheduler;
+        // reset on add task
+        $id = spl_object_hash($scheduler);
+        if (!isset($this->queue[$id])) {
+            $this->shouldRunning = null;
+        }
+        $this->queue[$id] = $scheduler;
     }
 
     /**
@@ -239,12 +258,54 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
         return $task;
     }
 
+    /**
+     * @param Task $task
+     * @return ?DateTimeInterface
+     */
+    public function getNextRunDate(Task $task): ?DateTimeInterface
+    {
+        $interval = $task->getInterval();
+        if ($interval instanceof SchedulerTimeInterface) {
+            return $interval->getNextRunDate();
+        }
+        if ($interval === 0) {
+            return null;
+        }
+        $time = time();
+        $record = $this->getRecordLoader()->getRecord($task);
+        $interval = max($interval, Task::MINIMUM_INTERVAL_TIME);
+        $last_time = $record?->getLastExecutionTime()??0;
+        $last  = $time - $last_time;
+        $nextRun = $last_time + $interval;
+        $next  = $time - $nextRun;
+        if ($last_time === 0 || $last < 0 || $next > 0 || Runner::MAXIMUM_RUNNING_TIME <= $last_time) {
+            try {
+                // if not valid add current time + interval
+                return new DateTimeImmutable(date('c', $time + $interval));
+            } catch (Exception) {
+                return (new DateTimeImmutable())->modify("+$interval seconds");
+            }
+        }
+        try {
+            return new DateTimeImmutable(date('c', $nextRun));
+        } catch (Exception) {
+            $interval = $time - $nextRun;
+            return (new DateTimeImmutable())->modify("+$interval seconds");
+        }
+    }
+
     public function shouldRun(Task $task) : bool
     {
         $interval = $task->getInterval();
+        // zero should skipped
         if ($interval === 0) {
             return false;
         }
+
+        if ($this->shouldRunning !== null && isset($this->shouldRunning[spl_object_hash($task)])) {
+            return true;
+        }
+
         $record = $this->getRecordLoader()->getRecord($task);
         $last_time = $record?->getLastExecutionTime()??0;
         $last_status_code = $record?->getStatusCode()??Runner::STATUS_UNKNOWN;
@@ -325,47 +386,101 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
         return isset($this->skipped[spl_object_hash($task)]);
     }
 
+    public function remove(Task $task): void
+    {
+        $id = spl_object_hash($task);
+        if (isset($this->queue[$id])) {
+            $this->shouldRunning = null;
+            unset($this->queue[$id]);
+        }
+    }
+
     /**
+     * @return array{queue: array<string, Task>, skip: array<string, Task>}
+     */
+    public function getQueueProcessed(): array
+    {
+        if ($this->shouldRunning !== null) {
+            return [
+                'queue' => $this->shouldRunning,
+                'skip'  => $this->skipped,
+            ];
+        }
+
+        uasort(
+            $this->queue,
+            function (Task $a, Task $b) {
+                $a = $this->getRecordLoader()->getRecord($a)?->getLastExecutionTime()??[0];
+                $b = $this->getRecordLoader()->getRecord($b)?->getLastExecutionTime()??[0];
+                return $a === $b ? 0 : ($a < $b ? -1 : 1);
+            }
+        );
+
+        $queues = $this->queue;
+        $this->shouldRunning = [];
+        while ($queue = array_shift($queues)) {
+            $id = spl_object_hash($queue);
+            if ($this->shouldRun($queue)) {
+                $this->shouldRunning[$id] = $queue;
+                continue;
+            }
+            $this->skipped[$id] = $queue;
+        }
+        return [
+            'queue' => $this->shouldRunning,
+            'skip' => $this->skipped,
+        ];
+    }
+
+    /**
+     * @param ?int $timeout in seconds. if after processed time greater than time scheduler will stopped
      * @return int
      */
-    public function run(): int
+    public function run(?int $timeout = null): int
     {
         if (($count = count($this->progress))) {
             throw new RuntimeException(
                 sprintf(
-                    'Scheduler is on progress with (%s) %s remaining',
-                    $count,
-                    $count > 1 ? 'tasks' : 'task'
+                    $this->translatePluralContext(
+                        'Scheduler is on progress with (%s) task remaining',
+                        'Scheduler is on progress with (%s) tasks remaining',
+                        $count,
+                        'scheduler'
+                    ),
+                    $count
                 )
             );
         }
 
+        $this->getQueueProcessed();
         try {
-            uasort(
-                $this->queue,
-                function (Task $a, Task $b) {
-                    $a = $this->getRecordLoader()->getRecord($a)?->getLastExecutionTime()??[0];
-                    $b = $this->getRecordLoader()->getRecord($b)?->getLastExecutionTime()??[0];
-                    return $a === $b ? 0 : ($a < $b ? -1 : 1);
-                }
-            );
+            $startTime = time();
+            $timedOut = is_int($timeout) && $timeout > 0
+                ? $startTime + $timeout
+                : null;
             $manager = $this->getManager();
             $processed = 0;
-            while ($queue = array_shift($this->queue)) {
-                $id = spl_object_hash($queue);
-                $record = $this
-                    ->getRecordLoader()
-                    ->getRecord($queue);
-
-                // create current time
-                $time = time();
-                // add in progress
+            if ($this->shouldRunning === null) {
+                $this->getQueueProcessed();
+                $this->shouldRunning ??= [];
+            }
+            foreach ($this->shouldRunning as $id => $queue) {
+                unset($this->queue[$id], $this->shouldRunning[$id]);
                 $this->progress[$id] = $queue;
-                $record ??= (new LastRecord(
+            }
+            // reset
+            $this->shouldRunning = null;
+            foreach ($this->progress as $id => $queue) {
+                $time = time();
+                if ($timedOut !== null && $time > $timedOut) {
+                    break;
+                }
+                // create current time
+                $record = $this->getRecordLoader()->getRecord($queue)??new LastRecord(
                     $queue,
                     $time,
                     null
-                ));
+                );
                 // increment
                 $processed++;
                 // new runner
@@ -375,37 +490,10 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
                     $record,
                     $time
                 );
-
-                if (!$this->shouldRun($queue)) {
-                    $this->skipped[$id] = $queue;
-                    $manager?->dispatch(
-                        'scheduler.beforeSkipTask',
-                        $runner,
-                        $time,
-                        $this
-                    );
-                    try {
-                        $runner->skip();
-                        $manager?->dispatch(
-                            'scheduler.skipTask',
-                            $runner,
-                            $time,
-                            $this
-                        );
-                    } finally {
-                        $manager?->dispatch(
-                            'scheduler.afterSkipTask',
-                            $runner,
-                            $time,
-                            $this
-                        );
-                    }
-                    continue;
-                }
-
                 $ended = false;
                 $manager?->dispatch(
-                    'scheduler.beforeProcessTask',
+                    'scheduler.beforeProcessing',
+                    $queue,
                     $runner,
                     $time,
                     $this
@@ -429,7 +517,6 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
                                 $this->{'status'} = Runner::STATUS_EXITED;
                             })->call($runner);
                         }
-
                         unset($this->progress[$id]);
                         $this->finished[$id] = $runner;
                         $this->getRecordLoader()->storeExitRunner(
@@ -437,41 +524,49 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
                             $this
                         );
                         $manager?->dispatch(
-                            'scheduler.afterProcessTask',
+                            'scheduler.afterProcessing',
+                            $queue,
+                            $runner,
+                            $time,
+                            $this
+                        );
+                        $manager?->dispatch(
+                            'scheduler.exiting',
+                            $queue,
                             $runner,
                             $time,
                             $this
                         );
                     }
                 );
+
                 try {
                     // do process
                     $runner->process();
-                    $manager?->dispatch(
-                        'scheduler.processTask',
-                        $runner,
-                        $time,
-                        $this
-                    );
+                    $ended = true;
+                    $manager?->dispatch('scheduler.processing', $queue, $runner, $time, $this);
                 } finally {
                     $ended = true;
                     // add records execution time & status
-                    $this->getRecordLoader()->finish(
-                        $time,
-                        $runner,
-                        $this
-                    );
+                    $this->getRecordLoader()->finish($time, $runner, $this);
                     // done
                     $this->finished[$id] = $runner;
                     // remove progress
                     unset($this->progress[$id]);
                     $manager?->dispatch(
-                        'scheduler.afterProcessTask',
+                        'scheduler.afterProcessing',
+                        $queue,
                         $runner,
                         $time,
                         $this
                     );
                 }
+            }
+
+            // put back if time out
+            foreach ($this->progress as $id => $queue) {
+                unset($this->progress[$id]);
+                $this->queue[$id] = $queue;
             }
         } finally {
             return $processed;
