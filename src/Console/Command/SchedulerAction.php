@@ -8,7 +8,6 @@ use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
-use ArrayAccess\TrayDigita\Scheduler\Abstracts\Task;
 use ArrayAccess\TrayDigita\Scheduler\Runner;
 use ArrayAccess\TrayDigita\Scheduler\Scheduler;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
