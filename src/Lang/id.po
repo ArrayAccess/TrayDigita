@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-19 03:02+0700\n"
-"PO-Revision-Date: 2023-10-19 03:02+0700\n"
+"POT-Creation-Date: 2023-10-19 03:54+0700\n"
+"PO-Revision-Date: 2023-10-19 03:55+0700\n"
 "Last-Translator: \n"
 "Language-Team: ArrayAccess\n"
 "Language: id\n"
@@ -1233,11 +1233,11 @@ msgstr "Kata sandi basis data"
 
 #: Console/Command/DatabaseChecker.php:1695
 #: Console/Command/SchedulerAction.php:121
-#: Console/Command/SchedulerAction.php:204
-#: Console/Command/SchedulerAction.php:215
-#: Console/Command/SchedulerAction.php:226
-#: Console/Command/SchedulerAction.php:274
-#: Console/Command/SchedulerAction.php:309
+#: Console/Command/SchedulerAction.php:205
+#: Console/Command/SchedulerAction.php:216
+#: Console/Command/SchedulerAction.php:228
+#: Console/Command/SchedulerAction.php:276
+#: Console/Command/SchedulerAction.php:311
 msgctxt "console"
 msgid "Unknown"
 msgstr "Tidak diketahui"
@@ -1714,25 +1714,25 @@ msgid "Object scheduler is not valid"
 msgstr "Object penjadwal tidak sah"
 
 #: Console/Command/SchedulerAction.php:109
-#: Console/Command/SchedulerAction.php:257
+#: Console/Command/SchedulerAction.php:259
 msgctxt "console"
 msgid "Id"
 msgstr "Id"
 
 #: Console/Command/SchedulerAction.php:110
-#: Console/Command/SchedulerAction.php:258
+#: Console/Command/SchedulerAction.php:260
 msgctxt "console"
 msgid "Name"
 msgstr "Nama"
 
 #: Console/Command/SchedulerAction.php:111
-#: Console/Command/SchedulerAction.php:259
+#: Console/Command/SchedulerAction.php:261
 msgctxt "console"
 msgid "Status"
 msgstr "Status"
 
 #: Console/Command/SchedulerAction.php:112
-#: Console/Command/SchedulerAction.php:260
+#: Console/Command/SchedulerAction.php:262
 msgctxt "console"
 msgid "Last Execution"
 msgstr "Eksekusi Terakhir"
@@ -1758,68 +1758,68 @@ msgid "Are you sure to execute scheduler ?"
 msgid_plural "Are you sure to execute schedulers ?"
 msgstr[0] "Apakah Anda yakin untuk menjalankan penjadwal?"
 
-#: Console/Command/SchedulerAction.php:200
+#: Console/Command/SchedulerAction.php:201
 msgctxt "console"
 msgid "Success"
 msgstr "Berhasil"
 
-#: Console/Command/SchedulerAction.php:201
+#: Console/Command/SchedulerAction.php:202
 msgctxt "console"
 msgid "Exited"
 msgstr "Keluar"
 
-#: Console/Command/SchedulerAction.php:202
+#: Console/Command/SchedulerAction.php:203
 msgctxt "console"
 msgid "Stopped"
 msgstr "Dihentikan"
 
-#: Console/Command/SchedulerAction.php:203
+#: Console/Command/SchedulerAction.php:204
 msgctxt "console"
 msgid "Failure"
 msgstr "Kegagalan"
 
-#: Console/Command/SchedulerAction.php:233
 #: Console/Command/SchedulerAction.php:235
-#: Console/Command/SchedulerAction.php:282
-#: Console/Command/SchedulerAction.php:316
-#: Console/Command/SchedulerAction.php:362
+#: Console/Command/SchedulerAction.php:237
+#: Console/Command/SchedulerAction.php:284
+#: Console/Command/SchedulerAction.php:318
+#: Console/Command/SchedulerAction.php:364
 msgctxt "console"
 msgid "Skipped"
 msgstr "Dilewati"
 
-#: Console/Command/SchedulerAction.php:261
+#: Console/Command/SchedulerAction.php:263
 msgctxt "console"
 msgid "Next Run Date"
 msgstr "Tanggal Pengoperasian Berikutnya"
 
-#: Console/Command/SchedulerAction.php:283
-#: Console/Command/SchedulerAction.php:369
+#: Console/Command/SchedulerAction.php:285
+#: Console/Command/SchedulerAction.php:371
 msgctxt "console"
 msgid "Need To Execute"
 msgstr "Perlu Dieksekusi"
 
-#: Console/Command/SchedulerAction.php:298
-#: Console/Command/SchedulerAction.php:376
+#: Console/Command/SchedulerAction.php:300
+#: Console/Command/SchedulerAction.php:378
 msgctxt "console"
 msgid "Finished"
 msgstr "Diselesaikan"
 
-#: Console/Command/SchedulerAction.php:324
+#: Console/Command/SchedulerAction.php:326
 msgctxt "console"
 msgid "No Schedulers Registered"
 msgstr "Tidak Ada Penjadwal Terdaftar"
 
-#: Console/Command/SchedulerAction.php:339
+#: Console/Command/SchedulerAction.php:341
 msgctxt "console"
 msgid "Total"
 msgstr "Total"
 
-#: Console/Command/SchedulerAction.php:348
+#: Console/Command/SchedulerAction.php:350
 msgctxt "console"
 msgid "Using Timezone"
 msgstr "Menggunakan Zona Waktu"
 
-#: Console/Command/SchedulerAction.php:355
+#: Console/Command/SchedulerAction.php:357
 msgctxt "console"
 msgid "Timezone Offset"
 msgstr "Pengimbangan Zona Waktu"
