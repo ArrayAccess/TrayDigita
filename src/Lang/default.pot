@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-17 12:28+0700\n"
+"POT-Creation-Date: 2023-10-19 03:02+0700\n"
 "PO-Revision-Date: 2023-09-24 19:00+0700\n"
 "Last-Translator: ArrayAccess\n"
 "Language-Team: ArrayAccess\n"
@@ -611,17 +611,17 @@ msgctxt "console"
 msgid "Press %s to exit."
 msgstr ""
 
-#: Console/Command/ChecksumGenerator.php:59
+#: Console/Command/ChecksumGenerator.php:60
 msgctxt "console"
 msgid "Create list of core file checksums."
 msgstr ""
 
-#: Console/Command/ChecksumGenerator.php:68
+#: Console/Command/ChecksumGenerator.php:69
 msgctxt "console"
 msgid "Display checksums on terminal without writing to disk"
 msgstr ""
 
-#: Console/Command/ChecksumGenerator.php:78
+#: Console/Command/ChecksumGenerator.php:79
 #, php-format
 msgctxt "console"
 msgid "The %s creating checksum files on %s directory."
@@ -634,43 +634,43 @@ msgid "Files will be put in directory: %s"
 msgstr ""
 
 #: Console/Command/ChecksumGenerator.php:133
-#: Console/Command/CommandGenerator.php:329
-#: Console/Command/ControllerGenerator.php:292
+#: Console/Command/CommandGenerator.php:333
+#: Console/Command/ControllerGenerator.php:296
 #: Console/Command/DatabaseChecker.php:1255
 #: Console/Command/DatabaseChecker.php:1397
-#: Console/Command/DatabaseEventGenerator.php:329
-#: Console/Command/EntityGenerator.php:325
-#: Console/Command/MiddlewareGenerator.php:323
-#: Console/Command/ModuleGenerator.php:344
-#: Console/Command/SchedulerGenerator.php:349
+#: Console/Command/DatabaseEventGenerator.php:331
+#: Console/Command/EntityGenerator.php:327
+#: Console/Command/MiddlewareGenerator.php:328
+#: Console/Command/ModuleGenerator.php:347
+#: Console/Command/SchedulerGenerator.php:355
 msgctxt "console"
 msgid "Are you sure to continue (Yes/No)?"
 msgstr ""
 
 #: Console/Command/ChecksumGenerator.php:148
-#: Console/Command/CommandGenerator.php:342
-#: Console/Command/ControllerGenerator.php:305
+#: Console/Command/CommandGenerator.php:346
+#: Console/Command/ControllerGenerator.php:309
 #: Console/Command/DatabaseChecker.php:1270
 #: Console/Command/DatabaseChecker.php:1412
-#: Console/Command/DatabaseEventGenerator.php:342
-#: Console/Command/EntityGenerator.php:338
-#: Console/Command/MiddlewareGenerator.php:338
-#: Console/Command/ModuleGenerator.php:359
-#: Console/Command/SchedulerGenerator.php:362
+#: Console/Command/DatabaseEventGenerator.php:344
+#: Console/Command/EntityGenerator.php:340
+#: Console/Command/MiddlewareGenerator.php:343
+#: Console/Command/ModuleGenerator.php:362
+#: Console/Command/SchedulerGenerator.php:368
 msgctxt "console"
 msgid "Please enter valid answer! (Yes / No)"
 msgstr ""
 
 #: Console/Command/ChecksumGenerator.php:160
-#: Console/Command/CommandGenerator.php:386
-#: Console/Command/ControllerGenerator.php:347
+#: Console/Command/CommandGenerator.php:390
+#: Console/Command/ControllerGenerator.php:351
 #: Console/Command/DatabaseChecker.php:1282
 #: Console/Command/DatabaseChecker.php:1426
-#: Console/Command/DatabaseEventGenerator.php:386
-#: Console/Command/EntityGenerator.php:383
-#: Console/Command/MiddlewareGenerator.php:382
-#: Console/Command/ModuleGenerator.php:403
-#: Console/Command/SchedulerGenerator.php:408
+#: Console/Command/DatabaseEventGenerator.php:388
+#: Console/Command/EntityGenerator.php:385
+#: Console/Command/MiddlewareGenerator.php:387
+#: Console/Command/ModuleGenerator.php:406
+#: Console/Command/SchedulerGenerator.php:414
 msgctxt "console"
 msgid "Operation cancelled!"
 msgstr ""
@@ -685,23 +685,23 @@ msgctxt "console"
 msgid "Source"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:79
+#: Console/Command/CommandGenerator.php:81
 msgctxt "console"
 msgid "Generate command class."
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:85
-#: Console/Command/ControllerGenerator.php:88
-#: Console/Command/DatabaseEventGenerator.php:89
-#: Console/Command/EntityGenerator.php:85
-#: Console/Command/MiddlewareGenerator.php:85
-#: Console/Command/ModuleGenerator.php:85
-#: Console/Command/SchedulerGenerator.php:85
+#: Console/Command/CommandGenerator.php:87
+#: Console/Command/ControllerGenerator.php:90
+#: Console/Command/DatabaseEventGenerator.php:91
+#: Console/Command/EntityGenerator.php:86
+#: Console/Command/MiddlewareGenerator.php:88
+#: Console/Command/ModuleGenerator.php:86
+#: Console/Command/SchedulerGenerator.php:89
 msgctxt "console"
 msgid "Print generated class file only"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:90
+#: Console/Command/CommandGenerator.php:92
 #, php-format
 msgctxt "console"
 msgid ""
@@ -711,23 +711,23 @@ msgid ""
 "Command only support single class name.\n"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:174
+#: Console/Command/CommandGenerator.php:176
 msgctxt "console"
 msgid "Please enter command class name"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:181
+#: Console/Command/CommandGenerator.php:183
 msgctxt "console"
 msgid "Please enter valid command class name!"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:192
+#: Console/Command/CommandGenerator.php:194
 #, php-format
 msgctxt "console"
 msgid "Command [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:203
+#: Console/Command/CommandGenerator.php:205
 #, php-format
 msgctxt "console"
 msgid ""
@@ -735,72 +735,72 @@ msgid ""
 "namespaced!"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:214
+#: Console/Command/CommandGenerator.php:216
 #, php-format
 msgctxt "console"
 msgid "Command [%s] is too long! Must be less or equal 128 characters"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:224
+#: Console/Command/CommandGenerator.php:226
 #, php-format
 msgctxt "console"
 msgid "Command [%s] exist"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:254
+#: Console/Command/CommandGenerator.php:258
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect command directory"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:268
-#: Console/Command/ControllerGenerator.php:238
-#: Console/Command/DatabaseEventGenerator.php:269
-#: Console/Command/EntityGenerator.php:253
-#: Console/Command/MiddlewareGenerator.php:262
-#: Console/Command/ModuleGenerator.php:268
-#: Console/Command/SchedulerGenerator.php:272
+#: Console/Command/CommandGenerator.php:272
+#: Console/Command/ControllerGenerator.php:242
+#: Console/Command/DatabaseEventGenerator.php:271
+#: Console/Command/EntityGenerator.php:255
+#: Console/Command/MiddlewareGenerator.php:267
+#: Console/Command/ModuleGenerator.php:271
+#: Console/Command/SchedulerGenerator.php:278
 #, php-format
 msgctxt "console"
 msgid "%s generator only support in interactive mode"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:292
+#: Console/Command/CommandGenerator.php:296
 #, php-format
 msgctxt "console"
 msgid "Command Name  : %s"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:305
+#: Console/Command/CommandGenerator.php:309
 #, php-format
 msgctxt "console"
 msgid "Command Class : %s"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:317
+#: Console/Command/CommandGenerator.php:321
 #, php-format
 msgctxt "console"
 msgid "Command File  : %s"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:364
+#: Console/Command/CommandGenerator.php:368
 #, php-format
 msgctxt "console"
 msgid "%s Could not save command!"
 msgstr ""
 
-#: Console/Command/CommandGenerator.php:375
+#: Console/Command/CommandGenerator.php:379
 #, php-format
 msgctxt "console"
 msgid "%s Command successfully created!"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:80
+#: Console/Command/ControllerGenerator.php:82
 msgctxt "console"
 msgid "Generate controller class."
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:94
+#: Console/Command/ControllerGenerator.php:96
 #, php-format
 msgctxt "console"
 msgid ""
@@ -810,65 +810,65 @@ msgid ""
 "Will converted into namespace separator"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:160
+#: Console/Command/ControllerGenerator.php:162
 msgctxt "console"
 msgid "Please enter controller name"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:166
+#: Console/Command/ControllerGenerator.php:168
 msgctxt "console"
 msgid "Please enter valid controller name!"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:173
+#: Console/Command/ControllerGenerator.php:175
 #, php-format
 msgctxt "console"
 msgid "Controller [%s] is too long! Must be less or equal 5 namespaces"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:184
+#: Console/Command/ControllerGenerator.php:186
 #, php-format
 msgctxt "console"
 msgid "Controller [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:194
+#: Console/Command/ControllerGenerator.php:196
 #, php-format
 msgctxt "console"
 msgid "Controller [%s] exist"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:224
+#: Console/Command/ControllerGenerator.php:228
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect controller directory"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:260
+#: Console/Command/ControllerGenerator.php:264
 #, php-format
 msgctxt "console"
 msgid "Controller Name  : %s"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:271
+#: Console/Command/ControllerGenerator.php:275
 #, php-format
 msgctxt "console"
 msgid "Controller Class : %s"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:282
+#: Console/Command/ControllerGenerator.php:286
 #, php-format
 msgctxt "console"
 msgid "Controller File  : %s"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:325
+#: Console/Command/ControllerGenerator.php:329
 #, php-format
 msgctxt "console"
 msgid "%s Could not save controller!"
 msgstr ""
 
-#: Console/Command/ControllerGenerator.php:336
+#: Console/Command/ControllerGenerator.php:340
 #, php-format
 msgctxt "console"
 msgid "%s Controller successfully created!"
@@ -1197,12 +1197,12 @@ msgid "Database password"
 msgstr ""
 
 #: Console/Command/DatabaseChecker.php:1695
-#: Console/Command/SchedulerAction.php:122
-#: Console/Command/SchedulerAction.php:205
-#: Console/Command/SchedulerAction.php:216
-#: Console/Command/SchedulerAction.php:227
-#: Console/Command/SchedulerAction.php:275
-#: Console/Command/SchedulerAction.php:310
+#: Console/Command/SchedulerAction.php:121
+#: Console/Command/SchedulerAction.php:204
+#: Console/Command/SchedulerAction.php:215
+#: Console/Command/SchedulerAction.php:226
+#: Console/Command/SchedulerAction.php:274
+#: Console/Command/SchedulerAction.php:309
 msgctxt "console"
 msgid "Unknown"
 msgstr ""
@@ -1287,12 +1287,12 @@ msgctxt "console"
 msgid "Contains changed database schema, you can check with command :"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:83
+#: Console/Command/DatabaseEventGenerator.php:85
 msgctxt "console"
 msgid "Generate database event class."
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:94
+#: Console/Command/DatabaseEventGenerator.php:96
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1302,23 +1302,23 @@ msgid ""
 "Database Event only support single class name."
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:178
+#: Console/Command/DatabaseEventGenerator.php:180
 msgctxt "console"
 msgid "Please enter database event class name"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:184
+#: Console/Command/DatabaseEventGenerator.php:186
 msgctxt "console"
 msgid "Please enter valid database event class name!"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:193
+#: Console/Command/DatabaseEventGenerator.php:195
 #, php-format
 msgctxt "console"
 msgid "Event [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:204
+#: Console/Command/DatabaseEventGenerator.php:206
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1326,60 +1326,60 @@ msgid ""
 "namespaced!"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:215
+#: Console/Command/DatabaseEventGenerator.php:217
 #, php-format
 msgctxt "console"
 msgid "Database event [%s] is too long! Must be less or equal 128 characters"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:225
+#: Console/Command/DatabaseEventGenerator.php:227
 #, php-format
 msgctxt "console"
 msgid "Database event [%s] exist"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:255
+#: Console/Command/DatabaseEventGenerator.php:257
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect database event directory"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:292
+#: Console/Command/DatabaseEventGenerator.php:294
 #, php-format
 msgctxt "console"
 msgid "Database Event Name : %s"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:305
+#: Console/Command/DatabaseEventGenerator.php:307
 #, php-format
 msgctxt "console"
 msgid "DatabaseEvent Class : %s"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:317
+#: Console/Command/DatabaseEventGenerator.php:319
 #, php-format
 msgctxt "console"
 msgid "DatabaseEvent File  : %s"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:364
+#: Console/Command/DatabaseEventGenerator.php:366
 #, php-format
 msgctxt "console"
 msgid "%s Could not save databaseEvent!"
 msgstr ""
 
-#: Console/Command/DatabaseEventGenerator.php:375
+#: Console/Command/DatabaseEventGenerator.php:377
 #, php-format
 msgctxt "console"
 msgid "%s DatabaseEvent successfully created!"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:79
+#: Console/Command/EntityGenerator.php:80
 msgctxt "console"
 msgid "Generate entity class."
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:90
+#: Console/Command/EntityGenerator.php:91
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1388,82 +1388,82 @@ msgid ""
 "Entity will use prefix namespace with %s\n"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:173
+#: Console/Command/EntityGenerator.php:174
 msgctxt "console"
 msgid "Please enter entity name"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:179
+#: Console/Command/EntityGenerator.php:180
 msgctxt "console"
 msgid "Please enter valid entity name!"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:188
+#: Console/Command/EntityGenerator.php:189
 #, php-format
 msgctxt "console"
 msgid "Entity [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:199
+#: Console/Command/EntityGenerator.php:200
 #, php-format
 msgctxt "console"
 msgid "Table name [%s] is too long! Must be less or equal 64 characters"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:209
+#: Console/Command/EntityGenerator.php:210
 #, php-format
 msgctxt "console"
 msgid "Entity [%s] exist"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:239
+#: Console/Command/EntityGenerator.php:241
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect entity directory"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:276
+#: Console/Command/EntityGenerator.php:278
 #, php-format
 msgctxt "console"
 msgid "Entity Name  : %s"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:288
+#: Console/Command/EntityGenerator.php:290
 #, php-format
 msgctxt "console"
 msgid "Table Name  : %s"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:301
+#: Console/Command/EntityGenerator.php:303
 #, php-format
 msgctxt "console"
 msgid "Entity Class : %s"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:313
+#: Console/Command/EntityGenerator.php:315
 #, php-format
 msgctxt "console"
 msgid "Entity File  : %s"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:361
+#: Console/Command/EntityGenerator.php:363
 #, php-format
 msgctxt "console"
 msgid "%s Could not save entity!"
 msgstr ""
 
-#: Console/Command/EntityGenerator.php:372
+#: Console/Command/EntityGenerator.php:374
 #, php-format
 msgctxt "console"
 msgid "%s Entity successfully created!"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:79
+#: Console/Command/MiddlewareGenerator.php:82
 msgctxt "console"
 msgid "Generate middleware class."
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:90
+#: Console/Command/MiddlewareGenerator.php:93
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1472,17 +1472,17 @@ msgid ""
 "Middleware will use prefix namespace with %s\n"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:174
+#: Console/Command/MiddlewareGenerator.php:177
 msgctxt "console"
 msgid "Please enter middleware class name"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:183
+#: Console/Command/MiddlewareGenerator.php:186
 msgctxt "console"
 msgid "Please enter valid middleware class name!"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:191
+#: Console/Command/MiddlewareGenerator.php:194
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1490,60 +1490,60 @@ msgid ""
 "namespaced!"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:205
+#: Console/Command/MiddlewareGenerator.php:208
 #, php-format
 msgctxt "console"
 msgid "Middleware [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:216
+#: Console/Command/MiddlewareGenerator.php:219
 #, php-format
 msgctxt "console"
 msgid "Middleware [%s] exist"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:248
+#: Console/Command/MiddlewareGenerator.php:253
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect middleware directory"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:284
+#: Console/Command/MiddlewareGenerator.php:289
 #, php-format
 msgctxt "console"
 msgid "Middleware Name  : %s"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:298
+#: Console/Command/MiddlewareGenerator.php:303
 #, php-format
 msgctxt "console"
 msgid "Middleware Class : %s"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:310
+#: Console/Command/MiddlewareGenerator.php:315
 #, php-format
 msgctxt "console"
 msgid "Middleware File  : %s"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:360
+#: Console/Command/MiddlewareGenerator.php:365
 #, php-format
 msgctxt "console"
 msgid "%s Could not save middleware!"
 msgstr ""
 
-#: Console/Command/MiddlewareGenerator.php:371
+#: Console/Command/MiddlewareGenerator.php:376
 #, php-format
 msgctxt "console"
 msgid "%s Middleware successfully created!"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:79
+#: Console/Command/ModuleGenerator.php:80
 msgctxt "console"
 msgid "Generate module class."
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:90
+#: Console/Command/ModuleGenerator.php:91
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1553,23 +1553,23 @@ msgid ""
 "Module only support single class name.\n"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:174
+#: Console/Command/ModuleGenerator.php:175
 msgctxt "console"
 msgid "Please enter module class name"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:181
+#: Console/Command/ModuleGenerator.php:182
 msgctxt "console"
 msgid "Please enter valid module class name!"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:192
+#: Console/Command/ModuleGenerator.php:193
 #, php-format
 msgctxt "console"
 msgid "Module [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:203
+#: Console/Command/ModuleGenerator.php:204
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1577,199 +1577,199 @@ msgid ""
 "namespaced!"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:214
+#: Console/Command/ModuleGenerator.php:215
 #, php-format
 msgctxt "console"
 msgid "Module [%s] is too long! Must be less or equal 128 characters"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:224
+#: Console/Command/ModuleGenerator.php:225
 #, php-format
 msgctxt "console"
 msgid "Module [%s] exist"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:254
+#: Console/Command/ModuleGenerator.php:257
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect module directory"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:293
+#: Console/Command/ModuleGenerator.php:296
 #, php-format
 msgctxt "console"
 msgid "Module Name  : %s"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:307
+#: Console/Command/ModuleGenerator.php:310
 #, php-format
 msgctxt "console"
 msgid "Module Class : %s"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:319
+#: Console/Command/ModuleGenerator.php:322
 #, php-format
 msgctxt "console"
 msgid "Module Namespace : %s"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:331
+#: Console/Command/ModuleGenerator.php:334
 #, php-format
 msgctxt "console"
 msgid "Module File  : %s"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:381
+#: Console/Command/ModuleGenerator.php:384
 #, php-format
 msgctxt "console"
 msgid "%s Could not save module!"
 msgstr ""
 
-#: Console/Command/ModuleGenerator.php:392
+#: Console/Command/ModuleGenerator.php:395
 #, php-format
 msgctxt "console"
 msgid "%s Module successfully created!"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:51
+#: Console/Command/SchedulerAction.php:50
 msgctxt "console"
 msgid "List or run scheduler."
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:58
+#: Console/Command/SchedulerAction.php:57
 msgctxt "console"
 msgid "Run the pending schedulers"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:64
+#: Console/Command/SchedulerAction.php:63
 #, php-format
 msgctxt "console"
 msgid "The %s help you to list & run scheduler"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:86
+#: Console/Command/SchedulerAction.php:85
 msgctxt "console"
 msgid "Object scheduler is not valid"
+msgstr ""
+
+#: Console/Command/SchedulerAction.php:109
+#: Console/Command/SchedulerAction.php:257
+msgctxt "console"
+msgid "Id"
 msgstr ""
 
 #: Console/Command/SchedulerAction.php:110
 #: Console/Command/SchedulerAction.php:258
 msgctxt "console"
-msgid "Id"
+msgid "Name"
 msgstr ""
 
 #: Console/Command/SchedulerAction.php:111
 #: Console/Command/SchedulerAction.php:259
 msgctxt "console"
-msgid "Name"
+msgid "Status"
 msgstr ""
 
 #: Console/Command/SchedulerAction.php:112
 #: Console/Command/SchedulerAction.php:260
 msgctxt "console"
-msgid "Status"
-msgstr ""
-
-#: Console/Command/SchedulerAction.php:113
-#: Console/Command/SchedulerAction.php:261
-msgctxt "console"
 msgid "Last Execution"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:114
+#: Console/Command/SchedulerAction.php:113
 msgctxt "console"
 msgid "Execution Time"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:118
+#: Console/Command/SchedulerAction.php:117
 msgctxt "console"
 msgid "Waiting"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:137
+#: Console/Command/SchedulerAction.php:136
 msgctxt "console"
 msgid "No Schedulers Waiting For Execution"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:155
+#: Console/Command/SchedulerAction.php:154
 msgctxt "console"
 msgid "Are you sure to execute scheduler ?"
 msgid_plural "Are you sure to execute schedulers ?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: Console/Command/SchedulerAction.php:201
+#: Console/Command/SchedulerAction.php:200
 msgctxt "console"
 msgid "Success"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:202
+#: Console/Command/SchedulerAction.php:201
 msgctxt "console"
 msgid "Exited"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:203
+#: Console/Command/SchedulerAction.php:202
 msgctxt "console"
 msgid "Stopped"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:204
+#: Console/Command/SchedulerAction.php:203
 msgctxt "console"
 msgid "Failure"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:234
-#: Console/Command/SchedulerAction.php:236
-#: Console/Command/SchedulerAction.php:283
-#: Console/Command/SchedulerAction.php:317
-#: Console/Command/SchedulerAction.php:363
+#: Console/Command/SchedulerAction.php:233
+#: Console/Command/SchedulerAction.php:235
+#: Console/Command/SchedulerAction.php:282
+#: Console/Command/SchedulerAction.php:316
+#: Console/Command/SchedulerAction.php:362
 msgctxt "console"
 msgid "Skipped"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:262
+#: Console/Command/SchedulerAction.php:261
 msgctxt "console"
 msgid "Next Run Date"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:284
-#: Console/Command/SchedulerAction.php:370
+#: Console/Command/SchedulerAction.php:283
+#: Console/Command/SchedulerAction.php:369
 msgctxt "console"
 msgid "Need To Execute"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:299
-#: Console/Command/SchedulerAction.php:377
+#: Console/Command/SchedulerAction.php:298
+#: Console/Command/SchedulerAction.php:376
 msgctxt "console"
 msgid "Finished"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:325
+#: Console/Command/SchedulerAction.php:324
 msgctxt "console"
 msgid "No Schedulers Registered"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:340
+#: Console/Command/SchedulerAction.php:339
 msgctxt "console"
 msgid "Total"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:349
+#: Console/Command/SchedulerAction.php:348
 msgctxt "console"
 msgid "Using Timezone"
 msgstr ""
 
-#: Console/Command/SchedulerAction.php:356
+#: Console/Command/SchedulerAction.php:355
 msgctxt "console"
 msgid "Timezone Offset"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:79
+#: Console/Command/SchedulerGenerator.php:83
 msgctxt "console"
 msgid "Generate scheduler class."
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:90
+#: Console/Command/SchedulerGenerator.php:94
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1780,23 +1780,23 @@ msgid ""
 "\n"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:174
+#: Console/Command/SchedulerGenerator.php:178
 msgctxt "console"
 msgid "Please enter scheduler class name"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:181
+#: Console/Command/SchedulerGenerator.php:185
 msgctxt "console"
 msgid "Please enter valid scheduler class name!"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:192
+#: Console/Command/SchedulerGenerator.php:196
 #, php-format
 msgctxt "console"
 msgid "Scheduler [%s] is invalid! class name contain reserved keyword!"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:203
+#: Console/Command/SchedulerGenerator.php:207
 #, php-format
 msgctxt "console"
 msgid ""
@@ -1804,55 +1804,55 @@ msgid ""
 "namespaced!"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:214
+#: Console/Command/SchedulerGenerator.php:218
 #, php-format
 msgctxt "console"
 msgid "Scheduler [%s] is too long! Must be less or equal 128 characters"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:225
+#: Console/Command/SchedulerGenerator.php:229
 #, php-format
 msgctxt "console"
 msgid "Scheduler [%s] exist"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:258
+#: Console/Command/SchedulerGenerator.php:264
 #, php-format
 msgctxt "console"
 msgid "%s Could not detect scheduler directory"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:300
+#: Console/Command/SchedulerGenerator.php:306
 #, php-format
 msgctxt "console"
 msgid "Scheduler Name     : %s"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:312
+#: Console/Command/SchedulerGenerator.php:318
 #, php-format
 msgctxt "console"
 msgid "Scheduler Identity : %s"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:325
+#: Console/Command/SchedulerGenerator.php:331
 #, php-format
 msgctxt "console"
 msgid "Scheduler Class : %s"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:337
+#: Console/Command/SchedulerGenerator.php:343
 #, php-format
 msgctxt "console"
 msgid "Scheduler File  : %s"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:386
+#: Console/Command/SchedulerGenerator.php:392
 #, php-format
 msgctxt "console"
 msgid "%s Could not save scheduler!"
 msgstr ""
 
-#: Console/Command/SchedulerGenerator.php:397
+#: Console/Command/SchedulerGenerator.php:403
 #, php-format
 msgctxt "console"
 msgid "%s Scheduler successfully created!"
