@@ -33,6 +33,7 @@ use function spl_object_hash;
 use function sprintf;
 use function str_replace;
 use function str_starts_with;
+use function ucfirst;
 
 abstract class AbstractHelper
 {
@@ -341,11 +342,32 @@ abstract class AbstractHelper
      */
     final public static function register(BaseKernel $kernel) : bool
     {
+        $manager = $kernel->getManager();
         $helper = new static($kernel);
-        $kernelId = spl_object_hash($kernel);
-        $id = $helper::class;
-        self::$registeredKernelServices[$id][$kernelId] ??= 0;
-        self::$registeredKernelServices[$id][$kernelId] += $helper->doRegister() ? 1 : 0;
+        $mode = ucfirst($helper->getMode());
+        try {
+            $manager?->dispatch(
+                "kernel.beforeRegisterService$mode",
+                $kernel,
+                $helper
+            );
+            $kernelId = spl_object_hash($kernel);
+            $id = $helper::class;
+            self::$registeredKernelServices[$id][$kernelId] ??= 0;
+            self::$registeredKernelServices[$id][$kernelId] += $helper->doRegister() ? 1 : 0;
+            $manager?->dispatch(
+                "kernel.registerService$mode",
+                $kernel,
+                $helper
+            );
+        } finally {
+            $manager?->dispatch(
+                "kernel.afterRegisterService$mode",
+                $kernel,
+                $helper
+            );
+        }
+
         return true;
     }
 

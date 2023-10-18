@@ -92,7 +92,8 @@ class KernelDatabaseEventLoader extends AbstractLoaderNameBased
             'kernel.beforeRegisterDatabaseEvent',
             $realPath,
             $eventsCollector,
-            $this->kernel
+            $this->kernel,
+            $this
         );
         $result = null;
         try {
@@ -103,7 +104,8 @@ class KernelDatabaseEventLoader extends AbstractLoaderNameBased
                     'kernel.registerDatabaseEvent',
                     $realPath,
                     $eventsCollector,
-                    $this->kernel
+                    $this->kernel,
+                    $this
                 );
                 return;
             }
@@ -143,6 +145,7 @@ class KernelDatabaseEventLoader extends AbstractLoaderNameBased
                 $realPath,
                 $eventsCollector,
                 $this->kernel,
+                $this,
                 $result
             );
         } finally {
@@ -152,6 +155,7 @@ class KernelDatabaseEventLoader extends AbstractLoaderNameBased
                 $realPath,
                 $eventsCollector,
                 $this->kernel,
+                $this,
                 $result
             );
         }

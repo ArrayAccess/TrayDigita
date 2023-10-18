@@ -114,7 +114,8 @@ class KernelSchedulerLoader extends AbstractLoaderNameBased
                     'kernel.registerScheduler',
                     $realPath,
                     $scheduler,
-                    $this->kernel
+                    $this->kernel,
+                    $this
                 );
                 return;
             }
@@ -155,6 +156,7 @@ class KernelSchedulerLoader extends AbstractLoaderNameBased
                 $realPath,
                 $scheduler,
                 $this->kernel,
+                $this,
                 $result
             );
         } finally {
@@ -167,6 +169,7 @@ class KernelSchedulerLoader extends AbstractLoaderNameBased
                 $realPath,
                 $scheduler,
                 $this->kernel,
+                $this,
                 $result
             );
         }

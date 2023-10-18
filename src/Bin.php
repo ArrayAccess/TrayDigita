@@ -179,10 +179,11 @@ final class Bin
         // add event on kernelAfter dispatch
         $manager->attach(
             'httpKernel.afterDispatch',
-            static function () use ($console, &$exitCode, &$run) {
+            static function ($arg) use ($console, &$exitCode, &$run) {
                 $run = true;
                 $console->setAutoExit(false);
                 $exitCode = $console->run();
+                return $arg;
             }
         );
 

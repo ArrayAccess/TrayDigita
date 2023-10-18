@@ -577,19 +577,19 @@ abstract class BaseKernel implements
                 static fn() => true
             );
         }
-        try {
-            if ($manager
-                && true === $environment->get('profiling')
-            ) {
-                try {
-                    $managerProfiler = ContainerHelper::decorate(ManagerProfiler::class, $container);
-                    $managerProfiler->registerProviders();
-                    $manager->setDispatchListener($managerProfiler);
-                } catch (Throwable) {
-                }
+        if ($manager
+            && true === $environment->get('profiling')
+        ) {
+            try {
+                $managerProfiler = ContainerHelper::decorate(ManagerProfiler::class, $container);
+                $managerProfiler->registerProviders();
+                $manager->setDispatchListener($managerProfiler);
+            } catch (Throwable) {
             }
+        }
 
-            // @dispatch(kernel.beforeInit)
+        try {
+            // @dispatch(kernel.beforeInitConfig)
             $manager->dispatch('kernel.beforeInitConfig');
 
             /*! TIMEZONE */
@@ -794,8 +794,10 @@ abstract class BaseKernel implements
             } catch (Throwable) {
                 $debugMiddleware = new DebuggingMiddleware($container);
             }
+            // @dispatch(kernel.initConfig)
             $manager->dispatch('kernel.initConfig', $this);
         } finally {
+            // @dispatch(kernel.afterInitConfig)
             $manager->dispatch('kernel.afterInitConfig', $this);
         }
 
@@ -808,8 +810,6 @@ abstract class BaseKernel implements
         // add routing middleware on before module
         // to make routing executed on last
         $httpKernel->addMiddleware($routing);
-        // registering debug middleware
-        $httpKernel->addMiddleware($debugMiddleware);
 
         /*! SERVICES */
         // do register modules
@@ -826,6 +826,9 @@ abstract class BaseKernel implements
         KernelDatabaseEventLoader::register($this);
         // do register commands
         KernelCommandLoader::register($this);
+
+        // registering debug middleware at the first middleware
+        $httpKernel->addMiddleware($debugMiddleware);
 
         return $this;
     }

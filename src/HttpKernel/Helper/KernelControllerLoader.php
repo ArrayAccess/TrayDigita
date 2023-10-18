@@ -94,7 +94,8 @@ class KernelControllerLoader extends AbstractLoaderNameBased
             'kernel.beforeRegisterController',
             $realPath,
             $this->getRouter(),
-            $this->kernel
+            $this->kernel,
+            $this
         );
         $result = null;
         try {
@@ -105,7 +106,8 @@ class KernelControllerLoader extends AbstractLoaderNameBased
                     'kernel.registerController',
                     $realPath,
                     $this->getRouter(),
-                    $this->kernel
+                    $this->kernel,
+                    $this
                 );
                 return;
             }
@@ -145,6 +147,7 @@ class KernelControllerLoader extends AbstractLoaderNameBased
                 $realPath,
                 $this->getRouter(),
                 $this->kernel,
+                $this,
                 $result
             );
         } finally {
@@ -154,6 +157,7 @@ class KernelControllerLoader extends AbstractLoaderNameBased
                 $realPath,
                 $this->getRouter(),
                 $this->kernel,
+                $this,
                 $result
             );
         }

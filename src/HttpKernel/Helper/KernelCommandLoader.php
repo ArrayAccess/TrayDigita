@@ -105,7 +105,8 @@ class KernelCommandLoader extends AbstractLoaderNameBased
             'kernel.beforeRegisterCommand',
             $realPath,
             $application,
-            $this->kernel
+            $this->kernel,
+            $this
         );
         $result = null;
         try {
@@ -116,7 +117,8 @@ class KernelCommandLoader extends AbstractLoaderNameBased
                     'kernel.registerCommand',
                     $realPath,
                     $application,
-                    $this->kernel
+                    $this->kernel,
+                    $this
                 );
                 return;
             }
@@ -157,6 +159,7 @@ class KernelCommandLoader extends AbstractLoaderNameBased
                 $realPath,
                 $application,
                 $this->kernel,
+                $this,
                 $result
             );
         } finally {
@@ -169,6 +172,7 @@ class KernelCommandLoader extends AbstractLoaderNameBased
                 $realPath,
                 $application,
                 $this->kernel,
+                $this,
                 $result
             );
         }

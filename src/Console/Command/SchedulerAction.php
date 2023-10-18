@@ -188,6 +188,7 @@ class SchedulerAction extends Command implements ContainerAllocatorInterface, Ma
             'scheduler.beforeProcessing',
             function ($task, Runner $runner) use ($progressBar) {
                 $progressBar->setMessage($runner->getTask()->getName());
+                return $task;
             }
         );
 
@@ -214,6 +215,7 @@ class SchedulerAction extends Command implements ContainerAllocatorInterface, Ma
                         round($total, 5)
                     ) : $this->translateContext('Unknown', 'console')
                 ];
+                return $task;
             }
         );
 

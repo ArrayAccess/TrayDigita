@@ -99,19 +99,25 @@ class KernelModuleLoader extends AbstractLoaderNameBased
         $manager = $this->getManager();
         $manager?->dispatch(
             'kernel.beforeInitModules',
-            $this->kernel
+            $modules,
+            $this->kernel,
+            $this
         );
         try {
             // init modules
             $modules->initModules();
             $manager?->dispatch(
                 'kernel.initModules',
-                $this->kernel
+                $modules,
+                $this->kernel,
+                $this
             );
         } finally {
             $manager?->dispatch(
                 'kernel.afterInitModules',
-                $this->kernel
+                $modules,
+                $this->kernel,
+                $this
             );
         }
     }
@@ -180,7 +186,8 @@ class KernelModuleLoader extends AbstractLoaderNameBased
             'kernel.beforeRegisterModule',
             $realPath,
             $modules,
-            $this->kernel
+            $this->kernel,
+            $this
         );
         $result = null;
         $baseName = $splFileInfo->getBasename();
@@ -194,6 +201,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
                     $realPath,
                     $modules,
                     $this->kernel,
+                    $this,
                     $result
                 );
                 return;
@@ -214,6 +222,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
                             $realPath,
                             $modules,
                             $this->kernel,
+                            $this,
                             $result
                         );
                         $this->saveCacheItemFileDirectory($splFileInfo, $targetFile);
@@ -244,6 +253,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
                     $realPath,
                     $modules,
                     $this->kernel,
+                    $this,
                     $result
                 );
                 return;
@@ -256,6 +266,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
                 $realPath,
                 $modules,
                 $this->kernel,
+                $this,
                 null
             );
         } finally {
@@ -274,6 +285,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
                 $realPath,
                 $modules,
                 $this->kernel,
+                $this,
                 $result
             );
         }

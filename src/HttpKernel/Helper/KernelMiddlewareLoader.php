@@ -14,6 +14,10 @@ use Throwable;
 use function class_exists;
 use function is_bool;
 use function is_dir;
+use function ksort;
+use function trim;
+use function ucfirst;
+use const SORT_DESC;
 
 class KernelMiddlewareLoader extends AbstractLoaderNameBased
 {
@@ -68,6 +72,90 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
     }
 
     /**
+     * @var array<int, array<string, AbstractMiddleware>>
+     */
+    private array $middlewares = [];
+
+    protected function postProcess(): void
+    {
+        ksort($this->middlewares, SORT_DESC);
+        $manager = $this->getManager();
+        foreach ($this->middlewares as $priority => $middlewares) {
+            unset($this->middlewares[$priority]);
+            foreach ($middlewares as $middleware) {
+                try {
+                    // @dispatch(kernel.beforeRegisterMiddleware)
+                    $manager?->dispatch(
+                        'kernel.beforeRegisterMiddleware',
+                        $this->kernel->getHttpKernel(),
+                        $this->kernel,
+                        $this,
+                        $middleware
+                    );
+                    $this->kernel->getHttpKernel()->addMiddleware($middleware);
+                    // @dispatch(kernel.registerMiddleware)
+                    $manager?->dispatch(
+                        'kernel.registerMiddleware',
+                        $this->kernel->getHttpKernel(),
+                        $this->kernel,
+                        $this,
+                        $middleware
+                    );
+                } finally {
+                    // @dispatch(kernel.afterRegisterMiddleware)
+                    $manager?->dispatch(
+                        'kernel.afterRegisterMiddleware',
+                        $this->kernel->getHttpKernel(),
+                        $this->kernel,
+                        $this,
+                        $middleware
+                    );
+                }
+            }
+        }
+    }
+
+    protected function doRegister(): bool
+    {
+        // preprocess
+        $this->preProcess();
+        $files = $this->getFileLists();
+        if (!$files) {
+            return false;
+        }
+
+        $mode = ucfirst(trim($this->getMode()));
+        $manager = $this->getManager();
+        $mode && $manager?->dispatch(
+            "kernel.beforeRegister$mode",
+            $this->kernel->getHttpKernel(),
+            $this->kernel,
+            $this
+        );
+        try {
+            foreach ($files as $list) {
+                $this->loadService($list);
+            }
+            // postprocess
+            $this->postProcess();
+            $mode && $manager?->dispatch(
+                "kernel.register$mode",
+                $this->kernel->getHttpKernel(),
+                $this->kernel,
+                $this
+            );
+        } finally {
+            $mode && $manager?->dispatch(
+                "kernel.afterRegister$mode",
+                $this->kernel->getHttpKernel(),
+                $this->kernel,
+                $this
+            );
+        }
+        return true;
+    }
+
+    /**
      * @param SplFileInfo $splFileInfo
      * @return void
      */
@@ -79,12 +167,13 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
         }
         $realPath = $splFileInfo->getRealPath();
         $manager = $this->getManager();
-        // @dispatch(kernel.beforeRegisterMiddleware)
+        // @dispatch(kernel.beforeLoadMiddleware)
         $manager?->dispatch(
-            'kernel.beforeRegisterMiddleware',
+            'kernel.beforeLoadMiddleware',
             $realPath,
             $this->kernel->getHttpKernel(),
-            $this->kernel
+            $this->kernel,
+            $this
         );
         $result = null;
         try {
@@ -92,10 +181,11 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
             if (!$className) {
                 // @dispatch(kernel.registerMiddleware)
                 $manager?->dispatch(
-                    'kernel.registerMiddleware',
+                    'kernel.loadMiddleware',
                     $realPath,
                     $this->kernel->getHttpKernel(),
-                    $this->kernel
+                    $this->kernel,
+                    $this
                 );
                 return;
             }
@@ -117,7 +207,9 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
                     && $ref->getFileName() === $splFileInfo->getRealPath()
                 ) {
                     $result = ContainerHelper::resolveCallable($className, $this->getContainer());
-                    $this->kernel->getHttpKernel()->addMiddleware($result);
+                    if ($result instanceof AbstractMiddleware) {
+                        $this->middlewares[$result->getPriority()][] = $result;
+                    }
                 }
             } catch (Throwable $e) {
                 $this->getLogger()?->debug(
@@ -130,24 +222,26 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
                     ]
                 );
             }
-            // @dispatch(kernel.registerMiddleware)
+            // @dispatch(kernel.loadMiddleware)
             $manager?->dispatch(
-                'kernel.registerMiddleware',
+                'kernel.loadMiddleware',
                 $realPath,
                 $this->kernel->getHttpKernel(),
                 $this->kernel,
+                $this,
                 $result
             );
         } finally {
             if ($result) {
                 $this->injectDependency($result);
             }
-            // @dispatch(kernel.afterRegisterMiddleware)
+            // @dispatch(kernel.afterLoadMiddleware)
             $manager?->dispatch(
-                'kernel.afterRegisterMiddleware',
+                'kernel.afterLoadMiddleware',
                 $realPath,
                 $this->kernel->getHttpKernel(),
                 $this->kernel,
+                $this,
                 $result
             );
         }
