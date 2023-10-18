@@ -13,8 +13,10 @@ use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Throwable;
 use function class_exists;
+use function is_bool;
+use function is_dir;
 
-final class KernelModuleLoader extends AbstractLoaderNameBased
+class KernelModuleLoader extends AbstractLoaderNameBased
 {
     private ?Modules $modules = null;
 
@@ -24,11 +26,14 @@ final class KernelModuleLoader extends AbstractLoaderNameBased
     }
 
     /**
-     * @return Finder
+     * @return ?Finder
      */
-    protected function getFileLists(): Finder
+    protected function getFileLists(): ?Finder
     {
-        return $this
+        $directory = $this->getDirectory();
+        return !$directory || ! is_dir($directory)
+            ? null
+            : $this
             ->createFinder($this->getDirectory(), 0, '/^[_A-za-z]([a-zA-Z0-9]+)?$/')
             ->directories();
     }
@@ -44,9 +49,10 @@ final class KernelModuleLoader extends AbstractLoaderNameBased
     protected function getDirectory(): ?string
     {
         $namespace = $this->getNameSpace();
-        return $namespace
+        $directory =  $namespace
             ? $this->kernel->getRegisteredDirectories()[$namespace]??null
             : null;
+        return $directory && is_dir($directory) ? $directory : null;
     }
 
     protected function getMode(): string
@@ -69,9 +75,16 @@ final class KernelModuleLoader extends AbstractLoaderNameBased
 
     protected function isProcessable(): bool
     {
-        return $this->getNameSpace()
+        $processable = $this->getNameSpace()
             && $this->getDirectory()
             && $this->getModules();
+        if ($processable) {
+            $canBeProcess = $this
+                ->getManager()
+                ->dispatch('kernel.moduleLoader', true);
+            $processable = is_bool($canBeProcess) ? $canBeProcess : true;
+        }
+        return $processable;
     }
 
     /**

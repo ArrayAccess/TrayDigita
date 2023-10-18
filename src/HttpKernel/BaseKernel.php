@@ -97,7 +97,7 @@ abstract class BaseKernel implements
     /**
      * @var array<string, string>
      */
-    private array $registeredDirectories = [];
+    protected array $registeredDirectories = [];
 
     /**
      * @var array|string[]
@@ -324,24 +324,19 @@ abstract class BaseKernel implements
     private bool $ready = false;
 
     /*! NAMESPACE */
-    private ?string $appNameSpace = null;
-    private ?string $controllerNameSpace = null;
-    private ?string $entityNamespace = null;
-    private ?string $middlewareNamespace = null;
-    private ?string $migrationNameSpace = null;
-    private ?string $moduleNameSpace = null;
-    private ?string $databaseEventNameSpace = null;
-    private ?string $commandNameSpace = null;
-    private ?string $schedulerNamespace = null;
+    protected ?string $appNameSpace = null;
+    protected ?string $controllerNameSpace = null;
+    protected ?string $entityNamespace = null;
+    protected ?string $middlewareNamespace = null;
+    protected ?string $migrationNameSpace = null;
+    protected ?string $moduleNameSpace = null;
+    protected ?string $databaseEventNameSpace = null;
+    protected ?string $commandNameSpace = null;
+    protected ?string $schedulerNamespace = null;
 
 
     /*! STATUS */
     private bool $providerRegistered = false;
-    private bool $moduleRegistered = false;
-    private bool $schedulerRegistered = false;
-
-    private bool $commandRegistered = false;
-    private bool $serviceRegistered = false;
 
     private ?string $rootDirectory = null;
 
@@ -822,6 +817,7 @@ abstract class BaseKernel implements
         // do register schedulers
         KernelSchedulerLoader::register($this);
 
+        /*! APPS */
         // do register middlewares
         KernelMiddlewareLoader::register($this);
         // do register controllers

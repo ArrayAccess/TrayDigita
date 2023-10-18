@@ -9,18 +9,22 @@ use function ucwords;
 abstract class AbstractLoaderNameBased extends AbstractHelper
 {
     /**
-     * @return Finder
+     * @return ?Finder
      */
-    abstract protected function getFileLists() : Finder;
+    abstract protected function getFileLists() : ?Finder;
 
-    protected function doRegister(): void
+    protected function doRegister(): bool
     {
         if (!$this->isProcessable()) {
-            return;
+            return false;
         }
 
         // preprocess
         $this->preProcess();
+        $files = $this->getFileLists();
+        if (!$files) {
+            return false;
+        }
 
         $mode = ucwords(trim($this->getMode()));
         $manager = $this->getManager();
@@ -29,7 +33,7 @@ abstract class AbstractLoaderNameBased extends AbstractHelper
             $this->kernel
         );
         try {
-            foreach ($this->getFileLists() as $list) {
+            foreach ($files as $list) {
                 $this->loadService($list);
             }
 
@@ -46,5 +50,6 @@ abstract class AbstractLoaderNameBased extends AbstractHelper
             // postprocess
             $this->postProcess();
         }
+        return true;
     }
 }

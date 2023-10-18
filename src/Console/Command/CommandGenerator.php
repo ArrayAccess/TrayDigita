@@ -7,7 +7,8 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
-use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -51,10 +52,16 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
     private ?string $commandDir = null;
     private string $commandNamespace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $commandNamespace = Decorator::kernel()?->getCommandNamespace();
-        if (!$commandNamespace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->commandNamespace = $kernel->getCommandNameSpace();
+            $this->commandDir = $kernel->getRegisteredDirectories()[$this->commandNamespace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +70,9 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $commandNamespace = "$appNameSpace\\Commands\\";
+            $this->commandNamespace = "$appNameSpace\\Commands\\";
         }
-        $this->commandNamespace = $commandNamespace;
-        parent::__construct($name);
-    }
 
-    protected function configure() : void
-    {
         $namespace = rtrim($this->commandNamespace, '\\');
         $this
             ->setName('app:generate:command')
@@ -239,12 +241,14 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = ContainerHelper::getNull(Config::class, $container)??new Config();
-        $path = $config->get('path');
-        $path = $path instanceof Config ? $path : null;
-        $commandDir = $path?->get('command');
-        if (is_string($commandDir) && is_dir($commandDir)) {
-            $this->commandDir = realpath($commandDir)??$commandDir;
+        if (!$this->commandDir) {
+            $config = ContainerHelper::getNull(Config::class, $container) ?? new Config();
+            $path = $config->get('path');
+            $path = $path instanceof Config ? $path : null;
+            $commandDir = $path?->get('command');
+            if (is_string($commandDir) && is_dir($commandDir)) {
+                $this->commandDir = realpath($commandDir) ?? $commandDir;
+            }
         }
 
         if (!$this->commandDir) {

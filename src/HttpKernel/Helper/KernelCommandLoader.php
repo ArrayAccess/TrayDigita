@@ -13,8 +13,10 @@ use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Throwable;
 use function class_exists;
+use function is_bool;
+use function is_dir;
 
-final class KernelCommandLoader extends AbstractLoaderNameBased
+class KernelCommandLoader extends AbstractLoaderNameBased
 {
     private ?Application $scheduler = null;
 
@@ -24,16 +26,19 @@ final class KernelCommandLoader extends AbstractLoaderNameBased
     }
 
     /**
-     * @return Finder
+     * @return ?Finder
      */
-    protected function getFileLists(): Finder
+    protected function getFileLists(): ?Finder
     {
-        return $this
+        $directory = $this->getDirectory();
+        return !$directory || ! is_dir($directory)
+            ? null
+            : $this
             ->createFinder($this->getDirectory(), 0, '/^[_A-za-z]([a-zA-Z0-9]+)?\.php$/')
             ->files();
     }
 
-    protected function getScheduler() : ?Application
+    protected function getApplication() : ?Application
     {
         return $this->scheduler ??= ContainerHelper::service(
             Application::class,
@@ -43,22 +48,23 @@ final class KernelCommandLoader extends AbstractLoaderNameBased
 
     protected function getManager(): ?ManagerInterface
     {
-        return $this->getScheduler()
+        return $this->getApplication()
             ?->getManager()??parent::getManager();
     }
 
     protected function getContainer(): ?ContainerInterface
     {
-        return $this->getScheduler()
+        return $this->getApplication()
             ?->getContainer()??parent::getContainer();
     }
 
     protected function getDirectory(): ?string
     {
         $namespace = $this->getNameSpace();
-        return $namespace
+        $directory =  $namespace
             ? $this->kernel->getRegisteredDirectories()[$namespace]??null
             : null;
+        return $directory && is_dir($directory) ? $directory : null;
     }
 
     protected function getMode(): string
@@ -68,9 +74,16 @@ final class KernelCommandLoader extends AbstractLoaderNameBased
 
     protected function isProcessable(): bool
     {
-        return $this->getNameSpace()
+        $processable = $this->getNameSpace()
             && $this->getDirectory()
-            && $this->getScheduler();
+            && $this->getApplication();
+        if ($processable) {
+            $canBeProcess = $this
+                ->getManager()
+                ->dispatch('kernel.commandLoader', true);
+            $processable = is_bool($canBeProcess) ? $canBeProcess : true;
+        }
+        return $processable;
     }
 
     /**
@@ -81,7 +94,7 @@ final class KernelCommandLoader extends AbstractLoaderNameBased
         SplFileInfo $splFileInfo
     ): void {
         if (!$splFileInfo->isFile()
-            || ! ($application = $this->getScheduler())
+            || ! ($application = $this->getApplication())
         ) {
             return;
         }

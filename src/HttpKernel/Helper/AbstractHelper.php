@@ -321,7 +321,19 @@ abstract class AbstractHelper
         }
     }
 
-    private static array $registeredKernel = [];
+    /**
+     * @var array<string, array<string, int>>
+     */
+    private static array $registeredKernelServices = [];
+
+    /**
+     * @return array<string, string<int>>
+     * @noinspection PhpUnused
+     */
+    public static function getRegisteredKernelServices(): array
+    {
+        return self::$registeredKernelServices;
+    }
 
     /**
      * @param BaseKernel $kernel
@@ -330,13 +342,10 @@ abstract class AbstractHelper
     final public static function register(BaseKernel $kernel) : bool
     {
         $helper = new static($kernel);
-        $id = $helper::class ."::" .spl_object_hash($kernel);
-        // prevent duplicate registration
-        if (isset(self::$registeredKernel[$id])) {
-            return false;
-        }
-        self::$registeredKernel[$id] = true;
-        $helper->doRegister();
+        $kernelId = spl_object_hash($kernel);
+        $id = $helper::class;
+        self::$registeredKernelServices[$id][$kernelId] ??= 0;
+        self::$registeredKernelServices[$id][$kernelId] += $helper->doRegister() ? 1 : 0;
         return true;
     }
 
@@ -444,7 +453,7 @@ abstract class AbstractHelper
     /**
      * Doing register
      */
-    abstract protected function doRegister();
+    abstract protected function doRegister() : bool;
 
     abstract protected function loadService(SplFileInfo $splFileInfo);
 }

@@ -18,6 +18,7 @@ use ArrayAccess\TrayDigita\Traits\Responder\HtmlResponderFactoryTrait;
 use ArrayAccess\TrayDigita\Traits\Responder\JsonResponderFactoryTrait;
 use ArrayAccess\TrayDigita\Traits\View\ViewTrait;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use ArrayAccess\TrayDigita\Util\Filter\DataType;
 use JsonSerializable;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -183,16 +184,10 @@ abstract class AbstractController implements ControllerInterface
     ) : ResponseInterface {
         $code =  $code === 301 ? 301 : 302;
         $response ??= $this->getResponseFactory()->createResponse($code);
-        return $response
+        return DataType::appendNoCache($response)
             ->withHeader(
                 'Location',
                 (string) $uri
-            )->withHeader(
-                'Pragma',
-                'no-cache'
-            )->withHeader(
-                'Cache-control',
-                'no-store, no-cache, must-revalidate, max-age=0'
             );
     }
 

@@ -12,8 +12,10 @@ use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Throwable;
 use function class_exists;
+use function is_bool;
+use function is_dir;
 
-final class KernelControllerLoader extends AbstractLoaderNameBased
+class KernelControllerLoader extends AbstractLoaderNameBased
 {
     protected function getNameSpace(): ?string
     {
@@ -21,13 +23,15 @@ final class KernelControllerLoader extends AbstractLoaderNameBased
     }
 
     /**
-     * @return Finder
+     * @return ?Finder
      */
-    protected function getFileLists(): Finder
+    protected function getFileLists(): ?Finder
     {
-        // override
         $maxDepth = 20;
-        return $this
+        $directory = $this->getDirectory();
+        return !$directory || ! is_dir($directory)
+            ? null
+            : $this
             ->createFinder($this->getDirectory(), "<= $maxDepth", '/^[_A-za-z]([a-zA-Z0-9]+)?\.php$/')
             ->files();
     }
@@ -43,9 +47,10 @@ final class KernelControllerLoader extends AbstractLoaderNameBased
     protected function getDirectory(): ?string
     {
         $namespace = $this->getNameSpace();
-        return $namespace
+        $directory =  $namespace
             ? $this->kernel->getRegisteredDirectories()[$namespace]??null
             : null;
+        return $directory && is_dir($directory) ? $directory : null;
     }
 
     protected function getContainer(): ContainerInterface
@@ -60,9 +65,16 @@ final class KernelControllerLoader extends AbstractLoaderNameBased
 
     protected function isProcessable(): bool
     {
-        return ! $this->kernel->getConfigError()
-            && $this->getNameSpace()
-            && $this->getDirectory();
+        $processable = $this->getNameSpace()
+            && $this->getDirectory()
+            && !$this->kernel->getConfigError();
+        if ($processable) {
+            $canBeProcess = $this
+                ->getManager()
+                ->dispatch('kernel.controllerLoader', true);
+            $processable = is_bool($canBeProcess) ? $canBeProcess : true;
+        }
+        return $processable;
     }
 
     /**

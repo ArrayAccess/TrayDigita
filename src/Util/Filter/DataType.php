@@ -289,4 +289,36 @@ class DataType
 
         return $data;
     }
+
+    /**
+     * Append no cache response
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
+    public static function appendNoIndex(ResponseInterface $response): ResponseInterface
+    {
+        return $response
+            ->withHeader(
+                'X-Robots-Tag',
+                'noindex, nofollow, noodp, noydir, noarchive'
+            );
+    }
+
+    /**
+     * Add no cache response
+     *
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
+    public static function appendNoCache(ResponseInterface $response) : ResponseInterface
+    {
+        return $response
+            ->withHeader(
+                'Pragma',
+                'no-cache'
+            )->withHeader(
+                'Cache-control',
+                'no-store, no-cache, must-revalidate, max-age=0'
+            );
+    }
 }

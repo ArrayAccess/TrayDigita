@@ -5,20 +5,21 @@ namespace ArrayAccess\TrayDigita\Console\Command;
 
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\UnsupportedRuntimeException;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
-use Composer\Autoload\ClassLoader;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use ReflectionClass;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Throwable;
 use function basename;
 use function date;
 use function dirname;
@@ -91,17 +92,16 @@ class ChecksumGenerator extends Command
                 'Application should be run in CLI mode'
             );
         }
-        $srcDirectory = dirname(__DIR__, 2);
-        try {
-            $ref = new ReflectionClass(ClassLoader::class);
-            $checksumDirectory = dirname($ref->getFileName(), 3)
-                . DIRECTORY_SEPARATOR
-                . 'checksums';
-        } catch (Throwable) {
-            $checksumDirectory = dirname($srcDirectory)
-                . DIRECTORY_SEPARATOR
-                . 'checksums';
+        $kernel = ContainerHelper::use(KernelInterface::class, $this->getContainer());
+        if ($kernel instanceof BaseKernel) {
+            $rootDirectory = $kernel->getRootDirectory();
+        } else {
+            $rootDirectory = PossibleRoot::getPossibleRootDirectory();
         }
+        $srcDirectory = dirname(__DIR__, 2);
+        $checksumDirectory = $rootDirectory
+            . DIRECTORY_SEPARATOR
+            . 'checksums';
 
         $io = new SymfonyStyle($input, $output);
         // $input->setInteractive(true);

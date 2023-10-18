@@ -7,7 +7,8 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
-use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -51,10 +52,16 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
     private ?string $entityDir = null;
     private string $entityNamespace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $entityNamespace = Decorator::kernel()?->getEntityNamespace();
-        if (!$entityNamespace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->entityNamespace = $kernel->getEntityNamespace();
+            $this->entityDir = $kernel->getRegisteredDirectories()[$this->entityNamespace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +70,8 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $entityNamespace = "$appNameSpace\\Entities\\";
+            $this->entityNamespace = "$appNameSpace\\Entities\\";
         }
-        $this->entityNamespace = $entityNamespace;
-        parent::__construct($name);
-    }
-
-    protected function configure() : void
-    {
         $namespace = rtrim($this->entityNamespace, '\\');
         $this
             ->setName('app:generate:entity')
@@ -224,14 +225,15 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = ContainerHelper::use(Config::class, $container)??new Config();
-        $path = $config->get('path');
-        $path = $path instanceof Config ? $path : null;
-        $entityDir = $path?->get('entity');
-        if (is_string($entityDir) && is_dir($entityDir)) {
-            $this->entityDir = realpath($entityDir)??$entityDir;
+        if (!$this->entityDir) {
+            $config = ContainerHelper::use(Config::class, $container) ?? new Config();
+            $path = $config->get('path');
+            $path = $path instanceof Config ? $path : null;
+            $entityDir = $path?->get('entity');
+            if (is_string($entityDir) && is_dir($entityDir)) {
+                $this->entityDir = realpath($entityDir) ?? $entityDir;
+            }
         }
-
         if (!$this->entityDir) {
             $output->writeln(
                 sprintf(

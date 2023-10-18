@@ -7,7 +7,8 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
-use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -49,12 +50,19 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
         TranslatorTrait;
 
     private ?string $controllerDir = null;
+
     private string $controllerNameSpace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $controllerNameSpace = Decorator::kernel()?->getControllerNameSpace();
-        if (!$controllerNameSpace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->controllerNameSpace = $kernel->getControllerNameSpace();
+            $this->controllerDir = $kernel->getRegisteredDirectories()[$this->controllerNameSpace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +71,8 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $controllerNameSpace = "$appNameSpace\\Controllers\\";
+            $this->controllerNameSpace = "$appNameSpace\\Controllers\\";
         }
-        $this->controllerNameSpace = $controllerNameSpace;
-        parent::__construct($name);
-    }
-
-    protected function configure() : void
-    {
         $namespace = rtrim($this->controllerNameSpace, '\\');
         $this
             ->setName('app:generate:controller')
@@ -209,12 +211,14 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = ContainerHelper::getNull(Config::class, $container)??new Config();
-        $path = $config->get('path');
-        $path = $path instanceof Config ? $path : null;
-        $controllerDir = $path?->get('controller');
-        if (is_string($controllerDir) && is_dir($controllerDir)) {
-            $this->controllerDir = realpath($controllerDir)??$controllerDir;
+        if (!$this->controllerDir) {
+            $config = ContainerHelper::getNull(Config::class, $container) ?? new Config();
+            $path = $config->get('path');
+            $path = $path instanceof Config ? $path : null;
+            $controllerDir = $path?->get('controller');
+            if (is_string($controllerDir) && is_dir($controllerDir)) {
+                $this->controllerDir = realpath($controllerDir) ?? $controllerDir;
+            }
         }
 
         if (!$this->controllerDir) {

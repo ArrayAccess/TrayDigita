@@ -7,7 +7,9 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -49,12 +51,19 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
         TranslatorTrait;
 
     private ?string $schedulerDir = null;
+
     private string $schedulerNamespace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $schedulerNamespace = Decorator::kernel()?->getSchedulerNamespace();
-        if (!$schedulerNamespace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->schedulerNamespace = $kernel->getSchedulerNamespace();
+            $this->schedulerDir = $kernel->getRegisteredDirectories()[$this->schedulerNamespace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +72,9 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $schedulerNamespace = "$appNameSpace\\Schedulers\\";
+            $this->schedulerNamespace = "$appNameSpace\\Schedulers\\";
         }
-        $this->schedulerNamespace = $schedulerNamespace;
-        parent::__construct($name);
-    }
 
-    protected function configure() : void
-    {
         $namespace = rtrim($this->schedulerNamespace, '\\');
         $this
             ->setName('app:generate:scheduler')
@@ -242,13 +246,15 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = ContainerHelper::use(Config::class, $container)
-            ??new Config();
-        $path = $config->get('path');
-        $path = $path instanceof Config ? $path : null;
-        $schedulerDir = $path?->get('scheduler');
-        if (is_string($schedulerDir) && is_dir($schedulerDir)) {
-            $this->schedulerDir = realpath($schedulerDir)??$schedulerDir;
+        if (!$this->schedulerDir) {
+            $config = ContainerHelper::use(Config::class, $container)
+                ?? new Config();
+            $path = $config->get('path');
+            $path = $path instanceof Config ? $path : null;
+            $schedulerDir = $path?->get('scheduler');
+            if (is_string($schedulerDir) && is_dir($schedulerDir)) {
+                $this->schedulerDir = realpath($schedulerDir) ?? $schedulerDir;
+            }
         }
 
         if (!$this->schedulerDir) {

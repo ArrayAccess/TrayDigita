@@ -7,7 +7,9 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -49,12 +51,19 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
         TranslatorTrait;
 
     private ?string $middlewareDir = null;
+
     private string $middlewareNamespace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $middlewareNamespace = Decorator::kernel()?->getMiddlewareNamespace();
-        if (!$middlewareNamespace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->middlewareNamespace = $kernel->getMiddlewareNamespace();
+            $this->middlewareDir = $kernel->getRegisteredDirectories()[$this->middlewareNamespace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +72,8 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $middlewareNamespace = "$appNameSpace\\Middlewares\\";
+            $this->middlewareNamespace = "$appNameSpace\\Middlewares\\";
         }
-        $this->middlewareNamespace = $middlewareNamespace;
-        parent::__construct($name);
-    }
-
-    protected function configure() : void
-    {
         $namespace = rtrim($this->middlewareNamespace, '\\');
         $this
             ->setName('app:generate:middleware')
@@ -233,12 +236,14 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = ContainerHelper::use(Config::class, $container)??new Config();
-        $path = $config->get('path');
-        $path = $path instanceof Config ? $path : null;
-        $middlewareDir = $path?->get('middleware');
-        if (is_string($middlewareDir) && is_dir($middlewareDir)) {
-            $this->middlewareDir = realpath($middlewareDir)??$middlewareDir;
+        if (!$this->middlewareDir) {
+            $config = ContainerHelper::use(Config::class, $container) ?? new Config();
+            $path = $config->get('path');
+            $path = $path instanceof Config ? $path : null;
+            $middlewareDir = $path?->get('middleware');
+            if (is_string($middlewareDir) && is_dir($middlewareDir)) {
+                $this->middlewareDir = realpath($middlewareDir) ?? $middlewareDir;
+            }
         }
 
         if (!$this->middlewareDir) {

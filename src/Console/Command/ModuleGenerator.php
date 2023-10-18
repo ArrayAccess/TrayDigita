@@ -7,7 +7,8 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
-use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -51,10 +52,16 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
     private ?string $moduleDir = null;
     private string $moduleNamespace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $moduleNamespace = Decorator::kernel()?->getModuleNamespace();
-        if (!$moduleNamespace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->moduleNamespace = $kernel->getControllerNameSpace();
+            $this->moduleDir = $kernel->getRegisteredDirectories()[$this->moduleNamespace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +70,8 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $moduleNamespace = "$appNameSpace\\Modules\\";
+            $this->moduleNamespace = "$appNameSpace\\Modules\\";
         }
-        $this->moduleNamespace = $moduleNamespace;
-        parent::__construct($name);
-    }
-
-    protected function configure() : void
-    {
         $namespace = rtrim($this->moduleNamespace, '\\');
         $this
             ->setName('app:generate:module')
@@ -239,12 +240,14 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        $config = ContainerHelper::use(Config::class, $container)??new Config();
-        $path = $config->get('path');
-        $path = $path instanceof Config ? $path : null;
-        $moduleDir = $path?->get('module');
-        if (is_string($moduleDir) && is_dir($moduleDir)) {
-            $this->moduleDir = realpath($moduleDir)??$moduleDir;
+        if (!$this->moduleDir) {
+            $config = ContainerHelper::use(Config::class, $container) ?? new Config();
+            $path = $config->get('path');
+            $path = $path instanceof Config ? $path : null;
+            $moduleDir = $path?->get('module');
+            if (is_string($moduleDir) && is_dir($moduleDir)) {
+                $this->moduleDir = realpath($moduleDir) ?? $moduleDir;
+            }
         }
 
         if (!$this->moduleDir) {

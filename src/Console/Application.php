@@ -203,26 +203,36 @@ class Application extends SymfonyConsole implements
         if ((debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]['class']??null) !== __CLASS__) {
             return;
         }
-        $this->configureDBCommands();
-        foreach ($this->factoryCommands as $command) {
-            try {
-                if (isset($this->registered[$command])) {
+        $manager = $this->getManager();
+        // @dispatch(console.beforeConfigureCommands)
+        $manager?->dispatch('console.beforeConfigureCommands', $this);
+        try {
+            $this->configureDBCommands();
+            foreach ($this->factoryCommands as $command) {
+                try {
+                    if (isset($this->registered[$command])) {
+                        continue;
+                    }
+                    $className = $command;
+                    $command = new $command;
+                    parent::add($this->appendDefaultContainer($command));
+                    $this->registered[$className] = true;
+                } catch (Throwable $e) {
+                    $this->errors[$command] = $e;
+                }
+            }
+            foreach ($this->queue as $commandName => $command) {
+                unset($this->queue[$commandName]);
+                if (isset($this->registered[$commandName])) {
                     continue;
                 }
-                $className = $command;
-                $command = new $command;
                 parent::add($this->appendDefaultContainer($command));
-                $this->registered[$className] = true;
-            } catch (Throwable $e) {
-                $this->errors[$command] = $e;
             }
-        }
-        foreach ($this->queue as $commandName => $command) {
-            unset($this->queue[$commandName]);
-            if (isset($this->registered[$commandName])) {
-                continue;
-            }
-            parent::add($this->appendDefaultContainer($command));
+            // @dispatch(console.configureCommands)
+            $manager?->dispatch('console.configureCommands', $this);
+        } finally {
+            // @dispatch(console.afterConfigureCommands)
+            $manager?->dispatch('console.afterConfigureCommands', $this);
         }
     }
 

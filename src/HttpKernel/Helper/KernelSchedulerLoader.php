@@ -13,8 +13,10 @@ use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Throwable;
 use function class_exists;
+use function is_bool;
+use function is_dir;
 
-final class KernelSchedulerLoader extends AbstractLoaderNameBased
+class KernelSchedulerLoader extends AbstractLoaderNameBased
 {
     private ?Scheduler $scheduler = null;
 
@@ -56,9 +58,10 @@ final class KernelSchedulerLoader extends AbstractLoaderNameBased
     protected function getDirectory(): ?string
     {
         $namespace = $this->getNameSpace();
-        return $namespace
+        $directory =  $namespace
             ? $this->kernel->getRegisteredDirectories()[$namespace]??null
             : null;
+        return $directory && is_dir($directory) ? $directory : null;
     }
 
     protected function getMode(): string
@@ -68,10 +71,17 @@ final class KernelSchedulerLoader extends AbstractLoaderNameBased
 
     protected function isProcessable(): bool
     {
-        return ! $this->kernel->getConfigError()
+        $processable = ! $this->kernel->getConfigError()
             && $this->getNameSpace()
             && $this->getDirectory()
             && $this->getScheduler();
+        if ($processable) {
+            $canBeProcess = $this
+                ->getManager()
+                ->dispatch('kernel.schedulerLoader', true);
+            $processable = is_bool($canBeProcess) ? $canBeProcess : true;
+        }
+        return $processable;
     }
 
     /**

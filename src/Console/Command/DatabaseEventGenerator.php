@@ -7,7 +7,9 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
+use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
@@ -51,10 +53,16 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
     private ?string $databaseEventDir = null;
     private string $databaseEventNamespace;
 
-    public function __construct(string $name = null)
+    protected function configure() : void
     {
-        $databaseEventNamespace = Decorator::kernel()?->getDatabaseEventNamespace();
-        if (!$databaseEventNamespace) {
+        $kernel = ContainerHelper::use(
+            KernelInterface::class,
+            $this->getContainer()
+        );
+        if ($kernel instanceof BaseKernel) {
+            $this->databaseEventNamespace = $kernel->getDatabaseEventNameSpace();
+            $this->databaseEventDir = $kernel->getRegisteredDirectories()[$this->databaseEventNamespace]??null;
+        } else {
             $namespace = dirname(
                 str_replace(
                     '\\',
@@ -63,14 +71,8 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
                 )
             );
             $appNameSpace = str_replace('/', '\\', dirname($namespace)) . '\\App';
-            $databaseEventNamespace = "$appNameSpace\\DatabaseEvents\\";
+            $this->databaseEventNamespace = "$appNameSpace\\DatabaseEvents\\";
         }
-        $this->databaseEventNamespace = $databaseEventNamespace;
-        parent::__construct($name);
-    }
-
-    protected function configure() : void
-    {
         $namespace = rtrim($this->databaseEventNamespace, '\\');
         $this
             ->setName('app:generate:database-event')
