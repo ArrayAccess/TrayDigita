@@ -16,9 +16,15 @@ use ArrayAccess\TrayDigita\Util\Filter\DataType;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
+use function is_array;
+use function memory_get_peak_usage;
 use function memory_get_usage;
 use function microtime;
+use function preg_match;
 use function preg_replace;
+use function preg_replace_callback;
+use function round;
+use function sprintf;
 use function str_contains;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
@@ -71,6 +77,11 @@ class DebuggingMiddleware extends AbstractMiddleware
             $manager->attach(
                 'response.final',
                 [$this, 'printPerformance'],
+                priority: PHP_INT_MAX - 5
+            );
+            $manager->attach(
+                'jsonResponder.format',
+                [$this, 'printJsonPerformance'],
                 priority: PHP_INT_MAX - 5
             );
         }
@@ -237,6 +248,7 @@ class DebuggingMiddleware extends AbstractMiddleware
         ) {
             return $response;
         }
+
         try {
             $response->getBody()->seek($response->getBody()->getSize());
         } catch (Throwable) {
@@ -265,5 +277,47 @@ class DebuggingMiddleware extends AbstractMiddleware
         );
         $response->getBody()->write($str);
         return $response;
+    }
+
+    private function printJsonPerformance($data)
+    {
+        $this->getManager()?->detach(
+            'jsonResponder.format',
+            [$this, 'printJsonPerformance'],
+            priority: PHP_INT_MAX - 5
+        );
+        if (!is_array($data)) {
+            return $data;
+        }
+        $container = $this->getContainer();
+        $config = ContainerHelper::use(Config::class, $container)?->get('environment');
+        $config = $config instanceof Config ? $config : new Config();
+
+        // maybe override? disabled!
+        if ($config->get('showPerformance') !== true) {
+            return $data;
+        }
+
+        $serverParams = $this->request?->getServerParams()??$_SERVER;
+        $startTime = (
+            $this->requestFloat
+            ??$serverParams['REQUEST_TIME_FLOAT']
+            ??$serverParams['REQUEST_TIME']
+        );
+        if (!isset($data['meta'])) {
+            $data['meta'] = [];
+        }
+        if (!is_array($data['meta'])) {
+            return $data;
+        }
+        $data['meta']['performance'] = [
+            'timing' => round(
+                (microtime(true) * 1000 - $startTime * 1000),
+                4
+            ),
+            'peak_memory' => Consolidation::sizeFormat(memory_get_peak_usage(), 3),
+            'used_memory' => Consolidation::sizeFormat(memory_get_usage(), 3)
+        ];
+        return $data;
     }
 }
