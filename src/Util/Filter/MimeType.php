@@ -9,9 +9,11 @@ use finfo;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use function array_merge;
+use function array_search;
 use function array_unique;
 use function array_values;
 use function class_exists;
+use function file_exists;
 use function function_exists;
 use function in_array;
 use function is_file;
@@ -64,6 +66,8 @@ final class MimeType
         'application/pdf' => 'pdf',
         'application/x-php' => 'php',
         'text/x-php' => 'php',
+        'application/x-sql' => 'sql',
+        'application/sql' => 'sql',
         'application/vnd.ms-powerpoint' => 'ppt',
         'application/x-rar-compressed' => 'rar',
         'application/stuffit' => 'hqx',
@@ -256,22 +260,53 @@ final class MimeType
 
     private static array $uriMimeTypes = [];
 
+    private static null|finfo|false $finfoObjectExists = null;
+
+    /**
+     * @return ?finfo
+     */
+    private static function createFinfo(): ?finfo
+    {
+        if (self::$finfoObjectExists === null) {
+            self::$finfoObjectExists = class_exists('finfo')
+                ? new finfo(FILEINFO_MIME_TYPE)
+                : false;
+        }
+        return self::$finfoObjectExists?:null;
+    }
+
     /** @noinspection PhpUnused */
     public static function streamMimeType(StreamInterface $stream) : ?string
     {
-        static $fn_exists = null;
-        if ($fn_exists === null) {
-            $fn_exists = class_exists('finfo');
+        $uri = $stream->getMetadata('uri');
+        if ($uri && isset(self::$uriMimeTypes[$uri])) {
+            return self::$uriMimeTypes[$uri];
         }
-        if (!$fn_exists) {
-            return null;
+
+        $info = self::createFinfo();
+        $mimeType = $info?->buffer((string) $stream)?:null;
+        if ($mimeType && file_exists($uri)) {
+            if ($mimeType === 'text/plain' && (
+                $ext = pathinfo($uri, PATHINFO_EXTENSION)
+                ) && ($key = array_search($ext, self::EXTENSION_PREFILL))
+            ) {
+                $mimeType = $key;
+            }
+            self::$uriMimeTypes[$uri] = $mimeType;
+            return $mimeType;
         }
-        $info = new finfo(FILEINFO_MIME_TYPE);
-        return $info->buffer((string) $stream)?:null;
+        return $mimeType;
     }
 
-    public static function fileMimeType(string $filePath) : ?string
+    /**
+     * @param string $filePath
+     * @param ?UploadedFileInterface $uploadedFile
+     * @return string|null
+     */
+    public static function fileMimeType(string $filePath, ?UploadedFileInterface $uploadedFile = null) : ?string
     {
+        static $fn_exists = null;
+
         $filePath = realpath($filePath)?:$filePath;
         if (!is_file($filePath)) {
             return null;
@@ -280,22 +315,30 @@ final class MimeType
         if (isset(self::$uriMimeTypes[$filePath])) {
             return self::$uriMimeTypes[$filePath]?:null;
         }
-        static $fn_exists = null;
 
-        if ($fn_exists === null) {
+        self::$uriMimeTypes[$filePath] = false;
+        $finfo = self::createFinfo();
+        $mimeType = Consolidation::callbackReduceError(fn() => $finfo?->file($filePath))?:null;
+        if (!$mimeType && $fn_exists === null) {
             $fn_exists = function_exists('mime_content_type');
         }
-        self::$uriMimeTypes[$filePath] = false;
         if ($fn_exists) {
             /**
              * @var ?string $mimeType
              */
             $mimeType = Consolidation::callbackReduceError(fn () => mime_content_type($filePath))?:null;
-            if ($mimeType) {
-                self::$uriMimeTypes[$filePath] = $mimeType;
-                return $mimeType;
-            }
         }
+        if ($mimeType) {
+            if ($mimeType === 'text/plain' && (
+                    $ext = pathinfo($uploadedFile?->getClientFilename()??$filePath, PATHINFO_EXTENSION)
+                ) && ($key = array_search($ext, self::EXTENSION_PREFILL))
+            ) {
+                $mimeType = $key;
+            }
+            self::$uriMimeTypes[$filePath] = $mimeType;
+            return $mimeType;
+        }
+
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
         if (!$extension) {
             return self::$uriMimeTypes[$filePath] = 'application/octet-stream';
@@ -304,12 +347,12 @@ final class MimeType
         if ($mimeType) {
             self::$uriMimeTypes[$filePath] = $mimeType;
         }
+
         return $mimeType;
     }
 
-    public static function mimeTypeUploadedFile(UploadedFileInterface $uploadedFile)
+    public static function mimeTypeUploadedFile(UploadedFileInterface $uploadedFile): ?string
     {
-        static $fn_exists = null;
         $uri = $uploadedFile->getStream()->getMetadata('uri');
         if (!is_string($uri) || !is_file($uri)) {
             $fileName = $uploadedFile->getClientFilename();
@@ -321,47 +364,12 @@ final class MimeType
                 ? MimeType::mime($extension)
                 : null;
         }
-
-        if (isset(self::$uriMimeTypes[$uri])) {
-            return self::$uriMimeTypes[$uri]?:null;
-        }
-
-        if ($fn_exists === null) {
-            $fn_exists = function_exists('mime_content_type');
-        }
-        self::$uriMimeTypes[$uri] = false;
-        if ($fn_exists) {
-            /**
-             * @var ?string $mimeType
-             */
-            $mimeType = Consolidation::callbackReduceError(fn () => mime_content_type($uri))?:null;
-            if ($mimeType) {
-                self::$uriMimeTypes[$uri] = $mimeType;
-                return $mimeType;
-            }
-        }
-
-        $fileName = $uploadedFile->getClientFilename();
-        if (!$fileName) {
-            return null;
-        }
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-        if (!$extension) {
-            return null;
-        }
-        $mimeType = MimeType::mime($extension);
-        if ($mimeType) {
-            self::$uriMimeTypes[$uri] = $mimeType;
-        }
-        return $mimeType;
+        return self::fileMimeType($uri, $uploadedFile);
     }
 
     public static function resolveMediaTypeUploadedFiles(
         UploadedFileInterface $uploadedFile
     ): UploadedFile|UploadedFileInterface {
-        if ($uploadedFile->getClientMediaType() !== 'application/octet-stream') {
-            return $uploadedFile;
-        }
         $mimeType = self::mimeTypeUploadedFile($uploadedFile);
         if (!$mimeType || $uploadedFile->getClientMediaType() === $mimeType) {
             return $uploadedFile;
