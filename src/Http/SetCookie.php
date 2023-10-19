@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Http;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InvalidArgumentException;
 use DateTimeInterface;
 use Psr\Http\Message\ResponseInterface;
+use Stringable;
 use function gmdate;
 use function in_array;
 use function is_int;
@@ -15,7 +16,7 @@ use function sprintf;
 use function strtolower;
 use function trim;
 
-class SetCookie
+class SetCookie implements Stringable
 {
     private string $name;
     private string $value;

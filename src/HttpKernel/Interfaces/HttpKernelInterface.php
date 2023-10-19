@@ -38,4 +38,13 @@ interface HttpKernelInterface extends
     public function getMiddlewareDispatcher(): MiddlewareDispatcherInterface;
 
     public function addMiddleware(MiddlewareInterface $middleware);
+
+    public function addDeferredMiddleware(MiddlewareInterface $middleware);
+
+    /**
+     * @return array<int, array<MiddlewareInterface>>
+     */
+    public function getDeferredMiddlewares() : array;
+    
+    public function clearDeferredMiddlewares();
 }

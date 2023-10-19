@@ -17,6 +17,8 @@ use function is_dir;
 use function ksort;
 use function trim;
 use function ucfirst;
+use function var_dump;
+use const SORT_ASC;
 use const SORT_DESC;
 
 class KernelMiddlewareLoader extends AbstractLoaderNameBased
@@ -32,25 +34,25 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
     protected function getFileLists(): ?Finder
     {
         $directory = $this->getDirectory();
-        return !$directory || ! is_dir($directory)
+        return !$directory || !is_dir($directory)
             ? null
             : $this
-            ->createFinder($this->getDirectory(), 0, '/^[_A-za-z]([a-zA-Z0-9]+)?\.php$/')
-            ->files();
+                ->createFinder($this->getDirectory(), 0, '/^[_A-za-z]([a-zA-Z0-9]+)?\.php$/')
+                ->files();
     }
 
     protected function getDirectory(): ?string
     {
         $namespace = $this->getNameSpace();
-        $directory =  $namespace
-            ? $this->kernel->getRegisteredDirectories()[$namespace]??null
+        $directory = $namespace
+            ? $this->kernel->getRegisteredDirectories()[$namespace] ?? null
             : null;
         return $directory && is_dir($directory) ? $directory : null;
     }
 
     protected function getContainer(): ContainerInterface
     {
-        return parent::getContainer()??Decorator::container();
+        return parent::getContainer() ?? Decorator::container();
     }
 
     protected function getMode(): string
@@ -78,7 +80,14 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
 
     protected function postProcess(): void
     {
-        ksort($this->middlewares, SORT_DESC);
+        foreach ($this->kernel->getHttpKernel()->getDeferredMiddlewares() as $priority => $middlewares) {
+            foreach ($middlewares as $middleware) {
+                $this->middlewares[$priority][] = $middleware;
+            }
+        }
+        // clear
+        $this->kernel->getHttpKernel()->clearDeferredMiddlewares();
+        ksort($this->middlewares, SORT_ASC);
         $manager = $this->getManager();
         foreach ($this->middlewares as $priority => $middlewares) {
             unset($this->middlewares[$priority]);

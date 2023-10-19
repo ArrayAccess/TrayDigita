@@ -16,6 +16,7 @@ use function function_exists;
 use function header;
 use function headers_sent;
 use function in_array;
+use function is_string;
 use function ob_end_clean;
 use function ob_end_flush;
 use function ob_get_contents;
@@ -134,6 +135,10 @@ class ResponseEmitter implements ResponseEmitterInterface
         }
         $statusCode = $response->getStatusCode();
         foreach ($response->getHeaders() as $header => $values) {
+            // numeric string will convert into int / float
+            if (!is_string($header)) {
+                continue;
+            }
             $name = $this->toWordCase($header);
             $first = $name !== 'Set-Cookie';
 

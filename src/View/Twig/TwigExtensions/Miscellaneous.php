@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\View\Twig\TwigExtensions;
 
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\PossibleRoot;
+use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
 use Stringable;
@@ -15,6 +17,7 @@ use function is_scalar;
 use function is_string;
 use function preg_quote;
 use function preg_replace;
+use function str_contains;
 use const DIRECTORY_SEPARATOR;
 
 class Miscellaneous extends AbstractExtension
@@ -83,27 +86,11 @@ class Miscellaneous extends AbstractExtension
                 'protect_path',
                 function ($data) {
                     $root = ContainerHelper::use(KernelInterface::class, $this->getContainer())
-                        ?->getRootDirectory();
+                        ?->getRootDirectory()??PossibleRoot::getPossibleRootDirectory();
                     if (!$root) {
                         return $data;
                     }
-                    $root = DataNormalizer::normalizeDirectorySeparator($root, true);
-                    $root = preg_quote($root . DIRECTORY_SEPARATOR, '~');
-                    if ($data instanceof Stringable || is_scalar($data)) {
-                        return preg_replace("~$root~", '', (string) $data);
-                    }
-                    if (!is_iterable($data)) {
-                        return $data;
-                    }
-
-                    $data = !is_iterable($data) ? [$data] : $data;
-                    foreach ($data as $key => $v) {
-                        if (!is_string($data) && $data instanceof Stringable) {
-                            continue;
-                        }
-                        $data[$key] = preg_replace("~$root~", '', (string) $v);
-                    }
-                    return $data;
+                    return Consolidation::protectMessage($data, $root);
                 }
             ),
         ];

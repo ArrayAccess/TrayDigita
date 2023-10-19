@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Util\Filter;
 
 use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
+use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouterInterface;
 use Closure;
 use Psr\Container\ContainerInterface;
@@ -13,6 +14,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionObject;
+use Stringable;
 use function array_key_exists;
 use function array_values;
 use function class_exists;
@@ -41,6 +43,7 @@ use function min;
 use function number_format;
 use function parse_str;
 use function preg_match;
+use function preg_quote;
 use function preg_replace;
 use function realpath;
 use function restore_error_handler;
@@ -1011,5 +1014,40 @@ class Consolidation
         }
 
         return is_string(self::$registeredLoaderAutoloader[$namespace][$directory]);
+    }
+
+    /**
+     * @param $data
+     * @param string|null $root
+     * @return mixed
+     */
+    public static function protectMessage($data, ?string $root = null) : mixed
+    {
+        if (is_numeric($data)) {
+            return $data;
+        }
+
+        if (is_string($data) || $data instanceof Stringable) {
+            $root ??= PossibleRoot::getPossibleRootDirectory();
+            $root = DataNormalizer::normalizeDirectorySeparator($root, true);
+            $root = preg_quote($root . DIRECTORY_SEPARATOR, '~');
+            $data = preg_replace("~$root~", '', (string) $data);
+            if (str_contains($data, 'SQLSTATE')) {
+                $data = preg_replace(
+                    '~(SQLSTATE.+)\'[^\'@]+\'@\'[^\']+\'~',
+                    "$1<redacted:user>@<redacted:host>",
+                    $data
+                );
+            }
+            return $data;
+        }
+        if (is_iterable($data)) {
+            $root ??= PossibleRoot::getPossibleRootDirectory();
+            foreach ($data as $key => $v) {
+                $data[$key] = self::protectMessage($v, $root);
+            }
+        }
+
+        return $data;
     }
 }

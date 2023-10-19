@@ -97,6 +97,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
             return;
         }
         $manager = $this->getManager();
+        // @dispatch(kernel.beforeInitModules);
         $manager?->dispatch(
             'kernel.beforeInitModules',
             $modules,
@@ -106,6 +107,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
         try {
             // init modules
             $modules->initModules();
+            // @dispatch(kernel.initModules);
             $manager?->dispatch(
                 'kernel.initModules',
                 $modules,
@@ -113,6 +115,7 @@ class KernelModuleLoader extends AbstractLoaderNameBased
                 $this
             );
         } finally {
+            // @dispatch(kernel.afterInitModules);
             $manager?->dispatch(
                 'kernel.afterInitModules',
                 $modules,

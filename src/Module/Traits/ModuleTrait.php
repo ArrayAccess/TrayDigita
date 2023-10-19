@@ -88,9 +88,10 @@ trait ModuleTrait
      * @template T of ModuleInterface
      * @psalm-param class-string<T>|T $module
      * @psalm-return ?T
+     * @return ?T
      */
     public function getModule(ModuleInterface|string $module)
     {
-        return $this->modules->get($module);
+        return $this->getModules()->get($module);
     }
 }

@@ -14,6 +14,7 @@ use ArrayAccess\TrayDigita\Http\Interfaces\ResponseEmitterInterface;
 use ArrayAccess\TrayDigita\Http\ResponseEmitter;
 use ArrayAccess\TrayDigita\HttpKernel\Interfaces\HttpKernelInterface;
 use ArrayAccess\TrayDigita\HttpKernel\Interfaces\TerminableInterface;
+use ArrayAccess\TrayDigita\Middleware\AbstractMiddleware;
 use ArrayAccess\TrayDigita\Middleware\MiddlewareDispatcher;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouterInterface;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouteRunnerInterface;
@@ -29,10 +30,12 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Throwable;
+use function ksort;
 use function memory_get_usage;
 use function microtime;
 use function spl_object_hash;
 use function strtoupper;
+use const SORT_DESC;
 
 /**
  * @mixin RouterInterface
@@ -67,6 +70,11 @@ class HttpKernel implements
      * @var float
      */
     private float $startTime;
+
+    /**
+     * @var array
+     */
+    private array $deferredMiddlewares = [];
 
     public function __construct(
         ContainerInterface $container = null,
@@ -142,6 +150,25 @@ class HttpKernel implements
         return $this;
     }
 
+    public function addDeferredMiddleware(MiddlewareInterface $middleware): static
+    {
+        $priority = $middleware instanceof AbstractMiddleware
+            ? $middleware->getPriority()
+            : 10;
+        $this->deferredMiddlewares[$priority][] = $middleware;
+        return $this;
+    }
+
+    public function getDeferredMiddlewares() : array
+    {
+        return $this->deferredMiddlewares;
+    }
+
+    public function clearDeferredMiddlewares(): void
+    {
+        $this->deferredMiddlewares = [];
+    }
+
     public function getLastResponse(): ?ResponseInterface
     {
         return $this->lastResponse;
@@ -168,6 +195,7 @@ class HttpKernel implements
             'httpKernel.beforeHandle',
             $this
         );
+
         try {
             $this->lastRequest = $request;
             // add middleware

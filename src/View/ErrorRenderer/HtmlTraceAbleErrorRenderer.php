@@ -29,7 +29,6 @@ use function ini_set;
 use function is_string;
 use function json_encode;
 use function preg_match;
-use function preg_quote;
 use function preg_replace;
 use function preg_replace_callback;
 use function realpath;
@@ -177,11 +176,10 @@ HTML;
         // $startLine = null;
         $theLine = '';
         $insideContent = '';
-        $baseFile = $this->rootDirectory ? preg_replace(
-            '~^'.preg_quote($this->rootDirectory, '~').'[\\\/]~',
-            '',
-            $trace['file']
-        ) : $trace['file'];
+        $baseFile = Consolidation::protectMessage(
+            $trace['file'],
+            $this->rootDirectory
+        );
 
         $mainErrorInfo = '';
         if (isset($trace['function'])) {
@@ -340,11 +338,10 @@ HTML;
         $errorLineEditor = '';
         $countLine = 1;
         $traceCount = 0;
-        $errorFile = $this->rootDirectory ? preg_replace(
-            '~^'.preg_quote($this->rootDirectory, '~').'[\\\/]~',
-            '',
-            $exception->getFile()
-        ) : $exception->getFile();
+        $errorFile = Consolidation::protectMessage(
+            $exception->getMessage(),
+            $this->rootDirectory
+        );
 
         for (; $countLine <= 5; $countLine++) {
             if ($countLine === 5) {
