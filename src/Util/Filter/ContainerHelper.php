@@ -104,10 +104,11 @@ class ContainerHelper
     }
 
     /**
-     * @param callable|array|mixed $callable
+     * @template T of object
+     * @param callable|array|class-string<T>|mixed $callable
      * @param array $arguments
      * @param ContainerInterface|null $container
-     * @return array|mixed
+     * @return array|T|mixed
      * @throws Throwable
      */
     public static function resolveCallable(

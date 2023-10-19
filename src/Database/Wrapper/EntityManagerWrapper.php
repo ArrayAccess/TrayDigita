@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Database\Wrapper;
 
 use ArrayAccess\TrayDigita\Database\Connection;
+use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use Doctrine\Common\Collections\Selectable;
@@ -17,7 +18,7 @@ use Doctrine\Persistence\ObjectRepository;
 use Throwable;
 use function get_object_vars;
 
-class EntityManagerWrapper extends EntityManagerDecorator
+class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndicateInterface
 {
     use ManagerDispatcherTrait;
 
@@ -89,17 +90,9 @@ class EntityManagerWrapper extends EntityManagerDecorator
         }
     }
 
-    protected function getManagerFromContainer() : ?ManagerInterface
+    public function getManager(): ?ManagerInterface
     {
-        $container = $this->databaseConnection->getContainer();
-        try {
-            $manager = $container->has(ManagerInterface::class)
-                ? $container->get(ManagerInterface::class)
-                : null;
-        } catch (Throwable) {
-            $manager = null;
-        }
-        return $manager instanceof ManagerInterface ? $manager : null;
+        return $this->databaseConnection->getManager();
     }
 
     /**

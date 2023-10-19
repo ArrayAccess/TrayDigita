@@ -47,11 +47,10 @@ class ContainerResolver implements ContainerIndicateInterface
     }
 
     /**
-     * @param callable|array|mixed $callable
+     * @template T of object
+     * @param callable|array|class-string<T>|mixed $callable
      * @param array $arguments
-     * @return array|mixed
-     * @throws ContainerFrozenException
-     * @throws ContainerNotFoundException
+     * @return array|T|mixed
      * @throws Throwable
      */
     public function resolveCallable(mixed $callable, array $arguments = []): mixed
@@ -174,14 +173,16 @@ class ContainerResolver implements ContainerIndicateInterface
         ReflectionClass|ReflectionFunctionAbstract $reflection,
         $arguments
     ): array {
-        // resolver empty arguments when auto resolve enabled
-        if (!empty($arguments)) {
-            return $arguments;
-        }
         $reflectionName = $reflection->getName();
         $reflection = $reflection instanceof ReflectionClass
             ? $reflection->getConstructor()
             : $reflection;
+
+        // resolver empty arguments when auto resolve enabled
+        /*if (!empty($arguments) && count($arguments) === $reflection->getNumberOfRequiredParameters()) {
+            return $arguments;
+        }*/
+
         $parameters = $reflection?->getParameters()??[];
         $container = $this->getContainer();
         $containerParameters = method_exists($container, 'getParameters')
@@ -191,7 +192,9 @@ class ContainerResolver implements ContainerIndicateInterface
         $containerAliases = method_exists($container, 'getAliases')
             ? $container->getAliases()
             : [];
+        $paramArguments = [];
         foreach ($parameters as $parameter) {
+            $argumentName = $parameter->getName();
             $type = $parameter->getType();
             if ($type instanceof ReflectionUnionType) {
                 foreach ($type->getTypes() as $unionType) {
@@ -214,28 +217,37 @@ class ContainerResolver implements ContainerIndicateInterface
             if (!$type instanceof ReflectionNamedType
                 || $type->isBuiltin()
             ) {
+                if (isset($arguments[$parameter->getName()])) {
+                    $paramArguments[$argumentName] = $containerParameters[$parameter->getName()];
+                    continue;
+                }
                 if (array_key_exists($parameter->getName(), $containerParameters)) {
-                    $arguments[] = $containerParameters[$parameter->getName()];
+                    $paramArguments[$argumentName] = $containerParameters[$parameter->getName()];
                     continue;
                 }
 
                 if ($parameter->isDefaultValueAvailable()) {
-                    $arguments[] = $parameter->getDefaultValue();
+                    $paramArguments[$argumentName] = $parameter->getDefaultValue();
                     continue;
                 }
                 if ($parameter->allowsNull()) {
-                    $arguments[] = null;
+                    $paramArguments[$argumentName] = null;
                     continue;
                 }
-                $arguments = [];
+                $paramArguments = [];
                 break;
+            }
+
+            if (isset($arguments[$parameter->getName()])) {
+                $paramArguments[$argumentName] = $arguments[$parameter->getName()];
+                continue;
             }
 
             $name = $type->getName();
             if ($name === ContainerInterface::class
                 || is_a($name, __CLASS__)
             ) {
-                $arguments[] = $container->has($name)
+                $paramArguments[$argumentName] = $container->has($name)
                     ? $container->get($name)
                     : $container;
                 continue;
@@ -244,7 +256,7 @@ class ContainerResolver implements ContainerIndicateInterface
                 && isset($containerAliases[$name])
                 && $container->has($containerAliases[$name])
             ) {
-                $arguments[] = $container->get($containerAliases[$name]);
+                $paramArguments[$argumentName] = $container->get($containerAliases[$name]);
                 continue;
             }
 
@@ -254,32 +266,32 @@ class ContainerResolver implements ContainerIndicateInterface
                     if (is_string($param) && $container->has($param)) {
                         $param = $container->get($param);
                     }
-                    $arguments[] = $param;
+                    $paramArguments[$argumentName] = $param;
                     continue;
                 }
                 if ($parameter->isDefaultValueAvailable()) {
-                    $arguments[] = $parameter->getDefaultValue();
+                    $paramArguments[$argumentName] = $parameter->getDefaultValue();
                     continue;
                 }
                 if ($parameter->allowsNull()) {
-                    $arguments[] = null;
+                    $paramArguments[$argumentName] = null;
                     continue;
                 }
-                $arguments = [];
+                $paramArguments = [];
                 break;
             }
-            $arguments[] = $container->get($name);
+            $paramArguments[$argumentName] = $container->get($name);
         }
-        if (($required = $reflection?->getNumberOfRequiredParameters()??0) > count($arguments)) {
+        if (($required = $reflection?->getNumberOfRequiredParameters()??0) > count($paramArguments)) {
             throw new UnResolveAbleException(
                 sprintf(
                     'Could not resolve required arguments for : %s. Required %d argument, but %d given',
                     $reflectionName,
                     $required,
-                    count($arguments)
+                    count($paramArguments)
                 )
             );
         }
-        return $arguments;
+        return $paramArguments;
     }
 }

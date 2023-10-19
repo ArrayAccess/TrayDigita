@@ -4,15 +4,17 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Database\Wrapper;
 
 use ArrayAccess\TrayDigita\Database\Connection;
+use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Driver\Statement;
 use Throwable;
 
-class ConnectionWrapper extends AbstractConnectionMiddleware
+class ConnectionWrapper extends AbstractConnectionMiddleware implements ManagerIndicateInterface
 {
     use ManagerDispatcherTrait;
 
@@ -28,18 +30,12 @@ class ConnectionWrapper extends AbstractConnectionMiddleware
         return 'connection';
     }
 
-    protected function getManagerFromContainer(): ?ManagerInterface
+
+    public function getManager(): ?ManagerInterface
     {
-        $container = $this->databaseConnection->getContainer();
-        try {
-            $manager = $container->has(ManagerInterface::class)
-                ? $container->get(ManagerInterface::class)
-                : null;
-        } catch (Throwable) {
-            $manager = null;
-        }
-        return $manager instanceof ManagerInterface ? $manager : null;
+        return $this->databaseConnection->getManager();
     }
+
 
     public function prepare(string $sql): Statement
     {
@@ -56,7 +52,10 @@ class ConnectionWrapper extends AbstractConnectionMiddleware
                 $this->databaseConnection
             );
 
-            $prepared = parent::prepare($sql);
+            $prepared = new StatementWrapper(
+                $this,
+                parent::prepare($sql)
+            );
 
             // @dispatch(connection.prepare)
             $this->dispatchCurrent(

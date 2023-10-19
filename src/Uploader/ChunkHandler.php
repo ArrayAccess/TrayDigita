@@ -16,11 +16,23 @@ use ArrayAccess\TrayDigita\Uploader\Exceptions\SourceFileNotFoundException;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use Psr\Http\Message\ResponseInterface;
 use SplFileInfo;
+use function file_get_contents;
+use function file_put_contents;
+use function filesize;
+use function is_array;
 use function is_file;
+use function is_float;
+use function is_int;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function microtime;
 use function preg_match;
 use function preg_quote;
 use function sprintf;
 use function substr;
+use function unlink;
+use const JSON_UNESCAPED_SLASHES;
 
 class ChunkHandler
 {
@@ -40,6 +52,25 @@ class ChunkHandler
      * @var string
      */
     public readonly string $targetCacheFile;
+
+    public readonly string $targetCacheMetaFile;
+
+    /**
+     * @var array{
+     *      first_time: ?float,
+     *      size: ?int,
+     *      count: ?int,
+     *      mimetype: ?string,
+     *      timing: array<array{written: int, time: float, size: int}>
+     *  }
+     */
+    private array $metadata = [
+        'first_time' => null,
+        'size' => null,
+        'count' => null,
+        'mimetype' => null,
+        'timing' => [],
+    ];
 
     /**
      * @var int
@@ -81,7 +112,10 @@ class ChunkHandler
         if (!$this->processor->requestIdHeader->valid) {
             throw new InvalidRequestId(
                 sprintf(
-                    'Request id "%s" is not valid',
+                    $this->processor->chunk->translateContext(
+                        'Request id "%s" is not valid',
+                        'chunk-uploader'
+                    ),
                     $this->processor->requestIdHeader->header
                 )
             );
@@ -92,6 +126,11 @@ class ChunkHandler
             DIRECTORY_SEPARATOR,
             $this->processor->requestIdHeader->header,
             $this->processor->chunk->partialExtension
+        );
+        $this->targetCacheMetaFile = sprintf(
+            '%1$s.%2$s',
+            $this->targetCacheFile,
+            $this->processor->chunk->partialMetaExtension
         );
     }
 
@@ -122,12 +161,35 @@ class ChunkHandler
         return $this->lastTarget;
     }
 
+    /**
+     * @return array{
+     *     first_time: ?float,
+     *     size: ?int,
+     *     count: ?int,
+     *     mimetype: ?string,
+     *     timing: array<array{written: int, time: float, size: int}>
+     * }
+     */
+    public function getMetadata(): array
+    {
+        return $this->metadata;
+    }
+
     public function deletePartial(): bool
     {
+        $status = false;
         if (is_file($this->targetCacheFile)) {
-            return unlink($this->targetCacheFile);
+            $status = Consolidation::callbackReduceError(
+                fn () => unlink($this->targetCacheFile)
+            );
         }
-        return false;
+        if (is_file($this->targetCacheMetaFile)) {
+            $new_status = Consolidation::callbackReduceError(
+                fn () => unlink($this->targetCacheMetaFile)
+            );
+            $status = $status || $new_status;
+        }
+        return $status;
     }
 
     /**
@@ -158,7 +220,10 @@ class ChunkHandler
         if (!is_writable($uploadDirectory)) {
             $this->status = self::STATUS_NOT_READY;
             throw new DirectoryUnWritAbleException(
-                'Cache upload storage is not writable.'
+                $this->processor->chunk->translateContext(
+                    'Cache upload storage is not writable.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -168,9 +233,11 @@ class ChunkHandler
         );
 
         $this->status = self::STATUS_READY;
-        $this->size = is_file($this->targetCacheFile)
-            ? filesize($this->targetCacheFile)
-            : 0;
+        if (is_file($this->targetCacheFile)) {
+            $this->size = filesize($this->targetCacheFile);
+        } else {
+            $this->size = 0;
+        }
         return $this->status;
     }
 
@@ -205,7 +272,10 @@ class ChunkHandler
             $this->status = self::STATUS_FAIL;
             throw new FileUnWritAbleException(
                 $this->targetCacheFile,
-                'Upload cache file is not writable.'
+                $this->processor->chunk->translateContext(
+                    'Upload cache file is not writable.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -216,7 +286,10 @@ class ChunkHandler
         if (!is_resource($this->cacheResource)) {
             $this->status = self::STATUS_FAIL;
             throw new SourceFileFailException(
-                'Can not create cached stream.'
+                $this->processor->chunk->translateContext(
+                    'Can not create cached stream.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -224,7 +297,10 @@ class ChunkHandler
         if ($wouldBlock) {
             throw new FileLockedException(
                 $this->targetCacheFile,
-                'Cache file has been locked.'
+                $this->processor->chunk->translateContext(
+                    'Cache file has been locked.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -237,10 +313,58 @@ class ChunkHandler
         while (!$uploadedStream->eof()) {
             $this->written += (int) fwrite($this->cacheResource, $uploadedStream->read(2048));
         }
-
+        $isFirst = $this->size === 0;
         $stat = Consolidation::callbackReduceError(fn () => fstat($this->cacheResource));
         $this->size = $stat ? (int) ($stat['size']??$this->size+$this->written) : ($this->size+$this->written);
         flock($this->cacheResource, LOCK_EX);
+        $written = null;
+        $time = $_SERVER['REQUEST_FLOAT_TIME']??null;
+        $time = is_float($time) ? $time : microtime(true);
+        if (is_file($this->targetCacheMetaFile)) {
+            $meta = Consolidation::callbackReduceError(fn () => json_decode(
+                file_get_contents($this->targetCacheMetaFile),
+                true
+            ));
+            $valid = is_array($meta)
+                && isset($meta['first_time'], $meta['mimetype'], $meta['count'], $meta['timing'])
+                && is_string($meta['mimetype'])
+                && is_float($meta['first_time'])
+                && is_int($meta['count'])
+                && is_array($meta['timing'])
+                && count($meta['timing']) === $meta['count']
+                && preg_match('~^[^/]+/~', $meta['mimetype']);
+            if (!$valid) {
+                 Consolidation::callbackReduceError(fn () => unlink($this->targetCacheMetaFile));
+            } else {
+                $written = $meta;
+                $written['count'] += 1;
+                $written['timing'][] = [
+                    'time' => $time,
+                    'written' => $this->written,
+                    'size' => $this->size
+                ];
+            }
+        } elseif ($isFirst) {
+            $written = [
+                'first_time' => $time,
+                'mimetype' => $this->processor->uploadedFile->getClientMediaType(),
+                'count' => 1,
+                'timing' => [
+                    [
+                        'time' => $time,
+                        'written' => $this->written,
+                        'size' => $this->size
+                    ]
+                ]
+            ];
+        }
+        if (is_array($written)) {
+            $this->metadata = $written;
+            Consolidation::callbackReduceError(fn () => file_put_contents(
+                $this->targetCacheMetaFile,
+                json_encode($written, JSON_UNESCAPED_SLASHES)
+            ));
+        }
         return $this->written;
     }
 
@@ -267,7 +391,10 @@ class ChunkHandler
             throw new InvalidOffsetPositionException(
                 $position,
                 $this->size,
-                'Offset upload position is invalid.'
+                $this->processor->chunk->translateContext(
+                    'Offset upload position is invalid.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -296,7 +423,10 @@ class ChunkHandler
         if (!is_file($movedFile?:$this->targetCacheFile)) {
             throw new SourceFileNotFoundException(
                 $movedFile?:$this->targetCacheFile,
-                'Source uploaded file does not exist.'
+                $this->processor->chunk->translateContext(
+                    'Source uploaded file does not exist.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -313,7 +443,10 @@ class ChunkHandler
         if (!$ready) {
             throw new SourceFileMovedException(
                 sprintf(
-                    'Upload cache file is not ready to move : (%d).',
+                    $this->processor->chunk->translateContext(
+                        'Upload cache file is not ready to move : (%d).',
+                        'chunk-uploader'
+                    ),
                     $this->status
                 )
             );
@@ -359,7 +492,10 @@ class ChunkHandler
                     throw new FileUnWritAbleException(
                         $target,
                         sprintf(
-                            '%s is not writable.',
+                            $this->processor->chunk->translateContext(
+                                'Target file "%s" is not writable.',
+                                'chunk-uploader'
+                            ),
                             $target
                         )
                     );
@@ -376,7 +512,10 @@ class ChunkHandler
             throw new DirectoryUnWritAbleException(
                 $targetDirectory,
                 sprintf(
-                    '%s is not writable.',
+                    $this->processor->chunk->translateContext(
+                        'Target directory "%s" is not writable.',
+                        'chunk-uploader'
+                    ),
                     $target
                 )
             );
@@ -389,6 +528,12 @@ class ChunkHandler
         } else {
             $result = Consolidation::callbackReduceError(
                 fn() => rename($this->targetCacheFile, $target)
+            );
+        }
+
+        if (is_file($this->targetCacheMetaFile)) {
+            Consolidation::callbackReduceError(
+                fn() => unlink($this->targetCacheMetaFile)
             );
         }
 

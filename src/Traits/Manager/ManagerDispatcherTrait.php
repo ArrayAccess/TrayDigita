@@ -24,65 +24,13 @@ trait ManagerDispatcherTrait
         return null;
     }
 
-    protected function getManagerFromContainer(): ?ManagerInterface
-    {
-        return ContainerHelper::getNull(ManagerInterface::class, $this->getContainer());
-    }
-
-    protected function getInternalMethodManager() : ?ManagerInterface
-    {
-        if ($this->internalMethodManager !== null) {
-            $method = $this->internalMethodManager?:null;
-            return $method ? $this->$method() : null;
-        }
-
-        if ($this instanceof ManagerIndicateInterface) {
-            $this->internalMethodManager = 'getManager';
-            return $this->getManager();
-        }
-
-        $manager = $this->getManagerFromContainer();
-        if ($manager) {
-            $this->internalMethodManager = 'getManagerFromContainer';
-            return $manager;
-        }
-
-        $ref = new ReflectionObject($this);
-        if (!$ref->hasMethod('getManager')) {
-            return null;
-        }
-        $method = $ref->getMethod('getManager');
-        $returnType = $method->getNumberOfRequiredParameters() === 0
-            ? $method->getReturnType()
-            : null;
-        if (!$returnType) {
-            return null;
-        }
-        $types = [];
-        if ($returnType instanceof ReflectionNamedType) {
-            $types = [$returnType];
-        } elseif ($returnType instanceof ReflectionUnionType) {
-            $types = $returnType->getTypes();
-        }
-        foreach ($types as $type) {
-            if ($type->isBuiltin()) {
-                continue;
-            }
-            if ($type->getName() === ManagerInterface::class
-                || is_subclass_of($type->getName(), ManagerInterface::class)
-            ) {
-                $this->internalMethodManager = $type->getName();
-                return $this->{$this->internalMethodManager}();
-            }
-        }
-        return null;
-    }
+    abstract public function getManager() : ?ManagerInterface;
 
     protected function dispatchEvent(
         string $eventName,
         ...$arguments
     ) {
-        $manager = $this->getInternalMethodManager();
+        $manager = $this->getManager();
         if (!$manager) {
             return count($arguments) > 0
                 ? reset($arguments)
@@ -132,5 +80,17 @@ trait ManagerDispatcherTrait
     protected function dispatchAfter(...$arguments)
     {
         return $this->doDispatchMethod('after', ...$arguments);
+    }
+
+    protected function dispatchWrap(callable $callback, ...$arguments)
+    {
+        try {
+            $this->doDispatchMethod('before', ...$arguments);
+            $arguments[] = $callback();
+            $this->doDispatchMethod(null, ...$arguments);
+            return end($arguments);
+        } finally {
+            $this->doDispatchMethod('after', ...$arguments);
+        }
     }
 }

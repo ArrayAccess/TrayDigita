@@ -12,6 +12,7 @@ use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Uploader\Exceptions\DirectoryUnWritAbleException;
 use ArrayAccess\TrayDigita\Uploader\Exceptions\NotExistsDirectoryException;
+use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use DirectoryIterator;
 use Psr\Container\ContainerInterface;
@@ -19,8 +20,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use function is_dir;
+use function is_int;
 use function is_string;
 use function is_writable;
+use function max;
+use function min;
 use function realpath;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -38,6 +42,10 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
      */
     const MAX_AGE_FILE = 18000;
 
+    const MIN_FILE_SIZE = 1024;
+
+    const DEFAULT_MIN_FILE_SIZE = 512000;
+
     /**
      * Maximum size for unlink
      */
@@ -54,15 +62,28 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
     public readonly string $partialExtension;
 
     /**
+     * @var string
+     */
+    public readonly string $partialMetaExtension;
+
+    /**
      * @var int
      */
     protected int $maxDeletionCount = self::DEFAULT_MAX_DELETE_COUNT;
 
     /**
      * @var ?int $limitMaxFileSize total max file size null as unlimited
-     * default : 134217728 bytes or 128MB
+     * default : 134217728 bytes or 128MiB
      */
     private ?int $limitMaxFileSize = 134217728;
+
+    /**
+     * @var ?int minimum size limit null as unlimited
+     * default: 512000 as 500Kib
+     */
+    private ?int $limitMinimumFileSize = self::DEFAULT_MIN_FILE_SIZE;
+
+    private int $maxUploadFileSize;
 
     public function __construct(
         protected ContainerInterface $container,
@@ -88,12 +109,14 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
             $this->setManager($manager);
         }
         $this->partialExtension = 'partial';
+        $this->partialMetaExtension = $this->partialExtension . '.meta';
         $storageDir = $storageDir??sys_get_temp_dir();
         $this->assertDirectory($storageDir);
         $storageDir = (realpath($storageDir)??$storageDir);
         $this->uploadCacheStorageDirectory = $storageDir
             . DIRECTORY_SEPARATOR
             . self::SUFFIX_STORAGE_DIRECTORY;
+        $this->maxUploadFileSize = Consolidation::getMaxUploadSize();
     }
 
     public function getContainer(): ?ContainerInterface
@@ -105,14 +128,20 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
     {
         if (trim($directory) === '') {
             throw new EmptyArgumentException(
-                'Storage directory could not be empty or whitespace only.'
+                $this->translateContext(
+                    'Storage directory could not be empty or whitespace only.',
+                    'chunk-uploader'
+                )
             );
         }
         if (!is_dir($directory)) {
             throw new NotExistsDirectoryException(
                 $directory,
                 sprintf(
-                    'Directory %s is not exist',
+                    $this->translateContext(
+                        'Directory %s is not exist',
+                        'chunk-uploader'
+                    ),
                     $directory
                 )
             );
@@ -121,7 +150,10 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
             throw new DirectoryUnWritAbleException(
                 $directory,
                 sprintf(
-                    'Directory %s is not writable',
+                    $this->translateContext(
+                        'Directory %s is not writable',
+                        'chunk-uploader'
+                    ),
                     $directory
                 )
             );
@@ -153,9 +185,42 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
         return $this->limitMaxFileSize;
     }
 
-    public function setLimitMaxFileSize(?int $limitMaxFileSize): void
+    public function setLimitMaxFileSize(?int $limitMaxFileSize): ?int
     {
+        if (is_int($limitMaxFileSize)) {
+            // minimum 500KiB
+            $limitMaxFileSize = max($limitMaxFileSize, self::DEFAULT_MIN_FILE_SIZE);
+            if (is_int($this->limitMinimumFileSize)
+                && $limitMaxFileSize < $this->limitMinimumFileSize
+            ) {
+                // assert min
+                $this->limitMinimumFileSize = min($limitMaxFileSize, $this->limitMinimumFileSize);
+            }
+        }
         $this->limitMaxFileSize = $limitMaxFileSize;
+        return $this->limitMaxFileSize;
+    }
+
+    public function getMaxUploadFileSize(): int
+    {
+        return $this->maxUploadFileSize;
+    }
+
+    public function setLimitMinimumFileSize(?int $limitMinFileSize): ?int
+    {
+        if (is_int($limitMinFileSize)) {
+            $limitMinFileSize = min($limitMinFileSize, $this->getMaxUploadFileSize());
+            $limitMinFileSize = min($limitMinFileSize, $this->getLimitMaxFileSize());
+            // minimum is 1024
+            $limitMinFileSize = max($limitMinFileSize, self::MIN_FILE_SIZE);
+        }
+        $this->limitMinimumFileSize = $limitMinFileSize;
+        return $this->limitMinimumFileSize;
+    }
+
+    public function getLimitMinimumFileSize(): ?int
+    {
+        return $this->limitMinimumFileSize;
     }
 
     public function appendResponseBytes(ResponseInterface $response): ResponseInterface
@@ -176,8 +241,8 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
 
     public function clean(?int $max = null) : int
     {
-        $max ??= $this->maxDeletionCount;
-        if (!is_dir($this->uploadCacheStorageDirectory) || $max <= 0) {
+        $max ??= $this->getMaxDeletionCount();
+        if ($max <= 0 || !is_dir($this->uploadCacheStorageDirectory)) {
             return 0;
         }
 
@@ -185,9 +250,14 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
         foreach (new DirectoryIterator(
             $this->uploadCacheStorageDirectory
         ) as $item) {
+            if ($max <= 0) {
+                break;
+            }
+            $isPartial = $item->getExtension() !== $this->partialExtension;
+            $isPartialMeta = $item->getExtension() !== $this->partialMetaExtension;
             if ($item->isDot()
-                || $item->getExtension() !== $this->partialExtension
                 || $item->getBasename()[0] === '.'
+                || (!$isPartial && !$isPartialMeta)
                 || !$item->isFile()
                 || $item->isLink()
             ) {
@@ -199,8 +269,8 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
             if (!$item->isWritable()) {
                 continue;
             }
-            if ($max-- < 0) {
-                break;
+            if ($isPartial) {
+                $max--;
             }
             $deleted++;
             unlink($item->getRealPath());

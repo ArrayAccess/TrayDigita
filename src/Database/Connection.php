@@ -7,6 +7,9 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Database\Wrapper\DriverWrapper;
 use ArrayAccess\TrayDigita\Database\Wrapper\EntityManagerWrapper;
+use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
+use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
+use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
@@ -42,9 +45,10 @@ use function trim;
 /**
  * @mixin DoctrineConnection
  */
-class Connection implements ContainerIndicateInterface
+class Connection implements ContainerIndicateInterface, ManagerAllocatorInterface
 {
-    use ManagerDispatcherTrait;
+    use ManagerDispatcherTrait,
+        ManagerAllocatorTrait;
 
     private ?DoctrineConnection $connection = null;
 
@@ -71,6 +75,10 @@ class Connection implements ContainerIndicateInterface
         $this->config ??= ContainerHelper::use(Config::class, $this->container)??new Config();
         $this->eventManager  = $eventManager??new EventManager();
         $this->defaultConfiguration = $configuration??new OrmConfiguration();
+        $manager = ContainerHelper::getNull(ManagerInterface::class, $this->container);
+        if ($manager) {
+            $this->setManager($manager);
+        }
     }
 
     protected function getPrefixNameEventIdentity(): ?string

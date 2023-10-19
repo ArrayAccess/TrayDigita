@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-19 03:54+0700\n"
-"PO-Revision-Date: 2023-10-19 03:55+0700\n"
+"POT-Creation-Date: 2023-10-19 21:21+0700\n"
+"PO-Revision-Date: 2023-10-19 21:21+0700\n"
 "Last-Translator: \n"
 "Language-Team: ArrayAccess\n"
 "Language: id\n"
@@ -47,21 +47,21 @@ msgctxt "benchmark"
 msgid "Service"
 msgstr "Layanan"
 
-#: Benchmark/Middlewares/DebuggingMiddleware.php:201
-#: Benchmark/Middlewares/DebuggingMiddleware.php:205
-#: Benchmark/Middlewares/DebuggingMiddleware.php:255
+#: Benchmark/Middlewares/DebuggingMiddleware.php:212
+#: Benchmark/Middlewares/DebuggingMiddleware.php:216
+#: Benchmark/Middlewares/DebuggingMiddleware.php:267
 msgctxt "benchmark"
 msgid "rendered time"
 msgstr "waktu pemuatan"
 
-#: Benchmark/Middlewares/DebuggingMiddleware.php:203
-#: Benchmark/Middlewares/DebuggingMiddleware.php:207
-#: Benchmark/Middlewares/DebuggingMiddleware.php:262
+#: Benchmark/Middlewares/DebuggingMiddleware.php:214
+#: Benchmark/Middlewares/DebuggingMiddleware.php:218
+#: Benchmark/Middlewares/DebuggingMiddleware.php:274
 msgctxt "benchmark"
 msgid "memory usage"
 msgstr "penggunaan memori"
 
-#: Benchmark/Middlewares/DebuggingMiddleware.php:260
+#: Benchmark/Middlewares/DebuggingMiddleware.php:272
 msgctxt "benchmark"
 msgid "peak memory usage"
 msgstr "penggunaan puncak memori"
@@ -621,29 +621,29 @@ msgctxt "console"
 msgid "Press %s to exit."
 msgstr "Tekan %s untuk keluar."
 
-#: Console/Command/ChecksumGenerator.php:60
+#: Console/Command/ChecksumGenerator.php:61
 msgctxt "console"
 msgid "Create list of core file checksums."
 msgstr "Membuat berkas daftar inti ceksum."
 
-#: Console/Command/ChecksumGenerator.php:69
+#: Console/Command/ChecksumGenerator.php:70
 msgctxt "console"
 msgid "Display checksums on terminal without writing to disk"
 msgstr "Tampilkan checksum di terminal tanpa menulis ke disk"
 
-#: Console/Command/ChecksumGenerator.php:79
+#: Console/Command/ChecksumGenerator.php:80
 #, php-format
 msgctxt "console"
 msgid "The %s creating checksum files on %s directory."
 msgstr "%s membuat berkas ceksum pada direktori %s."
 
-#: Console/Command/ChecksumGenerator.php:121
+#: Console/Command/ChecksumGenerator.php:122
 #, php-format
 msgctxt "console"
 msgid "Files will be put in directory: %s"
 msgstr "Berkas akan diletakkan pada direktori: %s"
 
-#: Console/Command/ChecksumGenerator.php:133
+#: Console/Command/ChecksumGenerator.php:134
 #: Console/Command/CommandGenerator.php:333
 #: Console/Command/ControllerGenerator.php:296
 #: Console/Command/DatabaseChecker.php:1255
@@ -657,7 +657,7 @@ msgctxt "console"
 msgid "Are you sure to continue (Yes/No)?"
 msgstr "Apakah anda yakin ingin melanjutkan (Yes/No)?"
 
-#: Console/Command/ChecksumGenerator.php:148
+#: Console/Command/ChecksumGenerator.php:149
 #: Console/Command/CommandGenerator.php:346
 #: Console/Command/ControllerGenerator.php:309
 #: Console/Command/DatabaseChecker.php:1270
@@ -671,7 +671,7 @@ msgctxt "console"
 msgid "Please enter valid answer! (Yes / No)"
 msgstr "Mohon masukkan jawaban yang benar! (Yes/No)"
 
-#: Console/Command/ChecksumGenerator.php:160
+#: Console/Command/ChecksumGenerator.php:161
 #: Console/Command/CommandGenerator.php:390
 #: Console/Command/ControllerGenerator.php:351
 #: Console/Command/DatabaseChecker.php:1282
@@ -685,12 +685,12 @@ msgctxt "console"
 msgid "Operation cancelled!"
 msgstr "Operasi dibatalkan!"
 
-#: Console/Command/ChecksumGenerator.php:271
+#: Console/Command/ChecksumGenerator.php:273
 msgctxt "console"
 msgid "Done!"
 msgstr "Selesai!"
 
-#: Console/Command/ChecksumGenerator.php:283
+#: Console/Command/ChecksumGenerator.php:285
 msgctxt "console"
 msgid "Source"
 msgstr "Sumber"
@@ -1955,6 +1955,134 @@ msgstr "versi"
 msgctxt "template"
 msgid "unknown"
 msgstr "tak diketahui"
+
+#: Uploader/Chunk.php:132
+msgctxt "chunk-uploader"
+msgid "Storage directory could not be empty or whitespace only."
+msgstr "Direktori penyimpanan tidak dapat kosong atau berupa whitespace saja."
+
+#: Uploader/Chunk.php:142
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Directory %s is not exist"
+msgstr "Direktori %s tidak ada"
+
+#: Uploader/Chunk.php:154
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Directory %s is not writable"
+msgstr "Direktori %s tidak dapat ditulisi"
+
+#: Uploader/ChunkHandler.php:116 Uploader/ChunkProcessor.php:223
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Request id \"%s\" is not valid"
+msgstr "Request id \"%s\" tidak sah"
+
+#: Uploader/ChunkHandler.php:224
+msgctxt "chunk-uploader"
+msgid "Cache upload storage is not writable."
+msgstr "Direktori penyimpanan cache tidak dapat ditulisi."
+
+#: Uploader/ChunkHandler.php:276
+msgctxt "chunk-uploader"
+msgid "Upload cache file is not writable."
+msgstr "Berkas cache unggahan tidak dapat ditulisi."
+
+#: Uploader/ChunkHandler.php:290
+msgctxt "chunk-uploader"
+msgid "Can not create cached stream."
+msgstr "Tidak dapat membuat cached stream."
+
+#: Uploader/ChunkHandler.php:301
+msgctxt "chunk-uploader"
+msgid "Cache file has been locked."
+msgstr "Berkas cache terkunci."
+
+#: Uploader/ChunkHandler.php:395
+msgctxt "chunk-uploader"
+msgid "Offset upload position is invalid."
+msgstr "Posisi offset unggahan tidak sah."
+
+#: Uploader/ChunkHandler.php:427
+msgctxt "chunk-uploader"
+msgid "Source uploaded file does not exist."
+msgstr "Berkas sumber yang diunggah tidak ada."
+
+#: Uploader/ChunkHandler.php:447
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Upload cache file is not ready to move : (%d)."
+msgstr "Berkas cache yang diunggah belum siap dipindahkan : (%d)."
+
+#: Uploader/ChunkHandler.php:496
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Target file \"%s\" is not writable."
+msgstr "Berkas tujuan \"%s\" tidak dapat ditulisi."
+
+#: Uploader/ChunkHandler.php:516
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Target directory \"%s\" is not writable."
+msgstr "Direktori tujuan \"%s\" tidak dapat ditulisi."
+
+#: Uploader/ChunkProcessor.php:46
+msgctxt "chunk-uploader"
+msgid "Uploaded files does not contain file name."
+msgstr "Berkas terunggah tidak mempunyai nama berkas."
+
+#: Uploader/ChunkProcessor.php:137
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Content-Range \"%s\" is invalid"
+msgstr "Content-Range \"%s\" tidak sah"
+
+#: Uploader/ChunkProcessor.php:152
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Content-Range unit \"%s\" is invalid"
+msgstr "Unit Content-Range \"%s\" tidak sah"
+
+#: Uploader/ChunkProcessor.php:163
+msgctxt "chunk-uploader"
+msgid "System does not support unknown size"
+msgstr "Sistem tidak mendukung ukuran yang tidak diketahui"
+
+#: Uploader/ChunkProcessor.php:184
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Uploaded file size is bigger than allowed size: %s."
+msgstr ""
+"Ukuran berkas yang diunggah lebih besar dari ukuran yang diperbolehkan: %s."
+
+#: Uploader/ChunkProcessor.php:200
+#, php-format
+msgctxt "chunk-uploader"
+msgid "Uploaded file size range is less than allowed minimum size: %s."
+msgstr ""
+"Ukuran rentang berkas yang diunggah kurang dari ukuran minimum yang "
+"diperbolehkan: %s."
+
+#: Uploader/ChunkProcessor.php:214
+msgctxt "chunk-uploader"
+msgid "Content-Range start bytes must be zero without Request-Id."
+msgstr "Content-Range byte awal harus nol atau tanpa Request-Id."
+
+#: Uploader/ChunkProcessor.php:234
+msgctxt "chunk-uploader"
+msgid "Content-Range start bytes must be greater zero with Request-Id."
+msgstr "Content-Range awal harus lebih besar dari nol dengan Id Permintaan."
+
+#: Uploader/ChunkProcessor.php:246
+msgctxt "chunk-uploader"
+msgid "Uploaded file size is bigger than ending size."
+msgstr "Ukuran berkas yang diunggah lebih besar dari ukuran akhir."
+
+#: Uploader/ChunkProcessor.php:255
+msgctxt "chunk-uploader"
+msgid "Range size is bigger than file size."
+msgstr "Ukuran rentang lebih besar dari ukuran berkas."
 
 #~ msgctxt "console"
 #~ msgid "No task in queue"

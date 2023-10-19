@@ -19,6 +19,7 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function sprintf;
+use function var_dump;
 
 final class ChunkProcessor
 {
@@ -41,7 +42,10 @@ final class ChunkProcessor
         $clientFileName = $this->uploadedFile->getClientFilename();
         if ($clientFileName === null) {
             throw new UnsupportedArgumentException(
-                'Uploaded files does not contain file name.'
+                $this->chunk->translateContext(
+                    'Uploaded files does not contain file name.',
+                    'chunk-uploader'
+                )
             );
         }
         if ($requestIdHeader !== null) {
@@ -129,7 +133,10 @@ final class ChunkProcessor
             if (!$this->contentRangeHeader->valid) {
                 throw new InvalidContentRange(
                     sprintf(
-                        'Content range "%s" is invalid',
+                        $this->chunk->translateContext(
+                            'Content-Range "%s" is invalid',
+                            'chunk-uploader'
+                        ),
                         $this->contentRangeHeader->header
                     )
                 );
@@ -141,7 +148,10 @@ final class ChunkProcessor
             )) {
                 throw new InvalidContentRange(
                     sprintf(
-                        'Content range unit "%s" is invalid',
+                        $this->chunk->translateContext(
+                            'Content-Range unit "%s" is invalid',
+                            'chunk-uploader'
+                        ),
                         $this->contentRangeHeader->unit
                     )
                 );
@@ -149,40 +159,70 @@ final class ChunkProcessor
 
             if (!is_int($this->contentRangeHeader->size)) {
                 throw new ContentRangeIsNotFulFilledException(
-                    'System does not support unknown size'
+                    $this->chunk->translateContext(
+                        'System does not support unknown size',
+                        'chunk-uploader'
+                    )
                 );
             }
         }
 
         $size = $this->contentRangeHeader->size;
         $limit = $this->chunk->getLimitMaxFileSize();
+        $minimum = $this->chunk->getLimitMinimumFileSize();
         $size = !is_int($size) ? null : $size;
         $ranges = $this->contentRangeHeader->ranges;
         $start  = is_array($ranges) ? $ranges[0] : null;
         $end  = is_array($ranges) ? $ranges[1] : null;
-        if ($limit !== null && $limit > 0 && (
+        if ($limit !== null && $limit > 0 && is_int($size) && (
             $size > $limit // limit size total
-            || $end > $limit // limit position
+            || is_int($end) && $end > $limit // limit position
         )) {
             throw new OutOfRangeException(
                 sprintf(
-                    'Uploaded file size is bigger than allowed size: %s.',
+                    $this->chunk->translateContext(
+                        'Uploaded file size is bigger than allowed size: %s.',
+                        'chunk-uploader'
+                    ),
                     Consolidation::sizeFormat($limit, 4)
                 )
             );
         }
+
+        if ($minimum !== null && is_int($size) && $size > $minimum && (
+            $start !== null && $end !== null
+            && $minimum > ($end - $start)
+            && $size > ($start + $end)
+        )) {
+            throw new OutOfRangeException(
+                sprintf(
+                    $this->chunk->translateContext(
+                        'Uploaded file size range is less than allowed minimum size: %s.',
+                        'chunk-uploader'
+                    ),
+                    Consolidation::sizeFormat($minimum, 4)
+                )
+            );
+        }
+
         if ($this->isNewRequestId) {
             if ($start !== null && $start > 0) {
                 throw new InvalidOffsetPositionException(
                     $start,
                     $this->contentRangeHeader->size,
-                    'Content-Range start bytes must be zero without Request-Id.'
+                    $this->chunk->translateContext(
+                        'Content-Range start bytes must be zero without Request-Id.',
+                        'chunk-uploader'
+                    )
                 );
             }
         } elseif (!$this->requestIdHeader->valid) {
             throw new InvalidRequestId(
                 sprintf(
-                    'Request id "%s" is not valid',
+                    $this->chunk->translateContext(
+                        'Request id "%s" is not valid',
+                        'chunk-uploader'
+                    ),
                     $this->requestIdHeader->header
                 )
             );
@@ -190,7 +230,10 @@ final class ChunkProcessor
             throw new InvalidOffsetPositionException(
                 $start,
                 $size,
-                'Content-Range start bytes must be greater zero with Request-Id.'
+                $this->chunk->translateContext(
+                    'Content-Range start bytes must be greater zero with Request-Id.',
+                    'chunk-uploader'
+                )
             );
         }
 
@@ -199,13 +242,19 @@ final class ChunkProcessor
         $endSize = ($end + 1) - $start;
         if ($endSize < $streamSize) {
             throw new OutOfRangeException(
-                'Uploaded file size is bigger than ending size.'
+                $this->chunk->translateContext(
+                    'Uploaded file size is bigger than ending size.',
+                    'chunk-uploader'
+                )
             );
         }
 
         if ($size !== null && $size < $streamSize) {
             throw new OutOfRangeException(
-                'Range size is bigger than file size.'
+                $this->chunk->translateContext(
+                    'Range size is bigger than file size.',
+                    'chunk-uploader'
+                )
             );
         }
 

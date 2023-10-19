@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Database\Wrapper;
 
 use ArrayAccess\TrayDigita\Database\Connection;
+use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
+use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use ArrayAccess\TrayDigita\Traits\Service\CallStackTraceTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Conversion;
 use DateTimeZone;
@@ -21,9 +23,10 @@ use function is_string;
 use function preg_match;
 use function trim;
 
-final class DriverWrapper extends AbstractDriverMiddleware
+final class DriverWrapper extends AbstractDriverMiddleware implements ManagerIndicateInterface
 {
-    use CallStackTraceTrait;
+    use CallStackTraceTrait,
+        ManagerDispatcherTrait;
 
     public function __construct(
         private readonly Connection $databaseConnection,
@@ -32,32 +35,27 @@ final class DriverWrapper extends AbstractDriverMiddleware
         parent::__construct($wrappedDriver);
     }
 
+    protected function getPrefixNameEventIdentity(): ?string
+    {
+        return 'connection';
+    }
+
     public function getDatabaseConnection(): Connection
     {
         return $this->databaseConnection;
+    }
+
+    public function getManager(): ?ManagerInterface
+    {
+        return $this->databaseConnection->getManager();
     }
 
     public function connect(#[SensitiveParameter] array $params) : DoctrineConnection
     {
         $this->assertCallstack();
 
-        $container = $this->databaseConnection->getContainer();
-        try {
-            $manager = $container->has(ManagerInterface::class)
-                ? $container->get(ManagerInterface::class)
-                : null;
-        } catch (Throwable) {
-            $manager = null;
-        }
-        $manager = $manager instanceof ManagerInterface ? $manager : null;
-
         // @dispatch(connection.beforeConnect)
-        $manager?->dispatch(
-            'connection.beforeConnect',
-            $params,
-            $this->databaseConnection,
-            $this,
-        );
+        $this->dispatchBefore($params, $this->databaseConnection);
 
         try {
             $connection = new ConnectionWrapper(
@@ -67,8 +65,7 @@ final class DriverWrapper extends AbstractDriverMiddleware
 
             $this->initConnection($connection);
             // @dispatch(connection.connect)
-            $manager?->dispatch(
-                'connection.connect',
+            $this->dispatchCurrent(
                 $params,
                 $this->databaseConnection,
                 $this,
@@ -78,8 +75,7 @@ final class DriverWrapper extends AbstractDriverMiddleware
         } finally {
             $this->resetCallstack();
             // @dispatch(connection.afterConnect)
-            $manager?->dispatch(
-                'connection.afterConnect',
+            $this->dispatchAfter(
                 $params,
                 $this->databaseConnection,
                 $this,
@@ -90,6 +86,8 @@ final class DriverWrapper extends AbstractDriverMiddleware
 
     private function initConnection(Driver\Connection $connection): void
     {
+        // @dispatch(connection.beforeInitConnection)
+        $this->dispatchBefore($connection, $this->databaseConnection);
         $platform = $this->wrappedDriver->getDatabasePlatform();
         $query = '';
         $config = $this->databaseConnection->getDatabaseConfig();
@@ -148,8 +146,25 @@ final class DriverWrapper extends AbstractDriverMiddleware
             $query = "SET SESSION TIME_ZONE='$timezone';";
         }
         try {
-            $query && $connection->exec($query);
+            if ($query) {
+                $result = $connection->exec($query);
+            }
+            // @dispatch(connection.initConnection)
+            $this->dispatchCurrent(
+                $connection,
+                $this->databaseConnection,
+                $query,
+                $result??null
+            );
         } catch (Throwable) {
+        } finally {
+            // @dispatch(connection.afterInitConnection)
+            $this->dispatchAfter(
+                $connection,
+                $this->databaseConnection,
+                $query,
+                $result??null
+            );
         }
     }
 }

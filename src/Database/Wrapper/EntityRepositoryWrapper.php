@@ -44,17 +44,9 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
         return $this->repository;
     }
 
-    protected function getManagerFromContainer(): ?ManagerInterface
+    public function getManager(): ?ManagerInterface
     {
-        $container = $this->databaseConnection->getContainer();
-        try {
-            $manager = $container->has(ManagerInterface::class)
-                ? $container->get(ManagerInterface::class)
-                : null;
-        } catch (Throwable) {
-            $manager = null;
-        }
-        return $manager instanceof ManagerInterface ? $manager : null;
+        return $this->databaseConnection->getManager();
     }
 
     public function find($id, $lockMode = null, $lockVersion = null)

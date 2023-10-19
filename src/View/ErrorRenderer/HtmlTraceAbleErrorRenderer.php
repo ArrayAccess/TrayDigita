@@ -84,6 +84,7 @@ class HtmlTraceAbleErrorRenderer extends AbstractErrorRenderer
                 return $view->render(
                     $path,
                     [
+                        'displayErrorDetails' => false,
                         'exception' => $exception
                     ]
                 );

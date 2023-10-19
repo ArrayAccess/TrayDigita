@@ -21,6 +21,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use function basename;
+use function clearstatcache;
 use function date;
 use function dirname;
 use function error_clear_last;
@@ -250,6 +251,7 @@ class ChecksumGenerator extends Command
                 continue;
             }
             $hash = $printMode === 'sha1' ? $sha1Sum : $md5Sum;
+            clearstatcache(true, $realPath);
             $output->writeln(
                 sprintf(
                     '<info>[%s]</info> <comment>%s</comment> %s',
