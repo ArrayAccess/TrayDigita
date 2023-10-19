@@ -31,7 +31,6 @@ use Psr\Container\ContainerInterface;
 use SensitiveParameter;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
-use function floor;
 use function is_dir;
 use function is_string;
 use function is_subclass_of;

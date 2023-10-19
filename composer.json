@@ -38,6 +38,7 @@
         "symfony/console": "^6",
         "symfony/filesystem": "^6",
         "symfony/finder": "^6",
+        "symfony/polyfill-mbstring": "^1",
         "symfony/polyfill-intl-idn": "^1",
         "symfony/yaml": "^v6",
         "symfony/http-client": "^6",

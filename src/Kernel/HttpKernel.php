@@ -30,12 +30,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Throwable;
-use function ksort;
 use function memory_get_usage;
 use function microtime;
 use function spl_object_hash;
 use function strtoupper;
-use const SORT_DESC;
 
 /**
  * @mixin RouterInterface

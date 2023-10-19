@@ -7,18 +7,10 @@ use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
-use Stringable;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
-use function is_iterable;
-use function is_scalar;
 use function is_string;
-use function preg_quote;
-use function preg_replace;
-use function str_contains;
-use const DIRECTORY_SEPARATOR;
 
 class Miscellaneous extends AbstractExtension
 {

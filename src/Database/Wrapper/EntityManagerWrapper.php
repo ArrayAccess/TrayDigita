@@ -15,7 +15,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
 use Doctrine\Persistence\ObjectRepository;
-use Throwable;
 use function get_object_vars;
 
 class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndicateInterface

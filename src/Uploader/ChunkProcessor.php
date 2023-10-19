@@ -19,7 +19,6 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function sprintf;
-use function var_dump;
 
 final class ChunkProcessor
 {
@@ -129,6 +128,7 @@ final class ChunkProcessor
             return $this->handler;
         }
 
+        $handler = new ChunkHandler($this);
         if ($this->contentRangeHeader->header) {
             if (!$this->contentRangeHeader->valid) {
                 throw new InvalidContentRange(
@@ -227,6 +227,7 @@ final class ChunkProcessor
                 )
             );
         } elseif ($start !== null && $start <= 0) {
+            $handler->deletePartial();
             throw new InvalidOffsetPositionException(
                 $start,
                 $size,
@@ -258,6 +259,6 @@ final class ChunkProcessor
             );
         }
 
-        return $this->handler = new ChunkHandler($this);
+        return $this->handler = $handler;
     }
 }

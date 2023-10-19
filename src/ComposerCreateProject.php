@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita;
 
+use ArrayAccess\TrayDigita\Util\Generator\RandomString;
 use DirectoryIterator;
 use Exception;
 use function chmod;
@@ -17,9 +18,7 @@ use function in_array;
 use function is_dir;
 use function is_link;
 use function preg_match;
-use function random_bytes;
 use function realpath;
-use function sha1;
 use function sprintf;
 use function str_replace;
 use const DIRECTORY_SEPARATOR;
@@ -362,9 +361,9 @@ PHP
                     'random_nonce_key',
                 ],
                 [
-                    sha1(random_bytes(16)),
-                    sha1(random_bytes(16)),
-                    sha1(random_bytes(16)),
+                    RandomString::randomHex(64),
+                    RandomString::randomHex(64),
+                    RandomString::randomHex(64),
                 ],
                 $configFile
             );

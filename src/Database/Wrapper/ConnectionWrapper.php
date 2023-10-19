@@ -7,12 +7,10 @@ use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
-use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\DBAL\Driver\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Driver\Statement;
-use Throwable;
 
 class ConnectionWrapper extends AbstractConnectionMiddleware implements ManagerIndicateInterface
 {

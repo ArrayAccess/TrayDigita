@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Auth\Google;
 
-use Throwable;
+use ArrayAccess\TrayDigita\Util\Generator\RandomString;
 use function chr;
 use function floor;
 use function hash_hmac;
@@ -12,11 +12,9 @@ use function is_int;
 use function is_numeric;
 use function max;
 use function min;
-use function mt_rand;
 use function ord;
 use function pack;
 use function pow;
-use function random_bytes;
 use function rawurlencode;
 use function rtrim;
 use function sprintf;
@@ -117,17 +115,12 @@ class Authenticator
 
     public static function generateRandomCode(int $length = 16, string|int|float $prefix = ''): string
     {
-        try {
-            $random = random_bytes($length);
-        } catch (Throwable) {
-            $random = '';
-            for ($i = 0; $i < $length; ++$i) {
-                $random .= chr(mt_rand(0, 256));
-            }
-        }
-
         $length += strlen($prefix);
-        return substr(rtrim(Converter::base32Encode($prefix . $random), '='), 0, $length);
+        return substr(
+            rtrim(Converter::base32Encode($prefix . RandomString::bytes($length)), '='),
+            0,
+            $length
+        );
     }
 
     /**

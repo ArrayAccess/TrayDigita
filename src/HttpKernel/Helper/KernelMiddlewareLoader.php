@@ -17,9 +17,7 @@ use function is_dir;
 use function ksort;
 use function trim;
 use function ucfirst;
-use function var_dump;
 use const SORT_ASC;
-use const SORT_DESC;
 
 class KernelMiddlewareLoader extends AbstractLoaderNameBased
 {

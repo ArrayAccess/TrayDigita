@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Util\Generator;
 
+use Random\Randomizer;
 use Stringable;
 use Throwable;
 use function chr;
+use function class_exists;
 use function function_exists;
 use function is_bool;
 use function mt_rand;
@@ -41,6 +43,8 @@ class RandomString implements Stringable
         return $randomString;
     }
 
+    private static ?Randomizer $randomizer = null;
+
     /**
      * @param int $bytes
      * @return string
@@ -51,6 +55,11 @@ class RandomString implements Stringable
 
         if ($bytes < 1) {
             return '';
+        }
+
+        if (self::$randomizer || class_exists(Randomizer::class)) {
+            self::$randomizer ??= new Randomizer();
+            return self::$randomizer->getBytes($bytes);
         }
         try {
             return random_bytes($bytes);

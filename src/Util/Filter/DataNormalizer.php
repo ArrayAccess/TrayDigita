@@ -119,7 +119,7 @@ final class DataNormalizer
         $contains = false;
         $string = preg_replace_callback('~[\xc0-\xff]+~', function ($match) use (&$contains) {
             $contains = true;
-            return utf8_encode($match[0]);
+            return StringFilter::sanitizeInvalidUtf8FromString($match[0]);
         }, $string);
         if ($contains) {
             // normalize ascii extended to ascii utf8

@@ -5,20 +5,16 @@ namespace ArrayAccess\TrayDigita\Auth\Generator;
 
 use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Util\Generator\RandomString;
 use SensitiveParameter;
-use Throwable;
 use WhichBrowser\Parser;
-use function chr;
 use function dechex;
 use function hash_equals;
 use function hash_hmac;
 use function hexdec;
 use function implode;
-use function mt_rand;
 use function preg_match;
-use function random_bytes;
 use function sha1;
-use function strlen;
 use function strtolower;
 use function strtotime;
 use function substr;
@@ -87,15 +83,7 @@ class HashIdentity
     public function generate(int $id): string
     {
         $bytes = 16;
-        try {
-            $random = random_bytes($bytes);
-        } catch (Throwable) {
-            $random = '';
-            while (strlen($random) < $bytes) {
-                $random .= chr(mt_rand(0, 255));
-            }
-        }
-
+        $random = RandomString::bytes($bytes);
         $randomKey = sha1($random);
         // get last 10 hex chars
         $randomHexNum = hexdec(substr($randomKey, -10));

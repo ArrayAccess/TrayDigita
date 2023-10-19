@@ -19,6 +19,7 @@ use SplFileInfo;
 use function file_get_contents;
 use function file_put_contents;
 use function filesize;
+use function fseek;
 use function is_array;
 use function is_file;
 use function is_float;
@@ -263,10 +264,11 @@ class ChunkHandler
 
     /**
      * @param string $mode
+     * @param int $offset
      *
      * @return int
      */
-    private function writeResource(string $mode) : int
+    private function writeResource(string $mode, int $offset) : int
     {
         if (file_exists($this->targetCacheFile) && !is_writable($this->targetCacheFile)) {
             $this->status = self::STATUS_FAIL;
@@ -308,14 +310,16 @@ class ChunkHandler
         if ($uploadedStream->isSeekable()) {
             $uploadedStream->rewind();
         }
-
+        fseek($this->cacheResource, $offset);
         $this->written = 0;
         while (!$uploadedStream->eof()) {
             $this->written += (int) fwrite($this->cacheResource, $uploadedStream->read(2048));
         }
         $isFirst = $this->size === 0;
         $stat = Consolidation::callbackReduceError(fn () => fstat($this->cacheResource));
-        $this->size = $stat ? (int) ($stat['size']??$this->size+$this->written) : ($this->size+$this->written);
+        $this->size = $stat ? (int) (
+            $stat['size']??($offset + $this->written)
+        ) : ($offset + $this->written);
         flock($this->cacheResource, LOCK_EX);
         $written = null;
         $time = $_SERVER['REQUEST_FLOAT_TIME']??null;
@@ -365,41 +369,47 @@ class ChunkHandler
                 json_encode($written, JSON_UNESCAPED_SLASHES)
             ));
         }
+
         return $this->written;
     }
 
     /**
-     * @param ?int $position
+     * @param ?int $offset
      *
      * @return int
      */
-    public function start(?int $position = null): int
+    public function start(?int $offset = null): int
     {
         if ($this->status === self::STATUS_WAITING) {
             $this->check();
         }
 
-        $position ??= $this->size;
+        $offset ??= $this->size;
         if ($this->status !== self::STATUS_READY) {
             return $this->written;
         }
 
-        $mode = 'ab+';
-        if ($position === 0) {
-            $mode = 'wb+';
-        } elseif ($position !== $this->size) {
-            throw new InvalidOffsetPositionException(
-                $position,
-                $this->size,
-                $this->processor->chunk->translateContext(
-                    'Offset upload position is invalid.',
-                    'chunk-uploader'
-                )
-            );
+        $mode = 'wb+';
+        if ($offset > 0) {
+            $allowRevertPosition = $this->processor->chunk->isAllowRevertPosition();
+            if (!$allowRevertPosition && $offset !== $this->size
+                || $allowRevertPosition && $offset > $this->size
+            ) {
+                // do delete
+                $this->deletePartial();
+                throw new InvalidOffsetPositionException(
+                    $offset,
+                    $this->size,
+                    $this->processor->chunk->translateContext(
+                        'Offset upload position is invalid.',
+                        'chunk-uploader'
+                    )
+                );
+            }
         }
 
         $this->status = self::STATUS_RESUME;
-        return $this->writeResource($mode);
+        return $this->writeResource($mode, $offset);
     }
 
     /**

@@ -433,7 +433,7 @@ class Scheduler implements ContainerAllocatorInterface, ManagerAllocatorInterfac
     }
 
     /**
-     * @param ?int $timeout in seconds. if after processed time greater than time scheduler will stopped
+     * @param ?int $timeout in seconds. if after processed time greater than time scheduler will stop
      * @return int
      */
     public function run(?int $timeout = null): int

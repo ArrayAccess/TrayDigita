@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Util\Filter;
 
-use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use Throwable;
 use Traversable;
 use function array_filter;
@@ -13,6 +12,7 @@ use function array_pop;
 use function array_unique;
 use function array_values;
 use function checkdnsrr;
+use function chr;
 use function explode;
 use function filter_var;
 use function function_exists;
@@ -28,13 +28,12 @@ use function is_object;
 use function is_string;
 use function ltrim;
 use function mb_strlen;
+use function ord;
 use function parse_url;
 use function preg_match;
 use function preg_match_all;
 use function preg_replace;
 use function preg_replace_callback;
-use function restore_error_handler;
-use function set_error_handler;
 use function sprintf;
 use function str_contains;
 use function str_replace;
@@ -283,20 +282,72 @@ final class StringFilter
     }
 
     /**
+     * alternative on @uses \utf8_encode()
+     * @param string $string
+     * @return string
+     */
+    public static function utf8Encode(string $string): string
+    {
+        $string .= $string;
+        $len = strlen($string);
+
+        for ($i = $len >> 1, $j = 0; $i < $len; ++$i, ++$j) {
+            switch (true) {
+                case $string[$i] < "\x80":
+                    $string[$j] = $string[$i];
+                    break;
+                case $string[$i] < "\xC0":
+                    $string[$j] = "\xC2";
+                    $string[++$j] = $string[$i];
+                    break;
+                default:
+                    $string[$j] = "\xC3";
+                    $string[++$j] = chr(ord($string[$i]) - 64);
+                    break;
+            }
+        }
+        return substr($string, 0, $j);
+    }
+
+    /**
+     * alternative on @uses \utf8_decode()
+     * @param string $string
+     * @return string
+     */
+    public static function utf8Decode(string $string) : string
+    {
+        $len = strlen($string);
+        for ($i = 0, $j = 0; $i < $len; ++$i, ++$j) {
+            switch ($string[$i] & "\xF0") {
+                case "\xC0":
+                case "\xD0":
+                    $c = (ord($string[$i] & "\x1F") << 6) | ord($string[++$i] & "\x3F");
+                    $string[$j] = $c < 256 ? chr($c) : '?';
+                    break;
+
+                case "\xF0":
+                    ++$i;
+                // no break
+
+                case "\xE0":
+                    $string[$j] = '?';
+                    $i += 2;
+                    break;
+
+                default:
+                    $string[$j] = $string[$i];
+            }
+        }
+        return substr($string, 0, $j);
+    }
+
+    /**
      * Sanitize non utf-8 string
      * @param string $data
      * @return string
      */
     public static function sanitizeUtf8Encode(string $data): string
     {
-        static $utf8;
-        if (!is_bool($utf8)) {
-            $utf8 = function_exists('utf8_encode');
-        }
-        if (!$utf8) {
-            return $data;
-        }
-
         $regex = '/(
             [\xC0-\xC1] # Invalid UTF-8 Bytes
             | [\xF5-\xFF] # Invalid UTF-8 Bytes
@@ -317,9 +368,11 @@ final class StringFilter
             | (?<=[\xF0-\xF4])[\x80-\xBF](?![\x80-\xBF]{2}) # Short 4 byte sequence
             | (?<=[\xF0-\xF4][\x80-\xBF])[\x80-\xBF](?![\x80-\xBF]) # Short 4 byte sequence (2)
         )/x';
-        return preg_replace_callback($regex, function ($e) {
-            return utf8_encode($e[1]);
-        }, $data);
+        return preg_replace_callback(
+            $regex,
+            static fn ($e) => StringFilter::utf8Encode($e[1]),
+            $data
+        );
     }
 
     /**
@@ -341,27 +394,10 @@ final class StringFilter
         }
 
         if (!function_exists('mb_strlen') || mb_strlen($string, 'UTF-8') !== strlen($string)) {
-            $result = false;
             // try to un-serial
-            try {
-                // add temporary error handler
-                set_error_handler(function ($errNo, $errStr) {
-                    throw new RuntimeException(
-                        $errStr,
-                        $errNo
-                    );
-                });
-                /**
-                 * use trim if possible
-                 * Serialized value could not start & end with white space
-                 */
-                /** @noinspection PhpComposerExtensionStubsInspection */
-                $result = iconv('windows-1250', 'UTF-8//IGNORE', $string);
-            } catch (Throwable) {
-                // pass
-            } finally {
-                restore_error_handler();
-            }
+            $result = Consolidation::callbackReduceError(
+                static fn () => iconv('windows-1250', 'UTF-8//IGNORE', $string)
+            );
             if ($result !== false) {
                 return self::sanitizeUtf8Encode($string);
             }

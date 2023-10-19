@@ -85,6 +85,8 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
 
     private int $maxUploadFileSize;
 
+    private bool $allowRevertPosition = true;
+
     public function __construct(
         protected ContainerInterface $container,
         ?string $storageDir = null
@@ -117,6 +119,16 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
             . DIRECTORY_SEPARATOR
             . self::SUFFIX_STORAGE_DIRECTORY;
         $this->maxUploadFileSize = Consolidation::getMaxUploadSize();
+    }
+
+    public function isAllowRevertPosition(): bool
+    {
+        return $this->allowRevertPosition;
+    }
+
+    public function setAllowRevertPosition(bool $allowRevertPosition): void
+    {
+        $this->allowRevertPosition = $allowRevertPosition;
     }
 
     public function getContainer(): ?ContainerInterface
