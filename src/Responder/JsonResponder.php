@@ -282,15 +282,19 @@ class JsonResponder implements JsonResponderInterface
             $body = $this->getStreamFactory()->createStream();
         }
         $body->write($this->encode($this->format($code, $data, $forceDebug)));
+        return $this->appendContentType(
+            $response->withStatus($code)->withBody($body)
+        );
+    }
+
+    public function appendContentType(ResponseInterface $response) : ResponseInterface
+    {
         $contentType = $this->getContentType();
         $charset = $this->getCharset();
         if ($charset) {
             $contentType .= sprintf('; charset=%s', $charset);
         }
-        return $response
-            ->withStatus($code)
-            ->withHeader('Content-Type', $contentType)
-            ->withBody($body);
+        return $response->withHeader('Content-Type', $contentType);
     }
 
     public function serveJsonMetadata(

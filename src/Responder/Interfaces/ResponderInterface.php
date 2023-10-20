@@ -18,4 +18,6 @@ interface ResponderInterface extends ManagerAllocatorInterface, ContainerAllocat
     public function getCharset() : ?string;
 
     public function serve(int $code, mixed $data = null, ?ResponseInterface $response = null) : ResponseInterface;
+
+    public function appendContentType(ResponseInterface $response) : ResponseInterface;
 }

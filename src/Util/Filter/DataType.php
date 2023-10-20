@@ -61,7 +61,7 @@ class DataType
             return false;
         }
 
-        return (bool)preg_match(
+        return (bool) preg_match(
             '~^text/x?html(?:[;\s]|$)~i',
             trim($contentType)
         );

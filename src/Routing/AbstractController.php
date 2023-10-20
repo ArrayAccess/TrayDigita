@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Http\Code;
 use ArrayAccess\TrayDigita\Module\Interfaces\ModuleInterface;
 use ArrayAccess\TrayDigita\Module\Modules;
+use ArrayAccess\TrayDigita\Responder\Interfaces\FileResponderInterface;
 use ArrayAccess\TrayDigita\Routing\Interfaces\ControllerInterface;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouteInterface;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouterInterface;
@@ -29,8 +30,8 @@ use ReflectionException;
 use ReflectionMethod;
 use Stringable;
 use Throwable;
-use function is_array;
 use function is_int;
+use function is_iterable;
 use function is_object;
 use function is_string;
 use function json_decode;
@@ -262,12 +263,14 @@ abstract class AbstractController implements ControllerInterface
             ) {
                 $statusCode = $this->statusCode;
             }
+            if ($response instanceof FileResponderInterface) {
+                // stop here
+                $response->send($request);
+            }
 
             if (!$response instanceof ResponseInterface) {
                 $this->response ??= $this->getResponseFactory()->createResponse($statusCode);
-                if (is_array($response)
-                    || $response instanceof JsonSerializable
-                ) {
+                if (is_iterable($response) || $response instanceof JsonSerializable) {
                     $this->response = $this
                         ->getJsonResponder()
                         ->serve(
@@ -283,11 +286,8 @@ abstract class AbstractController implements ControllerInterface
                                 flags: JSON_THROW_ON_ERROR
                             );
                             $this->response = $this
-                                ->response
-                                ->withHeader(
-                                    'Content-Type',
-                                    $this->getJsonResponder()->getContentType()
-                                );
+                                ->getJsonResponder()
+                                ->appendContentType($this->response);
                         } catch (Throwable) {
                         }
                     }
@@ -299,26 +299,29 @@ abstract class AbstractController implements ControllerInterface
                     || is_object($response) && method_exists($response, '__tostring')
                 ) {
                     $response = (string) $response;
+                    $useJson = false;
                     if ($this->asJSON) {
                         try {
                             json_decode(
                                 $response,
                                 flags: JSON_THROW_ON_ERROR
                             );
-                            $this->response = $this
-                                ->response
-                                ->withHeader(
-                                    'Content-Type',
-                                    $this->getJsonResponder()->getContentType()
-                                );
+                            $useJson = true;
+                            $body = $this->response->getBody()->isWritable()
+                                ? $this->response->getBody()
+                                : $this->getStreamFactory()->createStream();
+                            $body->write($response);
+                            $this->response = $this->getJsonResponder()->appendContentType(
+                                $this->response->withBody($body)
+                            );
                         } catch (Throwable) {
                         }
                     }
-                    $body = $this->response->getBody()->isWritable()
-                        ? $this->response->getBody()
-                        : $this->getStreamFactory()->createStream();
-                    $body->write($response);
-                    $this->response = $this->response->withBody($body);
+                    if (!$useJson) {
+                        return $this->response = $this
+                            ->getHtmlResponder()
+                            ->serve($statusCode, $response, $this->response);
+                    }
                 } elseif ($this->asJSON) {
                     $this->response = $this
                         ->getJsonResponder()
@@ -327,6 +330,10 @@ abstract class AbstractController implements ControllerInterface
                             $response,
                             $this->response
                         );
+                } else {
+                    $this->response = $this
+                        ->getHtmlResponder()
+                        ->serve($statusCode, $response, $this->response);
                 }
             } else {
                 $this->response = $response;

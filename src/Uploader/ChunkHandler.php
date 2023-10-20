@@ -24,6 +24,7 @@ use function is_array;
 use function is_file;
 use function is_float;
 use function is_int;
+use function is_numeric;
 use function is_string;
 use function json_decode;
 use function json_encode;
@@ -33,6 +34,7 @@ use function preg_quote;
 use function sprintf;
 use function substr;
 use function unlink;
+use function var_dump;
 use const JSON_UNESCAPED_SLASHES;
 
 class ChunkHandler
@@ -306,6 +308,10 @@ class ChunkHandler
             );
         }
 
+        $time = $_SERVER['REQUEST_TIME_FLOAT']??(
+            $_SERVER['REQUEST_TIME']??null
+        );
+        $time = is_numeric($time) ? (float) $time : microtime(true);
         $uploadedStream      = $this->processor->uploadedFile->getStream();
         if ($uploadedStream->isSeekable()) {
             $uploadedStream->rewind();
@@ -322,8 +328,6 @@ class ChunkHandler
         ) : ($offset + $this->written);
         flock($this->cacheResource, LOCK_EX);
         $written = null;
-        $time = $_SERVER['REQUEST_FLOAT_TIME']??null;
-        $time = is_float($time) ? $time : microtime(true);
         if (is_file($this->targetCacheMetaFile)) {
             $meta = Consolidation::callbackReduceError(fn () => json_decode(
                 file_get_contents($this->targetCacheMetaFile),
@@ -340,22 +344,28 @@ class ChunkHandler
             if (!$valid) {
                  Consolidation::callbackReduceError(fn () => unlink($this->targetCacheMetaFile));
             } else {
+                $endTime = microtime(true);
                 $written = $meta;
                 $written['count'] += 1;
                 $written['timing'][] = [
-                    'time' => $time,
+                    'start_time' => $time,
+                    'end_time' => $endTime,
+                    'elapsed_time' => $endTime - $time,
                     'written' => $this->written,
                     'size' => $this->size
                 ];
             }
         } elseif ($isFirst) {
+            $endTime = microtime(true);
             $written = [
                 'first_time' => $time,
                 'mimetype' => $this->processor->uploadedFile->getClientMediaType(),
                 'count' => 1,
                 'timing' => [
                     [
-                        'time' => $time,
+                        'start_time' => $time,
+                        'end_time' => $endTime,
+                        'elapsed_time' => $endTime - $time,
                         'written' => $this->written,
                         'size' => $this->size
                     ]
@@ -390,10 +400,13 @@ class ChunkHandler
         }
 
         $mode = 'wb+';
-        if ($offset > 0) {
+        if ($offset > 0 || $offset < 0) {
+            // offset start from zero
+            $maxOffset = $this->size > 0 ? ($this->size - 1) : 0;
             $allowRevertPosition = $this->processor->chunk->isAllowRevertPosition();
-            if (!$allowRevertPosition && $offset !== $this->size
-                || $allowRevertPosition && $offset > $this->size
+            if ($offset < 0
+                || !$allowRevertPosition && $offset !== $maxOffset
+                || $allowRevertPosition && $offset > $maxOffset
             ) {
                 // do delete
                 $this->deletePartial();
@@ -407,7 +420,8 @@ class ChunkHandler
                 );
             }
         }
-
+        // start offset
+        $offset = max($offset, 0);
         $this->status = self::STATUS_RESUME;
         return $this->writeResource($mode, $offset);
     }

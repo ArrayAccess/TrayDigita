@@ -85,7 +85,7 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
 
     private int $maxUploadFileSize;
 
-    private bool $allowRevertPosition = true;
+    private bool $allowRevertPosition = false;
 
     public function __construct(
         protected ContainerInterface $container,

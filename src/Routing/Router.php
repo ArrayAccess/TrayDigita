@@ -702,6 +702,7 @@ class Router implements RouterInterface, ManagerAllocatorInterface, ContainerAll
         if (!str_starts_with($path, $basePath)) {
             return null;
         }
+
         $basePath = rtrim($basePath, '/');
         $path = substr($path, strlen($basePath));
         if ($path === '') {

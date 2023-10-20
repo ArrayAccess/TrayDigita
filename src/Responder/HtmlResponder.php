@@ -124,15 +124,18 @@ class HtmlResponder implements HtmlResponderInterface
         }
 
         $body->write($this->format($code, $data));
+        return $this->appendContentType(
+            $response->withStatus($code)->withBody($body)
+        );
+    }
+
+    public function appendContentType(ResponseInterface $response) : ResponseInterface
+    {
         $contentType = $this->getContentType();
         $charset = $this->getCharset();
         if ($charset) {
             $contentType .= sprintf('; charset=%s', $charset);
         }
-
-        return $response
-            ->withStatus($code)
-            ->withHeader('Content-Type', $contentType)
-            ->withBody($body);
+        return $response->withHeader('Content-Type', $contentType);
     }
 }
