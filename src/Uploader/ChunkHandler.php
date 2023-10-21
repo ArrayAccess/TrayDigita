@@ -34,7 +34,6 @@ use function preg_quote;
 use function sprintf;
 use function substr;
 use function unlink;
-use function var_dump;
 use const JSON_UNESCAPED_SLASHES;
 
 class ChunkHandler
@@ -159,6 +158,7 @@ class ChunkHandler
         return $this->movedFile;
     }
 
+    /** @noinspection PhpUnused */
     public function getLastTarget(): ?string
     {
         return $this->lastTarget;
@@ -246,6 +246,7 @@ class ChunkHandler
 
     /**
      * @return int
+     * @noinspection PhpUnused
      */
     public function getWritten(): int
     {
@@ -321,6 +322,8 @@ class ChunkHandler
         while (!$uploadedStream->eof()) {
             $this->written += (int) fwrite($this->cacheResource, $uploadedStream->read(2048));
         }
+        // flush
+        fflush($this->cacheResource);
         $isFirst = $this->size === 0;
         $stat = Consolidation::callbackReduceError(fn () => fstat($this->cacheResource));
         $this->size = $stat ? (int) (
@@ -575,7 +578,6 @@ class ChunkHandler
     public function close(): void
     {
         if (is_resource($this->cacheResource)) {
-            fflush($this->cacheResource);
             flock($this->cacheResource, LOCK_UN);
             fclose($this->cacheResource);
             $this->cacheResource = null;
