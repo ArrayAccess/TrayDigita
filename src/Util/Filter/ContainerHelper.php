@@ -106,18 +106,20 @@ class ContainerHelper
     /**
      * @template T of object
      * @param callable|array|class-string<T>|mixed $callable
-     * @param array $arguments
      * @param ContainerInterface|null $container
+     * @param array $arguments
+     * @param ?array $fallback
      * @return array|T|mixed
      * @throws Throwable
      */
     public static function resolveCallable(
         mixed $callable,
         ?ContainerInterface $container = null,
-        array $arguments = []
+        array $arguments = [],
+        ?array $fallback = null
     ): mixed {
         $container ??= Decorator::container();
         return ContainerWrapper::maybeContainerOrCreate($container)
-            ->getResolver()->resolveCallable($callable, $arguments);
+            ->getResolver()->resolveCallable($callable, $arguments, $fallback);
     }
 }

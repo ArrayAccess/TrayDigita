@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Routing;
 
 use ArrayAccess\TrayDigita\Container\Container;
+use ArrayAccess\TrayDigita\Container\ContainerWrapper;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Http\Code;
@@ -30,6 +31,7 @@ use ReflectionException;
 use ReflectionMethod;
 use Stringable;
 use Throwable;
+use function array_values;
 use function is_int;
 use function is_iterable;
 use function is_object;
@@ -247,13 +249,33 @@ abstract class AbstractController implements ControllerInterface
                 $response = $this->getResponseFactory()->createResponse();
                 $refMethod = new ReflectionMethod($this, $method);
                 $method = $refMethod->getName();
-
+                $resolver = ContainerWrapper::maybeContainerOrCreate(
+                    $this->getContainer()
+                )->getResolver();
+                $_arguments = [
+                    ServerRequestInterface::class => $request,
+                    ResponseInterface::class => $response
+                ] + $arguments;
+                try {
+                    $_arguments = $resolver->resolveArguments(
+                        new ReflectionMethod($this, $method),
+                        $_arguments,
+                        array_values($_arguments)
+                    );
+                } catch (Throwable) {
+                    $_arguments = array_values($_arguments);
+                }
                 if ($refMethod->isPrivate()) {
                     $response = (function ($method, ...$arguments) {
                         return $this->$method(...$arguments);
-                    })->call($this, $refMethod->getName(), $request, $response, ...$arguments);
+                    })->call(
+                        $this,
+                        $resolver,
+                        $refMethod->getName(),
+                        ...$_arguments
+                    );
                 } else {
-                    $response = $this->{$refMethod->getName()}($request, $response, ...$arguments);
+                    $response = $this->{$refMethod->getName()}(...$_arguments);
                 }
             }
 

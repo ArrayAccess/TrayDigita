@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Container;
 
-use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
@@ -11,14 +10,29 @@ use ArrayAccess\TrayDigita\Container\Interfaces\UnInvokableInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Exceptions\Logical\UnResolveAbleException;
-use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
+use ArrayAccess\TrayDigita\Http\Factory\RequestFactory;
+use ArrayAccess\TrayDigita\Http\Factory\ResponseFactory;
+use ArrayAccess\TrayDigita\Http\Request;
+use ArrayAccess\TrayDigita\Http\Response;
+use ArrayAccess\TrayDigita\Http\ServerRequest;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Closure;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionNamedType;
+use ReflectionParameter;
+use ReflectionType;
 use ReflectionUnionType;
 use Throwable;
 use function array_key_exists;
@@ -26,6 +40,7 @@ use function array_unshift;
 use function class_exists;
 use function count;
 use function end;
+use function gettype;
 use function is_a;
 use function is_array;
 use function is_callable;
@@ -37,8 +52,14 @@ use function sprintf;
 
 class ContainerResolver implements ContainerIndicateInterface
 {
+    private bool $hasAliasedMethod;
+    private bool $hasParameterMethod;
+
     public function __construct(protected ContainerInterface $container)
     {
+        $isContainer = $this->container instanceof ContainerInterface;
+        $this->hasAliasedMethod = $isContainer|| method_exists($this->container, 'getAliases');
+        $this->hasParameterMethod = $isContainer || method_exists($this->container, 'getParameters');
     }
 
     public function getContainer(): ContainerInterface
@@ -50,20 +71,21 @@ class ContainerResolver implements ContainerIndicateInterface
      * @template T of object
      * @param callable|array|class-string<T>|mixed $callable
      * @param array $arguments
+     * @param array|null $fallback
      * @return array|T|mixed
      * @throws Throwable
      */
-    public function resolveCallable(mixed $callable, array $arguments = []): mixed
-    {
+    public function resolveCallable(
+        mixed $callable,
+        array $arguments = [],
+        ?array $fallback = null
+    ): mixed {
         $container = $this->getContainer();
         $value = $callable;
-        if (is_string($callable)
-            && Consolidation::isValidClassName($callable)
-            && class_exists($callable)
-        ) {
+        if (is_string($callable) && class_exists($callable)) {
             $ref = new ReflectionClass($callable);
             if ($ref->isInstantiable()) {
-                $arguments = $this->resolveArguments($ref, $arguments);
+                $arguments = $this->resolveArguments($ref, $arguments, $fallback);
                 // resolver empty arguments when auto resolve enabled
                 $value = new $callable(
                     ...$arguments
@@ -164,14 +186,217 @@ class ContainerResolver implements ContainerIndicateInterface
     }
 
     /**
+     * Resolve argument for builtin & object
+     *
+     * @param ReflectionNamedType $type
+     * @param mixed $argumentValue
+     * @param $found
+     * @return mixed
+     */
+    private function resolveTheArgumentObjectBuiltin(
+        ReflectionNamedType $type,
+        mixed $argumentValue,
+        &$found = null
+    ) : mixed {
+        $found = false;
+        if ($argumentValue === null && $type->allowsNull()) {
+            $found = true;
+            return null;
+        }
+        if ($type->isBuiltin()) {
+            $argType = gettype($argumentValue);
+            $found = $argType === $type->getName();
+            return $found ? $argumentValue : null;
+        }
+        if (is_object($argumentValue) && is_a($argumentValue, $type->getName())) {
+            $found = true;
+            return $argumentValue;
+        }
+        return null;
+    }
+
+    private function resolveFactoryObject(ReflectionNamedType $type, &$found = null)
+    {
+        $found = false;
+        if ($type->isBuiltin()) {
+            return null;
+        }
+        $name = $type->getName();
+        $factory = [
+            ServerRequest::class => ServerRequestInterface::class,
+            Request::class => RequestInterface::class,
+            Response::class => ResponseInterface::class,
+            ServerRequestInterface::class => ServerRequestInterface::class,
+            RequestInterface::class => RequestInterface::class,
+            ResponseInterface::class => ResponseInterface::class,
+        ];
+        if (!isset($factory[$name])) {
+            return null;
+        }
+        $container = $this->getContainer();
+        $name = $factory[$name];
+        switch ($name) {
+            case RequestInterface::class:
+            case ServerRequestInterface::class:
+                $found = true;
+                $serverRequest = ServerRequest::fromGlobals(
+                    ContainerHelper::use(ServerRequestFactoryInterface::class, $container),
+                    ContainerHelper::use(StreamFactoryInterface::class, $container)
+                );
+                if ($name === ServerRequestInterface::class) {
+                    return $serverRequest;
+                }
+                return (ContainerHelper::getNull(
+                    RequestFactoryInterface::class,
+                    $this->getContainer()
+                )??new RequestFactory())->createRequest($serverRequest->getMethod(), $serverRequest->getUri());
+            case ResponseInterface::class:
+                $found = true;
+                return (ContainerHelper::getNull(
+                    ResponseFactoryInterface::class,
+                    $this->getContainer()
+                )??new ResponseFactory())->createResponse();
+        }
+        return null;
+    }
+
+    private function resolveInternalArgument(
+        ReflectionParameter $parameter,
+        ReflectionType $refType,
+        int $offset,
+        array $arguments,
+        array $containerParameters,
+        array $containerAliases,
+        array &$paramArguments,
+        &$paramFound = null
+    ): void {
+        $paramFound = false;
+        if ($refType instanceof ReflectionUnionType) {
+            foreach ($refType->getTypes() as $type) {
+                if ($type instanceof ReflectionNamedType) {
+                    $this->resolveInternalArgument(
+                        $parameter,
+                        $type,
+                        $offset,
+                        $arguments,
+                        $containerParameters,
+                        $containerAliases,
+                        $paramArguments,
+                        $paramFound
+                    );
+                    if ($paramFound) {
+                        return;
+                    }
+                }
+            }
+            return;
+        }
+
+        if (!$refType instanceof ReflectionNamedType) {
+            return;
+        }
+
+        $parameterName = $parameter->getName();
+        $refName = $refType->getName();
+        if ($arguments !== []) {
+            foreach ([$refName, $parameterName, $offset] as $val) {
+                if (!array_key_exists($val, $arguments)) {
+                    continue;
+                }
+                $value = $this->resolveTheArgumentObjectBuiltin($refType, $arguments[$val], $paramFound);
+                if ($paramFound) {
+                    $paramArguments[$parameter->getName()] = $value;
+                    return;
+                }
+            }
+        }
+
+        if (array_key_exists($parameterName, $containerParameters)) {
+            $value = $this->resolveTheArgumentObjectBuiltin(
+                $refType,
+                $containerParameters[$parameterName],
+                $paramFound
+            );
+            if ($paramFound) {
+                $paramArguments[$parameterName] = $value;
+                return;
+            }
+        }
+
+        if ($refName === ContainerInterface::class || is_a($refName, $this->container::class)) {
+            $paramFound = true;
+            if ($this->container->has($refName)) {
+                try {
+                    $param = $this->container->get($refName);
+                    if (is_object($param) && is_a($param, ContainerInterface::class)) {
+                        $paramArguments[$parameterName] = $param;
+                        return;
+                    }
+                } catch (Throwable) {
+                }
+            }
+            $paramArguments[$parameterName] = $this->container;
+            return;
+        }
+
+        if (!$refType->isBuiltin()) {
+            if ($this->container->has($refName)) {
+                try {
+                    $value = $this->resolveTheArgumentObjectBuiltin(
+                        $refType,
+                        $this->container->get($refName),
+                        $paramFound
+                    );
+                    if ($paramFound) {
+                        $paramArguments[$parameterName] = $value;
+                        return;
+                    }
+                } catch (Throwable) {
+                }
+            }
+            if (isset($containerAliases[$parameterName])
+                && $this->container->has($containerAliases[$parameterName])
+            ) {
+                try {
+                    $value = $this->resolveTheArgumentObjectBuiltin(
+                        $refType,
+                        $this->container->get($containerAliases[$parameterName]),
+                        $paramFound
+                    );
+                    if ($paramFound) {
+                        $paramArguments[$parameterName] = $value;
+                        return;
+                    }
+                } catch (Throwable) {
+                }
+            }
+        }
+        if (($isDefault = $parameter->isDefaultValueAvailable())
+            || $parameter->allowsNull()
+        ) {
+            $paramFound = true;
+            try {
+                $paramArguments[$parameterName] = $isDefault ? $parameter->getDefaultValue() : null;
+                return;
+            } catch (ReflectionException) {
+            }
+        }
+        if ($paramFound) {
+            return;
+        }
+        $res = $this->resolveFactoryObject($refType, $paramFound);
+        if ($paramFound) {
+            $paramArguments[$parameterName] = $res;
+        }
+    }
+
+    /**
      * @throws Throwable
-     * @throws ContainerNotFoundException
-     * @throws ContainerFrozenException
-     * @throws UnResolveAbleException
      */
     public function resolveArguments(
         ReflectionClass|ReflectionFunctionAbstract $reflection,
-        $arguments
+        $arguments,
+        ?array $fallback = null
     ): array {
         $reflectionName = $reflection->getName();
         $reflection = $reflection instanceof ReflectionClass
@@ -182,105 +407,34 @@ class ContainerResolver implements ContainerIndicateInterface
         /*if (!empty($arguments) && count($arguments) === $reflection->getNumberOfRequiredParameters()) {
             return $arguments;
         }*/
-
         $parameters = $reflection?->getParameters()??[];
         $container = $this->getContainer();
-        $containerParameters = method_exists($container, 'getParameters')
-            ? $container->getParameters()
-            : [];
-        $containerParameters = (array) $containerParameters;
-        $containerAliases = method_exists($container, 'getAliases')
-            ? $container->getAliases()
-            : [];
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+        $containerParameters = (array) ($this->hasParameterMethod ? $container->getParameters() : []);
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+        $containerAliases = (array) ($this->hasAliasedMethod ? $container->getAliases() : []);
         $paramArguments = [];
-        foreach ($parameters as $parameter) {
-            $argumentName = $parameter->getName();
+        foreach ($parameters as $offset => $parameter) {
             $type = $parameter->getType();
-            if ($type instanceof ReflectionUnionType) {
-                foreach ($type->getTypes() as $unionType) {
-                    if (!$unionType instanceof ReflectionNamedType
-                        || $unionType->isBuiltin()
-                    ) {
-                        continue;
-                    }
-
-                    $name = $unionType->getName();
-                    if ($name === ContainerInterface::class
-                        || is_a($name, __CLASS__)
-                        || $container->has($name)
-                    ) {
-                        $type = $unionType;
-                        break;
-                    }
-                }
-            }
-            if (!$type instanceof ReflectionNamedType
-                || $type->isBuiltin()
-            ) {
-                if (isset($arguments[$parameter->getName()])) {
-                    $paramArguments[$argumentName] = $containerParameters[$parameter->getName()];
-                    continue;
-                }
-                if (array_key_exists($parameter->getName(), $containerParameters)) {
-                    $paramArguments[$argumentName] = $containerParameters[$parameter->getName()];
-                    continue;
-                }
-
-                if ($parameter->isDefaultValueAvailable()) {
-                    $paramArguments[$argumentName] = $parameter->getDefaultValue();
-                    continue;
-                }
-                if ($parameter->allowsNull()) {
-                    $paramArguments[$argumentName] = null;
-                    continue;
-                }
-                $paramArguments = [];
-                break;
-            }
-
-            if (isset($arguments[$parameter->getName()])) {
-                $paramArguments[$argumentName] = $arguments[$parameter->getName()];
+            $this->resolveInternalArgument(
+                $parameter,
+                $type,
+                $offset,
+                $arguments,
+                $containerParameters,
+                $containerAliases,
+                $paramArguments,
+                $found
+            );
+            if ($found) {
                 continue;
             }
-
-            $name = $type->getName();
-            if ($name === ContainerInterface::class
-                || is_a($name, __CLASS__)
-            ) {
-                $paramArguments[$argumentName] = $container->has($name)
-                    ? $container->get($name)
-                    : $container;
-                continue;
+            // go to default fallback
+            if ($fallback && count($fallback) > $reflection->getNumberOfRequiredParameters()) {
+                return $fallback;
             }
-            if (!$container->has($name)
-                && isset($containerAliases[$name])
-                && $container->has($containerAliases[$name])
-            ) {
-                $paramArguments[$argumentName] = $container->get($containerAliases[$name]);
-                continue;
-            }
-
-            if (!$container->has($name)) {
-                if (array_key_exists($name, $containerParameters)) {
-                    $param = $containerParameters[$name];
-                    if (is_string($param) && $container->has($param)) {
-                        $param = $container->get($param);
-                    }
-                    $paramArguments[$argumentName] = $param;
-                    continue;
-                }
-                if ($parameter->isDefaultValueAvailable()) {
-                    $paramArguments[$argumentName] = $parameter->getDefaultValue();
-                    continue;
-                }
-                if ($parameter->allowsNull()) {
-                    $paramArguments[$argumentName] = null;
-                    continue;
-                }
-                $paramArguments = [];
-                break;
-            }
-            $paramArguments[$argumentName] = $container->get($name);
+            $paramArguments = [];
+            break;
         }
         if (($required = $reflection?->getNumberOfRequiredParameters()??0) > count($paramArguments)) {
             throw new UnResolveAbleException(
