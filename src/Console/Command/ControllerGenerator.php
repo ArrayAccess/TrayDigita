@@ -49,7 +49,7 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $controllerDir = null;
+    private ?string $controllerDirectory = null;
 
     private string $controllerNameSpace;
 
@@ -61,7 +61,7 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
         );
         if ($kernel instanceof BaseKernel) {
             $this->controllerNameSpace = $kernel->getControllerNameSpace();
-            $this->controllerDir = $kernel->getRegisteredDirectories()[$this->controllerNameSpace]??null;
+            $this->controllerDirectory = $kernel->getRegisteredDirectories()[$this->controllerNameSpace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -131,7 +131,7 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
         $lowerClassName = strtolower($className);
         if ($this->controllerList === null) {
             $this->controllerList = [];
-            $controllerDirectory = $this->controllerDir;
+            $controllerDirectory = $this->controllerDirectory;
             $lengthStart = strlen($controllerDirectory) + 1;
             foreach (Finder::create()
                          ->in($controllerDirectory)
@@ -211,17 +211,17 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        if (!$this->controllerDir) {
+        if (!$this->controllerDirectory) {
             $config = ContainerHelper::getNull(Config::class, $container) ?? new Config();
             $path = $config->get('path');
             $path = $path instanceof Config ? $path : null;
-            $controllerDir = $path?->get('controller');
-            if (is_string($controllerDir) && is_dir($controllerDir)) {
-                $this->controllerDir = realpath($controllerDir) ?? $controllerDir;
+            $controllerDirectory = $path?->get('controller');
+            if (is_string($controllerDirectory) && is_dir($controllerDirectory)) {
+                $this->controllerDirectory = realpath($controllerDirectory) ?? $controllerDirectory;
             }
         }
 
-        if (!$this->controllerDir) {
+        if (!$this->controllerDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -248,7 +248,7 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
             return self::FAILURE;
         }
 
-        $fileName = $this->controllerDir
+        $fileName = $this->controllerDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $name)
             . '.php';

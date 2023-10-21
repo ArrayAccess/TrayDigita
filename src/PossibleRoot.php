@@ -60,9 +60,9 @@ final class PossibleRoot
                     $config = json_decode(file_get_contents($composerJson), true);
                     $config = is_array($config) ? $config : [];
                     $config = isset($config['config']) ? $config['config'] : [];
-                    $vendorDir = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
-                    if ($vendorDir && file_exists("$root/$vendorDir/autoload.php")) {
-                        require "$root/$vendorDir/autoload.php";
+                    $vendorDirectory = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
+                    if ($vendorDirectory && file_exists("$root/$vendorDirectory/autoload.php")) {
+                        require "$root/$vendorDirectory/autoload.php";
                     }
                 }
             }
@@ -119,8 +119,8 @@ final class PossibleRoot
                     $config = is_array($config) ? $config : [];
                     $config = isset($config['config']) ? $config['config'] : [];
                 }
-                $vendorDir = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
-                if (!is_string($vendorDir) || ! is_dir("$root/$vendorDir")) {
+                $vendorDirectory = isset($config['vendor-dir']) ? $config['vendor-dir'] : null;
+                if (!is_string($vendorDirectory) || ! is_dir("$root/$vendorDirectory")) {
                     $root = dirname(TD_APP_DIRECTORY);
                 }
                 self::$composerJsonConfig[$composerJson] = $root;

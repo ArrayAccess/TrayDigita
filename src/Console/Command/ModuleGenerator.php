@@ -49,7 +49,7 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $moduleDir = null;
+    private ?string $moduleDirectory = null;
     private string $moduleNamespace;
 
     protected function configure() : void
@@ -60,7 +60,7 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
         );
         if ($kernel instanceof BaseKernel) {
             $this->moduleNamespace = $kernel->getControllerNameSpace();
-            $this->moduleDir = $kernel->getRegisteredDirectories()[$this->moduleNamespace]??null;
+            $this->moduleDirectory = $kernel->getRegisteredDirectories()[$this->moduleNamespace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -139,7 +139,7 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
         $lowerClassName = strtolower($className);
         if ($this->moduleList === null) {
             $this->moduleList = [];
-            $moduleDirectory = $this->moduleDir;
+            $moduleDirectory = $this->moduleDirectory;
             $lengthStart = strlen($moduleDirectory) + 1;
             foreach (Finder::create()
                          ->in($moduleDirectory)
@@ -240,17 +240,17 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        if (!$this->moduleDir) {
+        if (!$this->moduleDirectory) {
             $config = ContainerHelper::use(Config::class, $container) ?? new Config();
             $path = $config->get('path');
             $path = $path instanceof Config ? $path : null;
-            $moduleDir = $path?->get('module');
-            if (is_string($moduleDir) && is_dir($moduleDir)) {
-                $this->moduleDir = realpath($moduleDir) ?? $moduleDir;
+            $moduleDirectory = $path?->get('module');
+            if (is_string($moduleDirectory) && is_dir($moduleDirectory)) {
+                $this->moduleDirectory = realpath($moduleDirectory) ?? $moduleDirectory;
             }
         }
 
-        if (!$this->moduleDir) {
+        if (!$this->moduleDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -277,7 +277,7 @@ class ModuleGenerator extends Command implements ContainerAllocatorInterface, Ma
             return self::FAILURE;
         }
 
-        $fileName = $this->moduleDir
+        $fileName = $this->moduleDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $named['className'])
             . DIRECTORY_SEPARATOR

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Console\Command\ApplicationChecker;
 
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
-use ArrayAccess\TrayDigita\Container\Container;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,7 +36,7 @@ class ContainerChecker extends AbstractChecker
             true
         );
         if ($output->isVerbose()) {
-            if ($container instanceof Container) {
+            if ($container instanceof SystemContainerInterface) {
                 $output->writeln('', OutputInterface::VERBOSITY_VERY_VERBOSE);
                 $this->writeIndent(
                     $output,

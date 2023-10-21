@@ -86,21 +86,21 @@ class View implements ViewInterface, ManagerAllocatorInterface
     public function __construct(
         protected ContainerInterface $container,
         ?ManagerInterface $manager = null,
-        string|iterable $viewsDir = '',
+        string|iterable $viewsDirectory = '',
     ) {
         $manager ??= ContainerHelper::service(ManagerInterface::class, $this->container);
         $this->setManager($manager??Decorator::manager());
-        if (empty($viewsDir)) {
+        if (empty($viewsDirectory)) {
             $config = ContainerHelper::use(Config::class, $this->container);
             $config = $config?->get('path')??null;
             $config = $config instanceof Config ? $config : null;
             $directory = $config?->get('view');
             if ($directory) {
-                $viewsDir = $directory;
+                $viewsDirectory = $directory;
             }
         }
 
-        $this->setViewsDirectory($viewsDir);
+        $this->setViewsDirectory($viewsDirectory);
     }
 
     /**

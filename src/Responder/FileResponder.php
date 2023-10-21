@@ -56,7 +56,7 @@ class FileResponder implements FileResponderInterface
 
     const DEFAULT_MIMETYPE = 'application/octet-stream';
 
-    protected string $fileName;
+    protected string $attachmentFileName;
 
     protected int $size;
 
@@ -65,6 +65,8 @@ class FileResponder implements FileResponderInterface
     protected bool $sendAsAttachment = false;
 
     protected bool $sendRealMimeType = true;
+
+    protected bool $sendContentLength = true;
 
     protected bool $allowRange = true;
 
@@ -92,7 +94,7 @@ class FileResponder implements FileResponderInterface
             $file = new SplFileInfo($file);
         }
         $this->file = $file;
-        $this->fileName = $this->file->getBasename();
+        $this->attachmentFileName = $this->file->getBasename();
         $this->size = $this->valid() ? $this->file->getSize() : 0;
     }
 
@@ -136,14 +138,29 @@ class FileResponder implements FileResponderInterface
         return $this->sendAsAttachment;
     }
 
-    public function setFileName(string $fileName): void
+    public function isSendContentLength(): bool
     {
-        $this->fileName = $fileName;
+        return $this->sendContentLength;
+    }
+
+    public function sendContentLength(bool $enable): void
+    {
+        $this->sendContentLength = $enable;
+    }
+
+    public function setAttachmentFileName(string $fileName): void
+    {
+        $this->attachmentFileName = $fileName;
+    }
+
+    public function getAttachmentFileName(): string
+    {
+        return $this->attachmentFileName;
     }
 
     public function resetFileName(): void
     {
-        $this->fileName = $this->getFile()->getBasename();
+        $this->attachmentFileName = $this->getFile()->getBasename();
     }
 
     public function sendRealMimeType(bool $enable): void
@@ -174,14 +191,6 @@ class FileResponder implements FileResponderInterface
         return $this->boundary ??= md5(RandomString::bytes(16));
     }
 
-    public function sendLastModified(): bool
-    {
-        return $this->sendHeader(
-            'Last-Modified',
-            gmdate('Y-m-d H:i:s \G\M\T')
-        );
-    }
-
     /**
      * @return ?string
      */
@@ -200,6 +209,145 @@ class FileResponder implements FileResponderInterface
         $size = $this->size;
         // hexadecimal using hex: modification time & hex: size
         return $this->eTag = sprintf('%x-%x', $time, $size);
+    }
+
+    /**
+     * @param string $name
+     * @param string|int|float $value
+     * @param int $code
+     * @return bool
+     */
+    private function sendHeader(
+        string $name,
+        string|int|float $value,
+        int $code = 0
+    ): bool {
+        if (headers_sent()) {
+            return false;
+        }
+        $name = trim($name);
+        if ($name === '') {
+            return false;
+        }
+        $name = ucwords(str_replace(' ', '-', strtolower($name)), '-');
+        $value  = is_string($value) ? trim($value) : $value;
+        $header = $value ? "$name: $value" : $name;
+        if (isset($this->headerSent[$name])) {
+            return false;
+        }
+        $this->headerSent[$name] = $header;
+        header($header, true, $code);
+        return true;
+    }
+
+    public function sendHeaderLastModified(): bool
+    {
+        if (!$this->isSendLastModifiedTime()) {
+            return false;
+        }
+
+        return $this->sendHeader(
+            'Last-Modified',
+            gmdate('Y-m-d H:i:s \G\M\T')
+        );
+    }
+
+    /**
+     * @param string|array|null $cacheType
+     * @param int|null $maxAge
+     * @return bool
+     */
+    public function sendHeaderCache(
+        string|array|null $cacheType = null,
+        ?int $maxAge = null
+    ) : bool {
+        $data = [];
+        if ($cacheType) {
+            $cacheType = !is_array($cacheType) ? [$cacheType] : $cacheType;
+            $cacheType = array_filter($cacheType, 'is_string');
+            if (!empty($cacheType)) {
+                $cacheType = array_unique(array_map('strtolower', $cacheType));
+                $data = array_values($cacheType);
+            }
+        }
+        if ($maxAge) {
+            $data[] = sprintf('max-age=%d', $maxAge);
+        }
+        return $this->sendHeader('Cache-Control', implode(', ', $data));
+    }
+
+    /**
+     * Send accept ranges
+     *
+     * @return bool
+     */
+    public function sendHeaderAcceptRanges(): bool
+    {
+        return $this->sendHeader(
+            'Accept-Ranges',
+            $this->isAllowRange() || $this->getMaxRanges() < 1
+                ? 'bytes'
+                : 'none'
+        );
+    }
+
+    public function sendHeaderContentLength(int $length): bool
+    {
+        if (!$this->isSendContentLength()) {
+            return false;
+        }
+        return $this->sendHeader('Content-Length', $length);
+    }
+
+    public function sendHeaderEtag(): bool
+    {
+        $etag = $this->getEtag();
+        return $etag && $this->sendHeader('Etag', $etag);
+    }
+
+    public function sendHeaderContentType($contentType, int $code = 0): bool
+    {
+        return $this->sendHeader('Content-Type', $contentType, $code);
+    }
+
+    public function getDetermineMimeType(): ?string
+    {
+        if ($this->isSendRealMimeType()) {
+            $mimeType = MimeType::fileMimeType($this->file->getRealPath());
+        } else {
+            $mimeType = MimeType::mime($this->file->getExtension());
+        }
+        return $mimeType;
+    }
+
+    public function sendHeaderMimeType(): bool
+    {
+        $mimeType = $this->getDetermineMimeType();
+        return $mimeType && $this->sendHeader('Content-Type', $mimeType);
+    }
+
+    /**
+     * @return bool
+     */
+    public function sendHeaderAttachment() : bool
+    {
+        if (!$this->isSendAsAttachment()) {
+            return false;
+        }
+        return $this->sendHeader(
+            'Content-Disposition',
+            sprintf(
+                'attachment; filename="%s"',
+                rawurlencode($this->getAttachmentFileName())
+            )
+        );
+    }
+
+    public function displayRangeNotSatisfy() : never
+    {
+        $this->sendHeaderContentType('text/html', 416);
+        $this->sendHeader('Content-Range', 'bytes */'.$this->size);
+        $this->stopRequest();
     }
 
     public function send(?ServerRequestInterface $request = null): never
@@ -235,121 +383,24 @@ class FileResponder implements FileResponderInterface
                 'Header already sent'
             );
         }
-        $this->sendData($request);
+        $this->sendRequestData($request);
     }
 
-    /**
-     * @param string $name
-     * @param string|int|float $value
-     * @param int $code
-     * @return bool
-     */
-    private function sendHeader(
-        string $name,
-        string|int|float $value,
-        int $code = 0
-    ): bool {
-        if (headers_sent()) {
-            return false;
-        }
-        $name = trim($name);
-        if ($name === '') {
-            return false;
-        }
-        $name = ucwords(str_replace(' ', '-', strtolower($name)), '-');
-        $value  = is_string($value) ? trim($value) : $value;
-        $header = $value ? "$name: $value" : $name;
-        if (isset($this->headerSent[$name])) {
-            return false;
-        }
-        $this->headerSent[$name] = $header;
-        header($header, true, $code);
-        return true;
-    }
-
-    /**
-     * @param string|array|null $cacheType
-     * @param int|null $maxAge
-     * @return bool
-     */
-    public function sendCacheHeader(
-        string|array|null $cacheType = null,
-        ?int $maxAge = null
-    ) : bool {
-        $data = [];
-        if ($cacheType) {
-            $cacheType = !is_array($cacheType) ? [$cacheType] : $cacheType;
-            $cacheType = array_filter($cacheType, 'is_string');
-            if (!empty($cacheType)) {
-                $cacheType = array_unique(array_map('strtolower', $cacheType));
-                $data = array_values($cacheType);
-            }
-        }
-        if ($maxAge) {
-            $data[] = sprintf('max-age=%d', $maxAge);
-        }
-        return $this->sendHeader('Cache-Control', implode(', ', $data));
-    }
-
-    /**
-     * Send accept ranges
-     *
-     * @return bool
-     */
-    public function sendAcceptRanges(): bool
-    {
-        return $this->sendHeader(
-            'Accept-Ranges',
-            $this->isAllowRange() || $this->getMaxRanges() < 1
-                ? 'bytes'
-                : 'none'
-        );
-    }
-
-    public function sendContentLength(int $length): bool
-    {
-        return $this->sendHeader('Content-Length', $length);
-    }
-
-    public function sendEtag(): bool
-    {
-        $etag = $this->getEtag();
-        return $etag && $this->sendHeader('Etag', $etag);
-    }
-
-    public function sendContentType(string $contentType, int $code = 0): bool
-    {
-        return $this->sendHeader('Content-Type', $contentType, $code);
-    }
-
-    public function sendRangeNotSatisfy() : never
-    {
-        $this->sendContentType('text/html', 416);
-        $this->sendHeader('Content-Range', 'bytes */'.$this->size);
-        $this->stopRequest();
-    }
-
-    private function sendData(ServerRequestInterface $request) : never
+    private function sendRequestData(ServerRequestInterface $request) : never
     {
         // remove x-powered-by php
         header_remove('X-Powered-By');
         $method = strtoupper($request->getMethod());
         if ($method === 'OPTIONS') {
-            $this->sendContentType('text/html');
+            $this->sendHeaderContentType('text/html');
             // just allow options get head post only
-            $this->sendAcceptRanges();
+            $this->sendHeaderAcceptRanges();
             // 604800 is 1 week
-            $this->sendCacheHeader(maxAge: 604800);
+            $this->sendHeaderCache(maxAge: 604800);
             $this->sendHeader('Allow', implode(', ', self::ALLOWED_METHODS));
             exit(0);
         }
 
-        // get mime types
-        if ($this->isSendRealMimeType()) {
-            $mimeType = MimeType::fileMimeType($this->file->getRealPath());
-        } else {
-            $mimeType = MimeType::mime($this->file->getExtension());
-        }
 
         $fileSize = $this->size;
         $rangeHeader = trim($request->getHeaderLine('Range'));
@@ -364,6 +415,8 @@ class FileResponder implements FileResponderInterface
         /**
          * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
          */
+        // get mime types
+        $mimeType = $this->getDetermineMimeType();
         $rangeMimeType = $mimeType??self::DEFAULT_MIMETYPE;
         $totalRanges = 0;
         $maxRanges = $this->getMaxRanges();
@@ -384,7 +437,7 @@ class FileResponder implements FileResponderInterface
 
                 if (($start === '' && $end === '')) {
                     // stop
-                    $this->sendRangeNotSatisfy();
+                    $this->displayRangeNotSatisfy();
                 }
 
                 $start = $start === '' ? 0 : $start;
@@ -399,7 +452,7 @@ class FileResponder implements FileResponderInterface
                     $headers = null;
                     $ranges = null;
                     // stop
-                    $this->sendRangeNotSatisfy();
+                    $this->displayRangeNotSatisfy();
                 }
 
                 $start = (int) $start;
@@ -457,13 +510,8 @@ class FileResponder implements FileResponderInterface
         // $this->sendAcceptRanges();
         // if only 1 or empty ranges
         if (($empty = empty($ranges)) || $totalRanges === 1) {
-            if ($mimeType) {
-                $this->sendContentType($mimeType);
-            }
-
             // send cache
             // $this->sendCacheHeader(['public', 'must-revalidate'], maxAge: 604800);
-
             $startingPoint = 0;
             // if ranges
             if (!$empty) {
@@ -477,14 +525,18 @@ class FileResponder implements FileResponderInterface
                 }
             }
             // set content length
-            $this->sendContentLength($total);
-
-            if ($this->isSendLastModifiedTime()) {
-                $this->sendLastModified();
-            }
+            $this->sendHeaderContentLength($total);
+            // send mimetype header
+            $this->sendHeaderMimeType();
+            // send etag
+            $this->sendHeaderEtag();
+            // send last modifier
+            $this->sendHeaderLastModified();
+            // send attachment header
+            $this->sendHeaderAttachment();
 
             // set etag
-            $this->sendEtag();
+            $this->sendHeaderEtag();
             if ($method === 'HEAD') {
                 $this->stopRequest();
             }
@@ -503,21 +555,23 @@ class FileResponder implements FileResponderInterface
         }
 
         if (!$this->isAllowRange()) {
-            $this->sendRangeNotSatisfy();
+            $this->displayRangeNotSatisfy();
         }
 
         // get socket
         $sock = $this->getSock();
 
         // send boundary and status code -> partial content 206
-        $this->sendContentType("multipart/byteranges; boundary=$boundary", 206);
+        $this->sendHeaderContentType("multipart/byteranges; boundary=$boundary", 206);
         // send range total
-        $this->sendContentLength($rangeTotal);
+        $this->sendHeaderContentLength($rangeTotal);
         // send etag
-        $this->sendEtag();
-        if ($this->isSendLastModifiedTime()) {
-            $this->sendLastModified();
-        }
+        $this->sendHeaderEtag();
+        // send last modifier
+        $this->sendHeaderLastModified();
+        // send attachment header
+        $this->sendHeaderAttachment();
+
         // no process if method header
         if ($method === 'HEAD') {
             $this->stopRequest();

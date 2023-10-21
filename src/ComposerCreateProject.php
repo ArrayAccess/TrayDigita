@@ -64,36 +64,36 @@ class ComposerCreateProject
             return;
         }
 
-        $installDir = getcwd();
+        $installDirectory = getcwd();
         ///*
         // $package = $event->getComposer()->getPackage();
         // $event->getComposer()->getInstallationManager()->getInstallPath($package);
         $prefixUnix = DIRECTORY_SEPARATOR === '/'
             ? "#!/usr/bin/env php\n"
             : '';
-        $vendorDir = $event->getComposer()->getConfig()->get('vendor-dir');
+        $vendorDirectory = $event->getComposer()->getConfig()->get('vendor-dir');
         $consoleIO->write(
-            sprintf('<info>Install Directory</info> [%s]', $installDir),
+            sprintf('<info>Install Directory</info> [%s]', $installDirectory),
             true,
             $consoleIO::VERY_VERBOSE
         );
         $consoleIO->write(
-            sprintf('<info>Vendor Directory</info> [%s]', $vendorDir),
+            sprintf('<info>Vendor Directory</info> [%s]', $vendorDirectory),
             true,
             $consoleIO::VERY_VERBOSE
         );
-        if (!$vendorDir) {
+        if (!$vendorDirectory) {
             return;
         }
-        $vendorDir = rtrim($vendorDir, '\\/');
-        $installDir = realpath($installDir)?:$installDir;
-        $installDir = rtrim($installDir, '\\/');
-        $vendorDir = str_replace('\\', '/', $vendorDir);
-        $installDir = str_replace('\\', '/', $installDir);
-        if (!str_starts_with($vendorDir, $installDir . '/')) {
+        $vendorDirectory = rtrim($vendorDirectory, '\\/');
+        $installDirectory = realpath($installDirectory)?:$installDirectory;
+        $installDirectory = rtrim($installDirectory, '\\/');
+        $vendorDirectory = str_replace('\\', '/', $vendorDirectory);
+        $installDirectory = str_replace('\\', '/', $installDirectory);
+        if (!str_starts_with($vendorDirectory, $installDirectory . '/')) {
             return;
         }
-        $vendor = substr($vendorDir, strlen($installDir) + 1);
+        $vendor = substr($vendorDirectory, strlen($installDirectory) + 1);
         $vendor = addcslashes($vendor, "'");
         $createFiles = [
             'data/README.md' => <<<MD
@@ -349,9 +349,9 @@ use const DIRECTORY_SEPARATOR;
 PHP
         ];
         $consoleIO->write('<info>Preparing to create application structures</info>');
-        if (!file_exists($installDir . DIRECTORY_SEPARATOR . 'config.php')) {
-            if (!is_dir($installDir)) {
-                mkdir($installDir, 0755, true);
+        if (!file_exists($installDirectory . DIRECTORY_SEPARATOR . 'config.php')) {
+            if (!is_dir($installDirectory)) {
+                mkdir($installDirectory, 0755, true);
             }
             $configFile = file_get_contents(dirname(__DIR__) .'/config.example.php');
             $configFile = str_replace(
@@ -370,15 +370,15 @@ PHP
             $consoleIO->write(
                 sprintf(
                     '[GENERATING CONFIG] <comment>%s</comment>',
-                    $installDir . '/config.php'
+                    $installDirectory . '/config.php'
                 ),
                 true,
                 $consoleIO::VERBOSE
             );
-            file_put_contents($installDir . '/config.php', $configFile);
+            file_put_contents($installDirectory . '/config.php', $configFile);
         }
         foreach ($createFiles as $pathName => $content) {
-            $path = $installDir . DIRECTORY_SEPARATOR . $pathName;
+            $path = $installDirectory . DIRECTORY_SEPARATOR . $pathName;
             $isConsole = $pathName === 'bin/tray-digita';
             if (file_exists($path)) {
                 if (!$isConsole || is_link($path)) {
@@ -418,7 +418,7 @@ PHP
                 chmod($path, 0744);
             }
         }
-        $langDir = $installDir . '/app/Languages';
+        $langDirectory = $installDirectory . '/app/Languages';
         $consoleIO->write(
             '<info>Copying language files</info>',
             true,
@@ -436,10 +436,10 @@ PHP
                 continue;
             }
             $baseName = $directory->getBasename();
-            if (file_exists($langDir . DIRECTORY_SEPARATOR . $baseName)) {
+            if (file_exists($langDirectory . DIRECTORY_SEPARATOR . $baseName)) {
                 continue;
             }
-            copy($directory->getRealPath(), $langDir . DIRECTORY_SEPARATOR . $baseName);
+            copy($directory->getRealPath(), $langDirectory . DIRECTORY_SEPARATOR . $baseName);
         }
         $consoleIO->write(
             '<info>Done</info>',

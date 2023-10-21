@@ -22,7 +22,9 @@ use ArrayAccess\TrayDigita\Cache\Cache;
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Console\Application;
 use ArrayAccess\TrayDigita\Container\Container;
+use ArrayAccess\TrayDigita\Container\ContainerWrapper;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerFactoryInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Database\DatabaseEventsCollector;
@@ -43,6 +45,8 @@ use ArrayAccess\TrayDigita\Image\Factory\ImageResizerFactory;
 use ArrayAccess\TrayDigita\Image\ImageResizer;
 use ArrayAccess\TrayDigita\Image\Interfaces\ImageResizerFactoryInterface;
 use ArrayAccess\TrayDigita\Kernel\HttpKernel;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
+use ArrayAccess\TrayDigita\Kernel\Kernel;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Translator;
 use ArrayAccess\TrayDigita\Logger\Logger;
@@ -103,8 +107,12 @@ class ContainerFactory implements ContainerFactoryInterface
         RouteRunnerInterface::class => RouteRunner::class,
         MiddlewareDispatcherInterface::class => MiddlewareDispatcher::class,
         ResponseEmitterInterface::class => ResponseEmitter::class,
+        // kernel
+        KernelInterface::class => Kernel::class,
         HttpKernelInterface::class => HttpKernel::class,
+        // scheduler
         Scheduler::class => Scheduler::class,
+        // assets
         AssetsCollectionInterface::class => AssetCollection::class,
         // i18n
         TranslatorInterface::class => Translator::class,
@@ -273,17 +281,20 @@ class ContainerFactory implements ContainerFactoryInterface
         foreach ($aliases as $id => $target) {
             $container->setAlias($id, $target);
         }
+
         return $container;
     }
 
     /**
-     * @psalm-return Container|ContainerInterface
+     * @return SystemContainerInterface
      * @throws ContainerFrozenException
      */
-    public function createDefault(): ContainerInterface
+    public function createDefault(): SystemContainerInterface
     {
         $default = array_merge($this->defaultServices, self::DEFAULT_SERVICES);
         $defaultAliases = array_merge($this->defaultServiceAliases, self::DEFAULT_SERVICE_ALIASES);
-        return $this->createContainer($default, $defaultAliases);
+        return ContainerWrapper::maybeContainerOrCreate(
+            $this->createContainer($default, $defaultAliases)
+        );
     }
 }

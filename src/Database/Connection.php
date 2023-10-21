@@ -133,18 +133,18 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             if (($schema = $configuration->getSchemaAssetsFilter())) {
                 $orm->setSchemaAssetsFilter($schema);
             }
-            $entityDir = null;
+            $entityDirectory = null;
             $storage = null;
-            $proxyDir = null;
+            $proxyDirectory = null;
             if (method_exists($container, 'getParameter')) {
-                $entityDir = $container->getParameter('entitiesDir');
-                $storage = $container->getParameter('storageDir');
-                $proxyDir = $container->getParameter('proxyDir');
+                $entityDirectory = $container->getParameter('entitiesDirectory');
+                $storage = $container->getParameter('storageDirectory');
+                $proxyDirectory = $container->getParameter('proxyDirectory');
             }
 
             $storage = is_string($storage) ? $storage : $path->get('storage');
-            $entityDir = is_string($entityDir) ? $entityDir : $path->get('entity');
-            $proxyPath = is_string($proxyDir) ? $proxyDir : $database->get('proxyDir');
+            $entityDirectory = is_string($entityDirectory) ? $entityDirectory : $path->get('entity');
+            $proxyPath = is_string($proxyDirectory) ? $proxyDirectory : $database->get('proxyDirectory');
             $proxyPath = $proxyPath ?: "$storage/database/proxy";
             $proxyPath = $configuration->getProxyDir() ?: $proxyPath;
             if (!is_dir($proxyPath) && ! Consolidation::isCli()) {
@@ -158,13 +158,13 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
                 : preg_replace('~(.+)\\\[^\\\]+$~', '$1\\Storage\Proxy', __NAMESPACE__);
             if (!$metadata instanceof AttributeDriver) {
                 $metadata = new AttributeDriver(
-                    [$entityDir],
+                    [$entityDirectory],
                     true
                 );
             }
 
             $metadata->setFileExtension('.php');
-            $metadata->addPaths([$entityDir]);
+            $metadata->addPaths([$entityDirectory]);
             $orm->setMetadataDriverImpl($metadata);
             $orm->setProxyDir($proxyPath);
             $orm->setProxyNamespace($proxyNamesSpace);

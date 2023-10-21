@@ -7,6 +7,7 @@ use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Handler\Interfaces\MiddlewareDispatcherInterface;
 use ArrayAccess\TrayDigita\Http\Interfaces\ResponseDispatcherInterface;
+use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouterInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -24,6 +25,7 @@ interface HttpKernelInterface extends
     ManagerIndicateInterface,
     ContainerIndicateInterface
 {
+    public function getKernel() : KernelInterface;
 
     public function getStartMemory() : int;
 
@@ -45,6 +47,11 @@ interface HttpKernelInterface extends
      * @return array<int, array<MiddlewareInterface>>
      */
     public function getDeferredMiddlewares() : array;
-    
+
+    public function dispatchDeferredMiddleware();
+
+    /**
+     * Clear the deferred middleware
+     */
     public function clearDeferredMiddlewares();
 }

@@ -7,9 +7,9 @@ namespace ArrayAccess\TrayDigita\Kernel;
 use ArrayAccess\TrayDigita\Auth\Roles\Interfaces\PermissionInterface;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\ProfilerInterface;
 use ArrayAccess\TrayDigita\Collection\Config;
-use ArrayAccess\TrayDigita\Container\Container;
 use ArrayAccess\TrayDigita\Container\ContainerWrapper;
 use ArrayAccess\TrayDigita\Container\Factory\ContainerFactory;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\EmptyArgumentException;
@@ -267,7 +267,7 @@ final class Decorator
         return self::resolveDepend($name);
     }
 
-    private static function resolveInternal(string $name): Container|ContainerWrapper
+    private static function resolveInternal(string $name): SystemContainerInterface
     {
         $container = self::container();
         $container = ContainerWrapper::maybeContainerOrCreate($container);

@@ -49,7 +49,7 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $middlewareDir = null;
+    private ?string $middlewareDirectory = null;
 
     private string $middlewareNamespace;
 
@@ -61,7 +61,7 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
         );
         if ($kernel instanceof BaseKernel) {
             $this->middlewareNamespace = $kernel->getMiddlewareNamespace();
-            $this->middlewareDir = $kernel->getRegisteredDirectories()[$this->middlewareNamespace]??null;
+            $this->middlewareDirectory = $kernel->getRegisteredDirectories()[$this->middlewareNamespace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -139,7 +139,7 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
         $lowerClassName = strtolower($className);
         if ($this->middlewareList === null) {
             $this->middlewareList = [];
-            $middlewareDirectory = $this->middlewareDir;
+            $middlewareDirectory = $this->middlewareDirectory;
             $lengthStart = strlen($middlewareDirectory) + 1;
             foreach (Finder::create()
                          ->in($middlewareDirectory)
@@ -235,17 +235,17 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        if (!$this->middlewareDir) {
+        if (!$this->middlewareDirectory) {
             $config = ContainerHelper::use(Config::class, $container) ?? new Config();
             $path = $config->get('path');
             $path = $path instanceof Config ? $path : null;
-            $middlewareDir = $path?->get('middleware');
-            if (is_string($middlewareDir) && is_dir($middlewareDir)) {
-                $this->middlewareDir = realpath($middlewareDir) ?? $middlewareDir;
+            $middlewareDirectory = $path?->get('middleware');
+            if (is_string($middlewareDirectory) && is_dir($middlewareDirectory)) {
+                $this->middlewareDirectory = realpath($middlewareDirectory) ?? $middlewareDirectory;
             }
         }
 
-        if (!$this->middlewareDir) {
+        if (!$this->middlewareDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -272,7 +272,7 @@ class MiddlewareGenerator extends Command implements ContainerAllocatorInterface
             return self::FAILURE;
         }
 
-        $fileName = $this->middlewareDir
+        $fileName = $this->middlewareDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $named['className'])
             . '.php';

@@ -14,10 +14,8 @@ use Throwable;
 use function class_exists;
 use function is_bool;
 use function is_dir;
-use function ksort;
 use function trim;
 use function ucfirst;
-use const SORT_ASC;
 
 class KernelMiddlewareLoader extends AbstractLoaderNameBased
 {
@@ -74,53 +72,12 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
     /**
      * @var array<int, array<string, AbstractMiddleware>>
      */
-    private array $middlewares = [];
+    // private array $middlewares = [];
 
-    protected function postProcess(): void
+    /*protected function postProcess(): void
     {
-        foreach ($this->kernel->getHttpKernel()->getDeferredMiddlewares() as $priority => $middlewares) {
-            foreach ($middlewares as $middleware) {
-                $this->middlewares[$priority][] = $middleware;
-            }
-        }
-        // clear
-        $this->kernel->getHttpKernel()->clearDeferredMiddlewares();
-        ksort($this->middlewares, SORT_ASC);
-        $manager = $this->getManager();
-        foreach ($this->middlewares as $priority => $middlewares) {
-            unset($this->middlewares[$priority]);
-            foreach ($middlewares as $middleware) {
-                try {
-                    // @dispatch(kernel.beforeRegisterMiddleware)
-                    $manager?->dispatch(
-                        'kernel.beforeRegisterMiddleware',
-                        $this->kernel->getHttpKernel(),
-                        $this->kernel,
-                        $this,
-                        $middleware
-                    );
-                    $this->kernel->getHttpKernel()->addMiddleware($middleware);
-                    // @dispatch(kernel.registerMiddleware)
-                    $manager?->dispatch(
-                        'kernel.registerMiddleware',
-                        $this->kernel->getHttpKernel(),
-                        $this->kernel,
-                        $this,
-                        $middleware
-                    );
-                } finally {
-                    // @dispatch(kernel.afterRegisterMiddleware)
-                    $manager?->dispatch(
-                        'kernel.afterRegisterMiddleware',
-                        $this->kernel->getHttpKernel(),
-                        $this->kernel,
-                        $this,
-                        $middleware
-                    );
-                }
-            }
-        }
-    }
+        $this->kernel->getHttpKernel()->dispatchDeferredMiddleware();
+    }*/
 
     protected function doRegister(): bool
     {
@@ -172,13 +129,14 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
         if (!$splFileInfo->isFile()) {
             return;
         }
+        $httpKernel = $this->kernel->getHttpKernel();
         $realPath = $splFileInfo->getRealPath();
         $manager = $this->getManager();
         // @dispatch(kernel.beforeLoadMiddleware)
         $manager?->dispatch(
             'kernel.beforeLoadMiddleware',
             $realPath,
-            $this->kernel->getHttpKernel(),
+            $httpKernel,
             $this->kernel,
             $this
         );
@@ -190,7 +148,7 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
                 $manager?->dispatch(
                     'kernel.loadMiddleware',
                     $realPath,
-                    $this->kernel->getHttpKernel(),
+                    $httpKernel,
                     $this->kernel,
                     $this
                 );
@@ -215,7 +173,7 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
                 ) {
                     $result = ContainerHelper::resolveCallable($className, $this->getContainer());
                     if ($result instanceof AbstractMiddleware) {
-                        $this->middlewares[$result->getPriority()][] = $result;
+                        $httpKernel->addDeferredMiddleware($result);
                     }
                 }
             } catch (Throwable $e) {
@@ -233,7 +191,7 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
             $manager?->dispatch(
                 'kernel.loadMiddleware',
                 $realPath,
-                $this->kernel->getHttpKernel(),
+                $httpKernel,
                 $this->kernel,
                 $this,
                 $result
@@ -246,7 +204,7 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
             $manager?->dispatch(
                 'kernel.afterLoadMiddleware',
                 $realPath,
-                $this->kernel->getHttpKernel(),
+                $httpKernel,
                 $this->kernel,
                 $this,
                 $result

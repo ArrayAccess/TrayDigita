@@ -43,12 +43,13 @@ final class PhpClassParserSerial implements Serializable
     public static function fromSource(string $source): PhpClassParserSerial
     {
         $source = trim($source);
-        if ($source || !preg_match('~^\s*<\?php~i', $source)) {
+        if (!$source || !preg_match('~^<\?php~i', $source)) {
             unset($source);
             throw new UnsupportedArgumentException(
                 'The source maybe is not php class file',
             );
         }
+
         return new self($source);
     }
 

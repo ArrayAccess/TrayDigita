@@ -49,7 +49,7 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $entityDir = null;
+    private ?string $entityDirectory = null;
     private string $entityNamespace;
 
     protected function configure() : void
@@ -60,7 +60,7 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
         );
         if ($kernel instanceof BaseKernel) {
             $this->entityNamespace = $kernel->getEntityNamespace();
-            $this->entityDir = $kernel->getRegisteredDirectories()[$this->entityNamespace]??null;
+            $this->entityDirectory = $kernel->getRegisteredDirectories()[$this->entityNamespace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -138,10 +138,10 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
         $lowerClassName = strtolower($className);
         if ($this->entityLists === null) {
             $this->entityLists = [];
-            $entityDir = $this->entityDir;
-            $lengthStart = strlen($entityDir) + 1;
+            $entityDirectory = $this->entityDirectory;
+            $lengthStart = strlen($entityDirectory) + 1;
             foreach (Finder::create()
-                         ->in($entityDir)
+                         ->in($entityDirectory)
                          ->ignoreVCS(true)
                          ->ignoreDotFiles(true)
                          // depth <= 10
@@ -225,16 +225,16 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        if (!$this->entityDir) {
+        if (!$this->entityDirectory) {
             $config = ContainerHelper::use(Config::class, $container) ?? new Config();
             $path = $config->get('path');
             $path = $path instanceof Config ? $path : null;
-            $entityDir = $path?->get('entity');
-            if (is_string($entityDir) && is_dir($entityDir)) {
-                $this->entityDir = realpath($entityDir) ?? $entityDir;
+            $entityDirectory = $path?->get('entity');
+            if (is_string($entityDirectory) && is_dir($entityDirectory)) {
+                $this->entityDirectory = realpath($entityDirectory) ?? $entityDirectory;
             }
         }
-        if (!$this->entityDir) {
+        if (!$this->entityDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -261,7 +261,7 @@ class EntityGenerator extends Command implements ContainerAllocatorInterface, Ma
             return self::FAILURE;
         }
 
-        $fileName = $this->entityDir
+        $fileName = $this->entityDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $named['className'])
             . '.php';

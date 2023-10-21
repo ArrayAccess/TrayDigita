@@ -15,19 +15,19 @@ final class Wrapper
 
     /**
      * @param ViewInterface $view
-     * @param string $publicDir
+     * @param string $publicDirectory
      * @param string $templatesPath
      */
     public function __construct(
         public readonly ViewInterface $view,
-        string $publicDir,
+        string $publicDirectory,
         string $templatesPath = 'templates'
     ) {
         $this->templatePath   = ltrim(
             DataNormalizer::normalizeDirectorySeparator($templatesPath, true),
             DIRECTORY_SEPARATOR
         );
-        $this->publicDirectory = DataNormalizer::normalizeDirectorySeparator($publicDir, true);
+        $this->publicDirectory = DataNormalizer::normalizeDirectorySeparator($publicDirectory, true);
     }
 
     public function getView(): ViewInterface

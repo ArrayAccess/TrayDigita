@@ -53,7 +53,6 @@ final class Web
      * @return ResponseInterface|false
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
-     * @noinspection DuplicatedCode
      */
     final public static function serve()
     {
@@ -116,10 +115,10 @@ final class Web
                 );
             }
             $publicFile = $publicFile ?: realpath(TD_INDEX_FILE);
-            $publicDir = dirname($publicFile);
+            $publicDirectory = dirname($publicFile);
             // HANDLE CLI-SERVER
             if (php_sapi_name() === 'cli-server') {
-                if ($_SERVER['DOCUMENT_ROOT'] !== $publicDir) {
+                if ($_SERVER['DOCUMENT_ROOT'] !== $publicDirectory) {
                     throw new RuntimeException(
                         "Builtin web server should be pointing into public root directory!"
                     );
@@ -141,7 +140,7 @@ final class Web
                 |mp[34]|og[gvpa]|mpe?g|3gp|avi|mov|flac|flv|webm|wmv # media
             )$~ix',
                     $requestUriNoQuery
-                ) && is_file($publicDir . '/' . $requestUriNoQuery)) {
+                ) && is_file($publicDirectory . '/' . $requestUriNoQuery)) {
                     // serve the static assets with return : false
                     return $lastResult = false;
                 }
@@ -152,7 +151,7 @@ final class Web
 
             if (!defined('TD_APP_DIRECTORY')) {
                 // DEFINE : TD_APP_DIRECTORY
-                define('TD_APP_DIRECTORY', dirname($publicDir) . DIRECTORY_SEPARATOR . 'app');
+                define('TD_APP_DIRECTORY', dirname($publicDirectory) . DIRECTORY_SEPARATOR . 'app');
             }
 
             /**
@@ -235,7 +234,10 @@ final class Web
         ) {
             $config = ContainerHelper::use(Config::class, $kernel->getHttpKernel()->getContainer());
             $config = $config->get('environment');
-            $enable = $config instanceof Config && $config->get('displayErrorDetails') === true;
+            $enable = $config instanceof Config && (
+                $config->get('displayErrorDetails') === true
+                || $config->get('debug') === true
+            );
         }
         $additionalText = ! $enable ? "<p><code>$message</code></p>" : <<<HTML
 <p><code>$message</code></p>

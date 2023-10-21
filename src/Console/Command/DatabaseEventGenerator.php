@@ -49,7 +49,7 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $databaseEventDir = null;
+    private ?string $databaseEventDirectory = null;
     private string $databaseEventNamespace;
 
     protected function configure() : void
@@ -60,7 +60,7 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
         );
         if ($kernel instanceof BaseKernel) {
             $this->databaseEventNamespace = $kernel->getDatabaseEventNameSpace();
-            $this->databaseEventDir = $kernel->getRegisteredDirectories()[$this->databaseEventNamespace]??null;
+            $this->databaseEventDirectory = $kernel->getRegisteredDirectories()[$this->databaseEventNamespace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -143,7 +143,7 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
         $lowerClassName = strtolower($className);
         if ($this->databaseEventList === null) {
             $this->databaseEventList = [];
-            $databaseEventDirectory = $this->databaseEventDir;
+            $databaseEventDirectory = $this->databaseEventDirectory;
             $lengthStart = strlen($databaseEventDirectory) + 1;
             foreach (Finder::create()
                          ->in($databaseEventDirectory)
@@ -244,12 +244,12 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
         $config = ContainerHelper::use(Config::class, $container)??new Config();
         $path = $config->get('path');
         $path = $path instanceof Config ? $path : null;
-        $databaseEventDir = $path?->get('databaseEvent');
-        if (is_string($databaseEventDir) && is_dir($databaseEventDir)) {
-            $this->databaseEventDir = realpath($databaseEventDir)??$databaseEventDir;
+        $databaseEventDirectory = $path?->get('databaseEvent');
+        if (is_string($databaseEventDirectory) && is_dir($databaseEventDirectory)) {
+            $this->databaseEventDirectory = realpath($databaseEventDirectory)??$databaseEventDirectory;
         }
 
-        if (!$this->databaseEventDir) {
+        if (!$this->databaseEventDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -276,7 +276,7 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
             return self::FAILURE;
         }
 
-        $fileName = $this->databaseEventDir
+        $fileName = $this->databaseEventDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $named['className'])
             . '.php';

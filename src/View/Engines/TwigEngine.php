@@ -131,7 +131,7 @@ final class TwigEngine extends AbstractEngine
         }
 
         $loader = $this->twig?->getLoader();
-        $viewsDir = $this->getFilteredViewsDir();
+        $viewsDirectory = $this->getFilteredViewsDir();
         parent::clearVariableCache();
         if ($loader instanceof FilesystemLoader) {
             $paths = $loader->getPaths();
@@ -144,7 +144,7 @@ final class TwigEngine extends AbstractEngine
                 if ($templateRule && str_starts_with($path, $templateRule)) {
                     continue;
                 }
-                if (!in_array($path, $viewsDir) && !in_array($path, $currentPaths)) {
+                if (!in_array($path, $viewsDirectory) && !in_array($path, $currentPaths)) {
                     $currentPaths[] = $path;
                 }
             }

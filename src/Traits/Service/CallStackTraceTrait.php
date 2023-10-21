@@ -13,7 +13,7 @@ trait CallStackTraceTrait
 {
     const MAX_CALLSTACK = 256;
 
-    private array $callStackIncrement = [];
+    protected array $callStackIncrement = [];
 
     private function getInternalCallStackName() : ?string
     {

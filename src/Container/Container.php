@@ -3,16 +3,14 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Container;
 
-use ArrayAccess;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException;
-use ArrayAccess\TrayDigita\Container\Interfaces\UnInvokableInterface;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Traits\ContainerDecorator;
 use ArrayAccess\TrayDigita\Exceptions\Logical\InvokeAbleException;
 use ArrayAccess\TrayDigita\Traits\Service\CallStackTraceTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use SensitiveParameter;
 use Throwable;
 use function array_key_exists;
@@ -23,7 +21,7 @@ use function sprintf;
 /**
  * @template T of object
  */
-class Container implements ContainerInterface, ArrayAccess, UnInvokableInterface
+class Container implements SystemContainerInterface
 {
     use CallStackTraceTrait,
         ContainerDecorator;
@@ -235,6 +233,7 @@ class Container implements ContainerInterface, ArrayAccess, UnInvokableInterface
      */
     public function get(string $id)
     {
+        /** @noinspection DuplicatedCode */
         if ($this->hasRawService($id)) {
             $this->frozenServices[$id] ??= true;
             return $this->getRawService($id);
@@ -259,7 +258,6 @@ class Container implements ContainerInterface, ArrayAccess, UnInvokableInterface
                 $this->assertCallstack();
                 $value = $this->getResolver()->resolve($id);
                 $this->removeQueuedService($id);
-
                 // call
                 $this->raw($id, $value);
                 $this->frozenServices[$id] = true;

@@ -89,18 +89,18 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
 
     public function __construct(
         protected ContainerInterface $container,
-        ?string $storageDir = null
+        ?string $storageDirectory = null
     ) {
-        if ($storageDir === null) {
+        if ($storageDirectory === null) {
             $config = ContainerHelper::service(Config::class);
             $path = $config?->get('path');
             $storageDirectory = $path instanceof Config
                 ? $path->get('storage')
                 : null;
-            if (is_string($storageDirectory)
-                && is_dir($storageDirectory)
+            if (!is_string($storageDirectory)
+                || !is_dir($storageDirectory)
             ) {
-                $storageDir = $storageDirectory;
+                $storageDirectory = null;
             }
         }
         $manager = ContainerHelper::use(
@@ -112,10 +112,10 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
         }
         $this->partialExtension = 'partial';
         $this->partialMetaExtension = $this->partialExtension . '.meta';
-        $storageDir = $storageDir??sys_get_temp_dir();
-        $this->assertDirectory($storageDir);
-        $storageDir = (realpath($storageDir)??$storageDir);
-        $this->uploadCacheStorageDirectory = $storageDir
+        $storageDirectory = $storageDirectory??sys_get_temp_dir();
+        $this->assertDirectory($storageDirectory);
+        $storageDirectory = (realpath($storageDirectory)??$storageDirectory);
+        $this->uploadCacheStorageDirectory = $storageDirectory
             . DIRECTORY_SEPARATOR
             . self::SUFFIX_STORAGE_DIRECTORY;
         $this->maxUploadFileSize = Consolidation::getMaxUploadSize();

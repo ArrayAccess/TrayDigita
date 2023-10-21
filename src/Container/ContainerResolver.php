@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Container;
 use ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\UnInvokableInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
@@ -172,7 +173,7 @@ class ContainerResolver implements ContainerIndicateInterface
     public function resolve(string $id): mixed
     {
         $container = $this->getContainer();
-        if (!$container instanceof Container || !$container->hasQueuedService($id)) {
+        if (!$container instanceof SystemContainerInterface || !$container->hasQueuedService($id)) {
             throw new ContainerNotFoundException(
                 sprintf('Queued container service %s has not found.', $id)
             );
@@ -204,8 +205,14 @@ class ContainerResolver implements ContainerIndicateInterface
             return null;
         }
         if ($type->isBuiltin()) {
+            $builtin = [
+                'bool' => 'boolean',
+                'float' => 'double',
+            ];
             $argType = gettype($argumentValue);
-            $found = $argType === $type->getName();
+            $argType = $builtin[$argType]??$argType;
+            $argName = $builtin[$type->getName()]??$type->getName();
+            $found = $argType === $argName;
             return $found ? $argumentValue : null;
         }
         if (is_object($argumentValue) && is_a($argumentValue, $type->getName())) {
@@ -291,7 +298,6 @@ class ContainerResolver implements ContainerIndicateInterface
             }
             return;
         }
-
         if (!$refType instanceof ReflectionNamedType) {
             return;
         }
@@ -323,7 +329,9 @@ class ContainerResolver implements ContainerIndicateInterface
             }
         }
 
-        if ($refName === ContainerInterface::class || is_a($refName, $this->container::class)) {
+        if ($refName === ContainerInterface::class
+            || $refName === SystemContainerInterface::class
+            || is_a($refName, $this->container::class)) {
             $paramFound = true;
             if ($this->container->has($refName)) {
                 try {

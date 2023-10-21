@@ -49,7 +49,7 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $commandDir = null;
+    private ?string $commandDirectory = null;
     private string $commandNamespace;
 
     protected function configure() : void
@@ -60,7 +60,7 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
         );
         if ($kernel instanceof BaseKernel) {
             $this->commandNamespace = $kernel->getCommandNameSpace();
-            $this->commandDir = $kernel->getRegisteredDirectories()[$this->commandNamespace]??null;
+            $this->commandDirectory = $kernel->getRegisteredDirectories()[$this->commandNamespace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -140,7 +140,7 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
         $lowerClassName = strtolower($className);
         if ($this->commandList === null) {
             $this->commandList = [];
-            $commandDirectory = $this->commandDir;
+            $commandDirectory = $this->commandDirectory;
             $lengthStart = strlen($commandDirectory) + 1;
             foreach (Finder::create()
                          ->in($commandDirectory)
@@ -241,17 +241,17 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        if (!$this->commandDir) {
+        if (!$this->commandDirectory) {
             $config = ContainerHelper::getNull(Config::class, $container) ?? new Config();
             $path = $config->get('path');
             $path = $path instanceof Config ? $path : null;
-            $commandDir = $path?->get('command');
-            if (is_string($commandDir) && is_dir($commandDir)) {
-                $this->commandDir = realpath($commandDir) ?? $commandDir;
+            $commandDirectory = $path?->get('command');
+            if (is_string($commandDirectory) && is_dir($commandDirectory)) {
+                $this->commandDirectory = realpath($commandDirectory) ?? $commandDirectory;
             }
         }
 
-        if (!$this->commandDir) {
+        if (!$this->commandDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -278,7 +278,7 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
             return self::FAILURE;
         }
 
-        $fileName = $this->commandDir
+        $fileName = $this->commandDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $named['className'])
             . '.php';

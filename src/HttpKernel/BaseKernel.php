@@ -7,7 +7,8 @@ use ArrayAccess\TrayDigita\Benchmark\Injector\ManagerProfiler;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\ResetInterface;
 use ArrayAccess\TrayDigita\Benchmark\Middlewares\DebuggingMiddleware;
 use ArrayAccess\TrayDigita\Collection\Config;
-use ArrayAccess\TrayDigita\Container\Container;
+use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use ArrayAccess\TrayDigita\HttpKernel\Helper\KernelCommandLoader;
@@ -30,6 +31,7 @@ use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
 use ArrayAccess\TrayDigita\Util\Parser\DotEnv;
 use DateTimeZone;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -72,10 +74,9 @@ use const PATHINFO_EXTENSION;
 abstract class BaseKernel implements
     KernelInterface,
     RequestHandlerInterface,
-    RebootableInterface
+    RebootableInterface,
+    ContainerIndicateInterface
 {
-    const DEFAULT_EXPIRED_AFTER = 7200;
-
     private int $bootStack = 0;
 
     private bool $booted = false;
@@ -131,6 +132,14 @@ abstract class BaseKernel implements
         }
     }
 
+    /**
+     * @return ?ContainerInterface
+     */
+    public function getContainer(): ?ContainerInterface
+    {
+        return $this->getHttpKernel()->getContainer();
+    }
+
     public function getStartMemory(): int
     {
         return $this->getHttpKernel()->getStartMemory();
@@ -175,16 +184,13 @@ abstract class BaseKernel implements
         if ($this->booted === true) {
             if (!$this->requestStackSize
                 && true === $this->resetServices
-                && $this
-                    ->getHttpKernel()
-                    ->getContainer()
-                    ?->has(ResetInterface::class)
+                && ($resetter = ContainerHelper::getNull(
+                    ResetInterface::class,
+                    $this->getContainer()
+                ))
             ) {
                 try {
-                    $resetter = $this->getHttpKernel()->getContainer()?->get(ResetInterface::class);
-                    if ($resetter instanceof ResetInterface) {
-                        $resetter->reset();
-                    }
+                    $resetter->reset();
                 } catch (Throwable) {
                 }
             }
@@ -387,7 +393,7 @@ abstract class BaseKernel implements
         }
 
         /**
-         * @var Container $container
+         * @var SystemContainerInterface $container
          */
         $httpKernel = $this->getHttpKernel();
         $container = $httpKernel->getContainer();
@@ -401,17 +407,17 @@ abstract class BaseKernel implements
 
         $container->remove(KernelInterface::class);
         $container->raw(KernelInterface::class, $this);
-        $appDir = realpath(TD_APP_DIRECTORY)?:TD_APP_DIRECTORY;
+        $appDirectory = realpath(TD_APP_DIRECTORY)?:TD_APP_DIRECTORY;
         $this->rootDirectory = $root;
         if (defined('TD_INDEX_FILE')
             && is_string(TD_INDEX_FILE)
             && file_exists(TD_INDEX_FILE)
         ) {
-            $publicDir = dirname(realpath(TD_INDEX_FILE)??TD_INDEX_FILE);
+            $publicDirectory = dirname(realpath(TD_INDEX_FILE)??TD_INDEX_FILE);
         } else {
             if (Consolidation::isCli()) {
                 // use default public
-                $publicDir = $root . DIRECTORY_SEPARATOR . 'public';
+                $publicDirectory = $root . DIRECTORY_SEPARATOR . 'public';
             } else {
                 $documentRoot = $_SERVER['DOCUMENT_ROOT']??null;
                 $documentRoot = $documentRoot && is_dir($documentRoot)
@@ -421,27 +427,27 @@ abstract class BaseKernel implements
                     && is_string($_SERVER['SCRIPT_FILENAME']??null)
                     && is_file($_SERVER['SCRIPT_FILENAME'])
                 ) {
-                    $publicDir = dirname($_SERVER['SCRIPT_FILENAME']);
+                    $publicDirectory = dirname($_SERVER['SCRIPT_FILENAME']);
                 } else {
-                    $publicDir = $root . DIRECTORY_SEPARATOR . 'public';
+                    $publicDirectory = $root . DIRECTORY_SEPARATOR . 'public';
                 }
             }
         }
         $defaultPaths = [
-            'controller' => $appDir . '/Controllers',
-            'entity' => $appDir . '/Entities',
-            'language' => $appDir . '/Languages',
-            'middleware' => $appDir . '/Middlewares',
-            'migration' => $appDir . '/Migrations',
-            'module' => $appDir . '/Modules',
-            'view' => $appDir . '/Views',
-            'databaseEvent' => $appDir . '/DatabaseEvents',
-            'scheduler' => $appDir . '/Schedulers',
-            'command' => $appDir . '/Commands',
+            'controller' => $appDirectory . '/Controllers',
+            'entity' => $appDirectory . '/Entities',
+            'language' => $appDirectory . '/Languages',
+            'middleware' => $appDirectory . '/Middlewares',
+            'migration' => $appDirectory . '/Migrations',
+            'module' => $appDirectory . '/Modules',
+            'view' => $appDirectory . '/Views',
+            'databaseEvent' => $appDirectory . '/DatabaseEvents',
+            'scheduler' => $appDirectory . '/Schedulers',
+            'command' => $appDirectory . '/Commands',
             'storage' => $root . '/storage',
             'data' => $root . '/data',
-            'public' => $publicDir,
-            'upload' => $publicDir . '/uploads',
+            'public' => $publicDirectory,
+            'upload' => $publicDirectory . '/uploads',
             'template' => 'templates',
         ];
 
@@ -547,16 +553,16 @@ abstract class BaseKernel implements
             }
         }
 
-        $uploadDir = $path->get('upload');
-        $uploadDir = $publicDir . DIRECTORY_SEPARATOR . $uploadDir;
-        $uploadDir = realpath($uploadDir)??$uploadDir;
+        $uploadDirectory = $path->get('upload');
+        $uploadDirectory = $publicDirectory . DIRECTORY_SEPARATOR . $uploadDirectory;
+        $uploadDirectory = realpath($uploadDirectory)??$uploadDirectory;
         $uploadPath = realpath($path->get('upload'))??null;
-        if (!$uploadPath || !str_starts_with($uploadPath, $publicDir)) {
-            if ($uploadPath && is_dir($publicDir . DIRECTORY_SEPARATOR . $uploadPath)) {
-                $uploadDir = $publicDir . DIRECTORY_SEPARATOR . $uploadPath;
-                $uploadDir = realpath($uploadDir)??$uploadDir;
+        if (!$uploadPath || !str_starts_with($uploadPath, $publicDirectory)) {
+            if ($uploadPath && is_dir($publicDirectory . DIRECTORY_SEPARATOR . $uploadPath)) {
+                $uploadDirectory = $publicDirectory . DIRECTORY_SEPARATOR . $uploadPath;
+                $uploadDirectory = realpath($uploadDirectory)??$uploadDirectory;
             }
-            $path->set('upload', $uploadDir);
+            $path->set('upload', $uploadDirectory);
         }
 
         if ($this->getConfigError()) {
@@ -566,11 +572,13 @@ abstract class BaseKernel implements
                 || $iniGet === '1'
                 || $iniGet === 'true';
         }
-
-        $container->setParameter(
-            'displayErrorDetails',
-            (bool)$environment['displayErrorDetails']
-        );
+        // debug also display error
+        $debug = $environment->get('debug') === true;
+        if ($debug) {
+            $environment['displayErrorDetails'] = true;
+        }
+        $environment['displayErrorDetails'] = (bool)$environment['displayErrorDetails'];
+        $container->setParameter('displayErrorDetails', $environment['displayErrorDetails']);
         if ($environment['displayErrorDetails']) {
             $manager?->attach(
                 'jsonResponder.debug',
@@ -654,37 +662,37 @@ abstract class BaseKernel implements
                 ? $templatePath
                 : 'templates';
             $path->set('template', $templatePath);
-            $storageDir = $path->get('storage');
-            $dataDir = $path->get('data');
+            $storageDirectory = $path->get('storage');
+            $dataDirectory = $path->get('data');
             if (!Consolidation::isCli()) {
-                if (!is_dir($storageDir)) {
-                    mkdir($storageDir, 0755, true);
+                if (!is_dir($storageDirectory)) {
+                    mkdir($storageDirectory, 0755, true);
                 }
-                if (!is_dir($dataDir)) {
-                    mkdir($dataDir, 0755, true);
+                if (!is_dir($dataDirectory)) {
+                    mkdir($dataDirectory, 0755, true);
                 }
             }
-            $dataDir = realpath($dataDir)?:$dataDir;
-            $storageDir = realpath($storageDir)?:$storageDir;
-            $path->set('storage', $storageDir);
-            $path->set('data', $dataDir);
+            $dataDirectory = realpath($dataDirectory)?:$dataDirectory;
+            $storageDirectory = realpath($storageDirectory)?:$storageDirectory;
+            $path->set('storage', $storageDirectory);
+            $path->set('data', $dataDirectory);
 
             // directory parameter
-            $container->setParameter('viewsDir', $path->get('view'));
-            $container->setParameter('controllersDir', $path->get('controller'));
-            $container->setParameter('languagesDir', $path->get('language'));
-            $container->setParameter('migrationsDir', $path->get('migration'));
-            $container->setParameter('modulesDir', $path->get('module'));
-            $container->setParameter('entitiesDir', $path->get('entity'));
-            // $container->setParameter('repositoriesDir', $path->get('repository'));
-            $container->setParameter('databaseEventsDir', $path->get('databaseEvent'));
-            $container->setParameter('schedulersDir', $path->get('scheduler'));
-            $container->setParameter('commandsDir', $path->get('command'));
-            $container->setParameter('middlewaresDir', $path->get('middleware'));
-            $container->setParameter('storageDir', $storageDir);
-            $container->setParameter('uploadsDir', $uploadDir);
-            $container->setParameter('publicDir', $publicDir);
-            $container->setParameter('dataDir', $dataDir);
+            $container->setParameter('viewsDirectory', $path->get('view'));
+            $container->setParameter('controllersDirectory', $path->get('controller'));
+            $container->setParameter('languagesDirectory', $path->get('language'));
+            $container->setParameter('migrationsDirectory', $path->get('migration'));
+            $container->setParameter('modulesDirectory', $path->get('module'));
+            $container->setParameter('entitiesDirectory', $path->get('entity'));
+            // $container->setParameter('repositoriesDirectory', $path->get('repository'));
+            $container->setParameter('databaseEventsDirectory', $path->get('databaseEvent'));
+            $container->setParameter('schedulersDirectory', $path->get('scheduler'));
+            $container->setParameter('commandsDirectory', $path->get('command'));
+            $container->setParameter('middlewaresDirectory', $path->get('middleware'));
+            $container->setParameter('storageDirectory', $storageDirectory);
+            $container->setParameter('uploadsDirectory', $uploadDirectory);
+            $container->setParameter('publicDirectory', $publicDirectory);
+            $container->setParameter('dataDirectory', $dataDirectory);
             $container->setParameter('templatePath', $templatePath);
 
             // security
@@ -842,7 +850,7 @@ abstract class BaseKernel implements
             return;
         }
         $this->providerRegistered = true;
-        $container = $this->getHttpKernel()->getContainer();
+        $container = $this->getContainer();
         $manager = ContainerHelper::use(ManagerInterface::class, $container);
         $manager?->dispatch('kernel.beforeRegisterProviders', $this);
         try {
@@ -853,7 +861,7 @@ abstract class BaseKernel implements
                 ? $translator
                 : null;
             if ($translator) {
-                if ($container instanceof Container) {
+                if ($container instanceof SystemContainerInterface) {
                     try {
                         $poMoAdapter = $container->decorate(PoMoAdapter::class);
                         $jsonAdapter = $container->decorate(JsonAdapter::class);
@@ -865,14 +873,14 @@ abstract class BaseKernel implements
                 $translator->addAdapter($poMoAdapter);
                 $translator->addAdapter($jsonAdapter);
 
-                $languageDir = $config?->get('language');
-                if (is_string($languageDir) && is_dir($languageDir)) {
+                $languageDirectory = $config?->get('language');
+                if (is_string($languageDirectory) && is_dir($languageDirectory)) {
                     $poMoAdapter->registerDirectory(
-                        $languageDir,
+                        $languageDirectory,
                         TranslatorInterface::DEFAULT_DOMAIN
                     );
                     $jsonAdapter->registerDirectory(
-                        $languageDir,
+                        $languageDirectory,
                         TranslatorInterface::DEFAULT_DOMAIN
                     );
                 }

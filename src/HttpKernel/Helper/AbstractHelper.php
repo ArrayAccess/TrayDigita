@@ -10,10 +10,7 @@ use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\HttpKernel\BaseKernel;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use ArrayAccess\TrayDigita\Util\Parser\PhpClassParserSerial;
 use DateInterval;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Namespace_;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
@@ -29,11 +26,14 @@ use function is_array;
 use function is_dir;
 use function is_string;
 use function md5;
+use function php_strip_whitespace;
+use function preg_match;
 use function spl_object_hash;
 use function sprintf;
 use function str_replace;
 use function str_starts_with;
 use function ucfirst;
+use const PREG_UNMATCHED_AS_NULL;
 
 abstract class AbstractHelper
 {
@@ -75,9 +75,14 @@ abstract class AbstractHelper
      */
     final protected function getClasNameFromFile(SplFileInfo $splFileInfo) : ?string
     {
-        if (!$splFileInfo->isFile()) {
+        if (!$splFileInfo->isFile()
+            || !$splFileInfo->isReadable()
+            || $splFileInfo->getExtension() !== 'php'
+            || $splFileInfo->getSize() > 1048576 // 1MiB
+        ) {
             return null;
         }
+
         $realPath   = $splFileInfo->getRealPath();
         $mtime      = $splFileInfo->getMTime();
         $cacheKey   = $this->generateCacheKey("class:$realPath");
@@ -90,7 +95,63 @@ abstract class AbstractHelper
             || (!is_string($cacheItems['className']) && $cacheItems['className'] !== false)
         ) {
             try {
-                $parser = PhpClassParserSerial::fromFileInfo($splFileInfo);
+                $source = php_strip_whitespace($splFileInfo->getRealPath());
+                // GETTING CLAS NAME
+                preg_match(
+                    '~
+                            ^<\?php\s+
+                            # declare
+                            (?:
+                                (?:\s*declare\s*\(\s*
+                                        (?:
+                                            strict_types\s*=\s*[01]
+                                            |encoding\s*=\s*\'[^\']*\'
+                                            |ticks\s*=\s*[1-9][0-9]*(?:\.[0-9]*)?
+                                        )
+                                        (?:
+                                        \s*,\s*
+                                        (?:
+                                            strict_types\s*=\s*[01]
+                                                |encoding\s*=\s*\'[^\']*\'
+                                                |ticks\s*=\s*[1-9][0-9]*(?:\.[0-9]*)?
+                                            )
+                                        )*
+                                    \s*
+                                    \)
+                                    \s*;\s*
+                                )*
+                            )?
+                            (?:\s*namespace\s+
+                                (?<namespace>
+                                [A-Z-a-z_\x80-\xff]+
+                                    [A-Z-a-z_0-9\x80-\xff]*
+                                    (?:\\\[A-Z-a-z_\x80-\xff]+[A-Z-a-z_0-9\x80-\xff]*)*
+                                )\s*;
+                            )?
+                            \s*
+                            (use\s+[^;]+;\s*(?!class\s+).*)?
+                            (?:(?:final|readonly)\s+)?class\s+
+                            (?<className>
+                                [A-Z-a-z_\x80-\xff]+[A-Z-a-z_0-9\x80-\xff]*
+                            )
+                            [\s{]
+                        ~xi',
+                    $source,
+                    $match,
+                    PREG_UNMATCHED_AS_NULL
+                );
+                $className = false;
+                $ns = null;
+                if (!empty($match)) {
+                    $ns = ($match['namespace']??null?:null);
+                    $className = $match['className'];
+                }
+                /*
+                // use parser
+                $parser = PhpClassParserSerial::fromSource($source);
+                unset($source);
+                $parser->getSource();
+                echo microtime(true) * 1000 - $start."\n";
                 $className = false;
                 $ns = null;
                 foreach ($parser->getSource() as $stmt) {
@@ -109,6 +170,7 @@ abstract class AbstractHelper
                         break;
                     }
                 }
+                */
                 if ($className) {
                     if ($ns) {
                         $className = "$ns\\$className";

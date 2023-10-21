@@ -14,6 +14,8 @@ return [
     'environment' => [
         // site debugging (set false in production)
         'displayErrorDetails' => false,
+        // site debugging (set false in production)
+        'debug' => true,
         // site profiling (benchmarking)
         // profiling is consume high memory footprints (set false in production)
         'profiling' => false,
@@ -60,7 +62,7 @@ return [
         // dev mode for development environment without cache (set false in production)
         'devMode' => false,
         // proxy entities directory
-        'proxyDir' => __DIR__ . '/storage/database/proxy',
+        'proxyDirectory' => __DIR__ . '/storage/database/proxy',
         // additional doctrine config
         'options' => [
         ],

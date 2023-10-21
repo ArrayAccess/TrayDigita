@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Routing;
 
-use ArrayAccess\TrayDigita\Container\Container;
 use ArrayAccess\TrayDigita\Container\ContainerWrapper;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Http\Code;
@@ -22,7 +22,6 @@ use ArrayAccess\TrayDigita\Traits\View\ViewTrait;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use ArrayAccess\TrayDigita\Util\Filter\DataType;
 use JsonSerializable;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -54,7 +53,7 @@ abstract class AbstractController implements ControllerInterface
 
     private ?ResponseInterface $response = null;
 
-    protected ?ContainerInterface $container = null;
+    protected ?SystemContainerInterface $container = null;
 
     protected ?ManagerInterface $manager = null;
 
@@ -64,8 +63,9 @@ abstract class AbstractController implements ControllerInterface
 
     final public function __construct(public readonly RouterInterface $router)
     {
-        $this->container = $this->router->getContainer();
-        if ($this->container && $this instanceof ManagerAllocatorInterface) {
+        $container = $this->router->getContainer();
+        $this->container = $container ? ContainerWrapper::maybeContainerOrCreate($container) : null;
+        if ($this instanceof ManagerAllocatorInterface) {
             $manager = ContainerHelper::use(ManagerInterface::class, $this->container);
             if ($manager) {
                 $this->setManager($manager);
@@ -161,10 +161,10 @@ abstract class AbstractController implements ControllerInterface
             );
     }
 
-    public function getContainer(): ContainerInterface|Container|null
+    public function getContainer(): SystemContainerInterface|null
     {
         if (!$this->container && ($container = $this->router->getContainer())) {
-            $this->container = $container;
+            $this->container = ContainerWrapper::maybeContainerOrCreate($container);
         }
         return $this->container;
     }

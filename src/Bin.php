@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita;
 
 use ArrayAccess\TrayDigita\Console\Application;
-use ArrayAccess\TrayDigita\Container\Container;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Http\Exceptions\HttpException;
 use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
@@ -45,7 +45,6 @@ final class Bin
     /**
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
-     * @noinspection DuplicatedCode
      * @throws Throwable
      */
     final public static function run()
@@ -106,22 +105,22 @@ final class Bin
         chdir($root);
         # TD_APP_DIRECTORY='app' php bin/console
         if (!defined('TD_APP_DIRECTORY')) {
-            $appDir = getenv('TD_APP_DIRECTORY')?: null;
-            if ($appDir && is_string($appDir)) {
-                $appDir = realpath($appDir) ?: (
-                    realpath($cwd . DIRECTORY_SEPARATOR . $appDir) ?: (
-                        realpath(TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . $appDir) ?: null
+            $appDirectory = getenv('TD_APP_DIRECTORY')?: null;
+            if ($appDirectory && is_string($appDirectory)) {
+                $appDirectory = realpath($appDirectory) ?: (
+                    realpath($cwd . DIRECTORY_SEPARATOR . $appDirectory) ?: (
+                        realpath(TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . $appDirectory) ?: null
                     )
                 );
             }
 
-            $appDir = isset($appDir) ? $appDir : TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . 'app';
-            /*if (!is_dir($appDir)) {
+            $appDirectory = isset($appDirectory) ? $appDirectory : TD_ROOT_COMPOSER_DIR . DIRECTORY_SEPARATOR . 'app';
+            /*if (!is_dir($appDirectory)) {
                 echo "\n\033[0;31mCould not detect application directory\033[0m\n";
                 echo "\n";
                 exit(255);
             }*/
-            define('TD_APP_DIRECTORY', $appDir);
+            define('TD_APP_DIRECTORY', $appDirectory);
         } elseif (!is_string(TD_APP_DIRECTORY)) {
             echo "\n\033[0;31mConstant \033[0;0m`TD_APP_DIRECTORY`\033[0;31m is invalid\033[0m\n";
             echo "\n";
@@ -158,7 +157,7 @@ final class Bin
         $kernel->boot();
 
         /**
-         * @var Container $container
+         * @var SystemContainerInterface $container
          */
         $container = $kernel->getContainer();
         $manager = $kernel->getManager();

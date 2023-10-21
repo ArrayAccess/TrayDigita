@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-21 03:07+0700\n"
-"PO-Revision-Date: 2023-10-21 03:07+0700\n"
+"POT-Creation-Date: 2023-10-22 02:40+0700\n"
+"PO-Revision-Date: 2023-10-22 02:40+0700\n"
 "Last-Translator: \n"
 "Language-Team: ArrayAccess\n"
 "Language: id\n"
@@ -1973,7 +1973,7 @@ msgctxt "chunk-uploader"
 msgid "Directory %s is not writable"
 msgstr "Direktori %s tidak dapat ditulisi"
 
-#: Uploader/ChunkHandler.php:119 Uploader/ChunkProcessor.php:223
+#: Uploader/ChunkHandler.php:118 Uploader/ChunkProcessor.php:223
 #, php-format
 msgctxt "chunk-uploader"
 msgid "Request id \"%s\" is not valid"
@@ -1984,44 +1984,44 @@ msgctxt "chunk-uploader"
 msgid "Cache upload storage is not writable."
 msgstr "Direktori penyimpanan cache tidak dapat ditulisi."
 
-#: Uploader/ChunkHandler.php:280
+#: Uploader/ChunkHandler.php:281
 msgctxt "chunk-uploader"
 msgid "Upload cache file is not writable."
 msgstr "Berkas cache unggahan tidak dapat ditulisi."
 
-#: Uploader/ChunkHandler.php:294
+#: Uploader/ChunkHandler.php:295
 msgctxt "chunk-uploader"
 msgid "Can not create cached stream."
 msgstr "Tidak dapat membuat cached stream."
 
-#: Uploader/ChunkHandler.php:305
+#: Uploader/ChunkHandler.php:306
 msgctxt "chunk-uploader"
 msgid "Cache file has been locked."
 msgstr "Berkas cache terkunci."
 
-#: Uploader/ChunkHandler.php:417
+#: Uploader/ChunkHandler.php:420
 msgctxt "chunk-uploader"
 msgid "Offset upload position is invalid."
 msgstr "Posisi offset unggahan tidak sah."
 
-#: Uploader/ChunkHandler.php:451
+#: Uploader/ChunkHandler.php:454
 msgctxt "chunk-uploader"
 msgid "Source uploaded file does not exist."
 msgstr "Berkas sumber yang diunggah tidak ada."
 
-#: Uploader/ChunkHandler.php:471
+#: Uploader/ChunkHandler.php:474
 #, php-format
 msgctxt "chunk-uploader"
 msgid "Upload cache file is not ready to move : (%d)."
 msgstr "Berkas cache yang diunggah belum siap dipindahkan : (%d)."
 
-#: Uploader/ChunkHandler.php:520
+#: Uploader/ChunkHandler.php:523
 #, php-format
 msgctxt "chunk-uploader"
 msgid "Target file \"%s\" is not writable."
 msgstr "Berkas tujuan \"%s\" tidak dapat ditulisi."
 
-#: Uploader/ChunkHandler.php:540
+#: Uploader/ChunkHandler.php:543
 #, php-format
 msgctxt "chunk-uploader"
 msgid "Target directory \"%s\" is not writable."

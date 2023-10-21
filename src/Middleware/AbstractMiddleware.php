@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Middleware;
 
-use ArrayAccess\TrayDigita\Container\Container;
 use ArrayAccess\TrayDigita\Container\ContainerWrapper;
+use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
@@ -51,9 +51,9 @@ abstract class AbstractMiddleware implements MiddlewareInterface, ManagerIndicat
     }
 
     /**
-     * @return ContainerInterface|Container
+     * @return ContainerInterface|SystemContainerInterface
      */
-    public function getContainer(): ContainerInterface|Container
+    public function getContainer(): ContainerInterface|SystemContainerInterface
     {
         return $this->container;
     }

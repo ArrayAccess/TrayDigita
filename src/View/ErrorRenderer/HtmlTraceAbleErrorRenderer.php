@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\View\ErrorRenderer;
 
+use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\MaximumCallstackExceeded;
 use ArrayAccess\TrayDigita\Http\Exceptions\HttpException;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
@@ -48,7 +49,12 @@ class HtmlTraceAbleErrorRenderer extends AbstractErrorRenderer
         Throwable $exception,
         bool $displayErrorDetails
     ): ?string {
-        if ($displayErrorDetails) {
+        $config = ContainerHelper::getNull(
+            Config::class,
+            $this->getContainer()
+        )?->get('environment');
+        $isDebug = $config instanceof Config && $config->get('debug') === true;
+        if ($displayErrorDetails && $isDebug) {
             try {
                 $kernel = ContainerHelper::use(KernelInterface::class, $this->getContainer());
                 $root = $kernel?->getRootDirectory()??PossibleRoot::getPossibleRootDirectory();
@@ -84,8 +90,8 @@ class HtmlTraceAbleErrorRenderer extends AbstractErrorRenderer
                 return $view->render(
                     $path,
                     [
-                        'displayErrorDetails' => false,
-                        'exception' => $exception
+                        'displayErrorDetails' => $displayErrorDetails,
+                        'exception' => $exception,
                     ]
                 );
             }

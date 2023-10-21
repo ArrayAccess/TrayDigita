@@ -49,7 +49,7 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
         ManagerAllocatorTrait,
         TranslatorTrait;
 
-    private ?string $schedulerDir = null;
+    private ?string $schedulerDirectory = null;
 
     private string $schedulerNamespace;
 
@@ -61,7 +61,7 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
         );
         if ($kernel instanceof BaseKernel) {
             $this->schedulerNamespace = $kernel->getSchedulerNamespace();
-            $this->schedulerDir = $kernel->getRegisteredDirectories()[$this->schedulerNamespace]??null;
+            $this->schedulerDirectory = $kernel->getRegisteredDirectories()[$this->schedulerNamespace]??null;
         } else {
             $namespace = dirname(
                 str_replace(
@@ -141,7 +141,7 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
         $lowerClassName = strtolower($className);
         if ($this->schedulerList === null) {
             $this->schedulerList = [];
-            $schedulerDirectory = $this->schedulerDir;
+            $schedulerDirectory = $this->schedulerDirectory;
             $lengthStart = strlen($schedulerDirectory) + 1;
             foreach (Finder::create()
                          ->in($schedulerDirectory)
@@ -245,18 +245,18 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
 
         $input->setInteractive(true);
         $container = $this->getContainer();
-        if (!$this->schedulerDir) {
+        if (!$this->schedulerDirectory) {
             $config = ContainerHelper::use(Config::class, $container)
                 ?? new Config();
             $path = $config->get('path');
             $path = $path instanceof Config ? $path : null;
-            $schedulerDir = $path?->get('scheduler');
-            if (is_string($schedulerDir) && is_dir($schedulerDir)) {
-                $this->schedulerDir = realpath($schedulerDir) ?? $schedulerDir;
+            $schedulerDirectory = $path?->get('scheduler');
+            if (is_string($schedulerDirectory) && is_dir($schedulerDirectory)) {
+                $this->schedulerDirectory = realpath($schedulerDirectory) ?? $schedulerDirectory;
             }
         }
 
-        if (!$this->schedulerDir) {
+        if (!$this->schedulerDirectory) {
             $output->writeln(
                 sprintf(
                     $this->translateContext(
@@ -283,7 +283,7 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
             return self::FAILURE;
         }
 
-        $fileName = $this->schedulerDir
+        $fileName = $this->schedulerDirectory
             . DIRECTORY_SEPARATOR
             . str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $named['className'])
             . '.php';

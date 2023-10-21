@@ -15,9 +15,18 @@ interface FileResponderInterface
     public function valid() : bool;
 
     public function setAllowRange(bool $enable);
+
     public function isAllowRange() : bool;
 
-    public function setFileName(string $fileName);
+    public function setMaxRanges(int $ranges);
+    /**
+     * @return int
+     */
+    public function getMaxRanges() : int;
+
+    public function setAttachmentFileName(string $fileName);
+
+    public function getAttachmentFileName();
 
     public function resetFileName();
 
@@ -32,12 +41,10 @@ interface FileResponderInterface
     public function sendRealMimeType(bool $enable);
 
     public function isSendRealMimeType(): bool;
-    public function setMaxRanges(int $ranges);
 
-    /**
-     * @return int
-     */
-    public function getMaxRanges() : int;
+    public function sendContentLength(bool $enable);
+
+    public function isSendContentLength(): bool;
 
     public function getBoundary(): string;
 
