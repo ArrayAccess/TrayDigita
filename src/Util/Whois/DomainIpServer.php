@@ -8,11 +8,15 @@ use Psr\Cache\CacheItemPoolInterface;
 use Throwable;
 use function array_pop;
 use function explode;
+use function idn_to_ascii;
 use function is_int;
 use function preg_match;
 use function sha1;
 use function sprintf;
+use function str_starts_with;
+use function substr;
 use function trim;
+use function var_dump;
 
 final class DomainIpServer
 {
@@ -30,7 +34,7 @@ final class DomainIpServer
     const RIPE = 'RIPE';
     const AFRINIC = 'AFRINIC';
 
-    const IP_WHOIS_SERVER_PROVIDER = [
+    final const IP_WHOIS_SERVER_PROVIDER = [
         'whois.apnic.net' => self::APNIC,
         'whois.arin.net' => self::ARIN,
         'whois.ripe.net' => self::RIPE,
@@ -38,6 +42,22 @@ final class DomainIpServer
         'whois.afrinic.net' => self::AFRINIC,
     ];
 
+    final const EXTRA_COMMANDS = [
+        'whois.jprs.jp' => '/e'
+    ];
+
+    final const PREDEFINED_SERVER = [
+        'jp' => 'whois.jprs.jp',
+        'com' => 'whois.verisign-grs.com',
+        'net' => 'whois.verisign-grs.com',
+        'org' => 'whois.publicinterestregistry.org',
+        // za domain
+        'za' => 'whois.nic.za',
+    ];
+
+    /**
+     * @var Domain|Ip
+     */
     protected Domain|Ip $address;
 
     protected string|false|null $extension = null;
@@ -75,31 +95,64 @@ final class DomainIpServer
         return $this->extension;
     }
 
-    public function getServer()
+    /**
+     * Get extra command
+     *
+     * @return string|null
+     */
+    public function getExtraCommand(): ?string
+    {
+        $server = $this->getServer();
+        return $server && isset(self::EXTRA_COMMANDS[$server])
+            ? self::EXTRA_COMMANDS[$server]
+            : null;
+    }
+
+    /**
+     * @return ?string
+     */
+    public function getServer(): ?string
     {
         if ($this->server !== null) {
-            return $this->server === '' ? null : $this->server;
+            return $this->server?:null;
         }
+
         $this->server = '';
-        if (!$this->address->isValid()) {
-            return null;
-        }
-        if ($this->address instanceof Domain) {
-            $extension = $this->getDomainNameExtension();
-            $this->server = '';
+        // if contains extension only
+        if ($this->address instanceof Domain
+            && !$this->address->isLocal()
+            && strlen($this->address->getAddress()) > 1
+            && str_starts_with($this->address->getAddress(), '.')
+        ) {
+            $extension = idn_to_ascii(substr($this->address->getAddress(), 1));
             if (!$extension) {
                 return null;
             }
         } else {
-            if ($this->address->isLocal()) {
+            if (!$this->address->isValid()) {
                 return null;
             }
-            $extension = $this->address->getAddress();
+            if ($this->address instanceof Domain) {
+                $extension = $this->getDomainNameExtension();
+                $this->server = '';
+                if (!$extension) {
+                    return null;
+                }
+            } else {
+                if ($this->address->isLocal()) {
+                    return null;
+                }
+                $extension = $this->address->getAddress();
+            }
         }
 
+        // use predefined
+        if (isset(self::PREDEFINED_SERVER[$extension])) {
+            return $this->server = self::PREDEFINED_SERVER[$extension];
+        }
         if (isset(self::$extensionServers[$extension])) {
             $this->server = self::$extensionServers[$extension];
-            return $this->server === '' ? null : $this->server;
+            return $this->server?:null;
         }
 
         $cacheName = self::CACHE_NAME_PREFIX.sha1($extension);

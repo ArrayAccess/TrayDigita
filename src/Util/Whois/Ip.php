@@ -17,6 +17,7 @@ class Ip extends AddressStorage
         $this->ipVersion ??= IpValidator::version($this->getAddress())?:false;
         return $this->ipVersion?:null;
     }
+
     public function isLocal() : bool
     {
         $this->isLocal ??= IpValidator::isLocalIP($this->getAddress());

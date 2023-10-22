@@ -7,7 +7,9 @@ use ArrayAccess\TrayDigita\Util\Whois\Abstracts\AddressStorage;
 use function array_pop;
 use function explode;
 use function in_array;
+use function is_string;
 use function preg_match;
+use function str_ends_with;
 use function strlen;
 use function strtolower;
 
@@ -41,6 +43,19 @@ final class Domain extends AddressStorage
     public function isValid(): bool
     {
         return $this->getAsciiName() !== false;
+    }
+
+    public function isLocal() : bool
+    {
+        $address = strtolower($this->address);
+        if ($address === '.local' || $address === 'localhost') {
+            return true;
+        }
+        $utf8 = $this->getUtf8Name();
+        if (!$utf8) {
+            return false;
+        }
+        return $utf8 === 'localhost' || str_ends_with($utf8, '.local');
     }
 
     public function getUtf8Name(): false|string
@@ -85,7 +100,8 @@ final class Domain extends AddressStorage
         }
 
         $domainName = idn_to_ascii($domainName);
-        if (strlen($domainName) > 255
+        if (!is_string($domainName)
+            || strlen($domainName) > 255
             || !preg_match(self::REGEXP_VALID_ASCII_PATTERN, $domainName)
         ) {
             return false;

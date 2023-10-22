@@ -12,6 +12,7 @@ use function curl_getinfo;
 use function curl_init;
 use function curl_setopt_array;
 use function curl_version;
+use function error_clear_last;
 use function fclose;
 use function feof;
 use function fopen;
@@ -20,15 +21,19 @@ use function fread;
 use function fseek;
 use function fsockopen;
 use function fstat;
+use function func_get_args;
 use function function_exists;
 use function fwrite;
 use function in_array;
 use function is_resource;
 use function parse_url;
+use function restore_error_handler;
+use function set_error_handler;
 use function sprintf;
 use function stream_get_meta_data;
 use function strtolower;
 use function trim;
+use function var_dump;
 use const CURLOPT_CONNECTTIMEOUT;
 use const CURLOPT_FOLLOWLOCATION;
 use const CURLOPT_INFILE;
@@ -47,13 +52,13 @@ use const CURLPROTO_TELNET;
 
 class SocketRequest
 {
-    protected static ?bool $usSocket = null;
+    protected static ?bool $useSocket = null;
 
     protected array $acceptedProtocol = [];
 
     public function __construct()
     {
-        self::$usSocket ??= function_exists('fsockopen');
+        self::$useSocket ??= function_exists('fsockopen');
         $this->acceptedProtocol = curl_version()['protocols'];
     }
 
@@ -85,14 +90,29 @@ class SocketRequest
      * @param string $server
      * @param string $domain
      * @param int $timeout
+     * @param ?string $extraCommand extra command, commonly in whois.jprs.jp to print english
      * @return array{error: array{code: int, message: ?string}, info: array, result: ?string}
      */
     public function socketRequest(
         string $server,
         string $domain,
-        int $timeout = 15
+        int $timeout = 15,
+        ?string $extraCommand = null
     ) : array {
         $server = $this->determineServer($server);
+        $alternateErrorCode = null;
+        $alternateMessage = null;
+        set_error_handler(static function (
+            $errCode,
+            $errMessage
+        ) use (
+            &$alternateErrorCode,
+            &$alternateMessage
+        ) {
+            $alternateErrorCode = $errCode;
+            $alternateMessage = $errMessage;
+            error_clear_last();
+        });
         $fp = fsockopen(
             $server['host'],
             $server['port'],
@@ -100,17 +120,24 @@ class SocketRequest
             $errorMessage,
             $timeout
         );
+        // restore
+        restore_error_handler();
+        $errorCode = $alternateErrorCode !== null && $errorCode === 0
+            ? $alternateErrorCode
+            : $errorCode;
+        $errorMessage = $alternateMessage !== null && !$errorMessage
+            ? $alternateMessage
+            : $errorMessage;
         $result = false;
         $info = false;
-        if ($errorCode === 0) {
-            fputs($fp, "$domain\r\n");
+        if ($fp && $errorCode === 0) {
+            fputs($fp, "$domain$extraCommand\r\n");
             $result = '';
             while (!feof($fp)) {
                 $result .= fread($fp, 1024);
             }
             $info = stream_get_meta_data($fp);
         }
-
         if (is_resource($fp)) {
             fclose($fp);
         }
@@ -128,10 +155,15 @@ class SocketRequest
      * @param string $server
      * @param string $domain
      * @param int $timeout
+     * @param ?string $extraCommand extra command, commonly in whois.jprs.jp to print english
      * @return array{error: array{code: int, message: ?string}, info: array, result: ?string}
      */
-    public function curlRequest(string $server, string $domain, int $timeout = 15) : array
-    {
+    public function curlRequest(
+        string $server,
+        string $domain,
+        int $timeout = 15,
+        ?string $extraCommand = null
+    ) : array {
         $server = $this->determineServer($server);
         if (!in_array($server['scheme'], $this->acceptedProtocol)) {
             throw new RuntimeException(
@@ -141,7 +173,7 @@ class SocketRequest
 
         $fp = fopen("php://temp", 'r+');
         $domain = strtolower(trim($domain));
-        fwrite($fp, "$domain\r\n");
+        fwrite($fp, "$domain$extraCommand\r\n");
         fseek($fp, 0);
         $size = fstat($fp)['size'];
         $ch = curl_init();
@@ -191,12 +223,17 @@ class SocketRequest
      * @param string $server
      * @param string $domain
      * @param int $timeout
+     * @param ?string $extraCommand extra command, commonly in whois.jprs.jp to print english
      * @return array{error: array{code: int, message: ?string}, info: array, result: ?string}
      */
-    public function doRequest(string $server, string $domain, int $timeout = 15): array
-    {
-        return self::$usSocket
-            ? $this->socketRequest($server, $domain, $timeout)
-            : $this->curlRequest($server, $domain, $timeout);
+    public function doRequest(
+        string $server,
+        string $domain,
+        int $timeout = 15,
+        ?string $extraCommand = null
+    ): array {
+        return self::$useSocket
+            ? $this->socketRequest($server, $domain, $timeout, $extraCommand)
+            : $this->curlRequest($server, $domain, $timeout, $extraCommand);
     }
 }

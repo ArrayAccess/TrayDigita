@@ -7,6 +7,7 @@ use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\EmptyArgumentException;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InvalidArgumentException;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use ArrayAccess\TrayDigita\Util\Filter\Ip as IpValidator;
+use ArrayAccess\TrayDigita\Util\Whois\Util\WhoisDataConversionFactory;
 use Psr\Cache\CacheItemPoolInterface;
 use Throwable;
 use function is_int;
@@ -27,10 +28,11 @@ class Checker
      */
     private SocketRequest $request;
 
+    private WhoisDataConversionFactory $conversionFactory;
+
     public function __construct(
         protected ?CacheItemPoolInterface $cache = null
     ) {
-        $this->setRequest(new SocketRequest());
     }
 
     public function getCache(): ?CacheItemPoolInterface
@@ -38,9 +40,19 @@ class Checker
         return $this->cache;
     }
 
+    public function getConversionFactory(): WhoisDataConversionFactory
+    {
+        return $this->conversionFactory ??= new WhoisDataConversionFactory();
+    }
+
+    public function setConversionFactory(WhoisDataConversionFactory $conversionFactory): void
+    {
+        $this->conversionFactory = $conversionFactory;
+    }
+
     public function getRequest(): SocketRequest
     {
-        return $this->request;
+        return $this->request ??= new SocketRequest();
     }
 
     public function setRequest(SocketRequest $request): void
@@ -48,8 +60,11 @@ class Checker
         $this->request = $request;
     }
 
-    protected function fromCacheDomain(Domain|Ip $domain) : ?WhoisResult
-    {
+    protected function fromCacheDomain(
+        Domain|Ip $domain,
+        string $server,
+        ?string $extraCommand
+    ) : ?WhoisResult {
         $isDomain = $domain instanceof Domain;
         $domain = $isDomain
             ? $domain->getAsciiName()
@@ -58,7 +73,9 @@ class Checker
         if (!$domain || !$pool) {
             return null;
         }
-        $cacheName = self::CACHE_NAME_PREFIX . sha1($domain);
+        $cacheName = self::CACHE_NAME_PREFIX . sha1(
+            "$domain:$server:$extraCommand"
+        );
         try {
             $item = $pool->getItem($cacheName);
             $result = $item->get();
@@ -77,6 +94,15 @@ class Checker
             : null;
     }
 
+    public function getDomainIpServer(Domain|Ip $address): DomainIpServer
+    {
+        return new DomainIpServer(
+            $this->getRequest(),
+            $address,
+            $this->getCache()
+        );
+    }
+
     protected function saveCache(WhoisResult $data) : string|false
     {
         $pool = $this->getCache();
@@ -88,7 +114,10 @@ class Checker
         if (!$ascii) {
             return false;
         }
-        $cacheName = self::CACHE_NAME_PREFIX . sha1($ascii);
+        $server = $data->getServer();
+        $extraCommand = $data->getExtraCommand();
+        $cacheName = self::CACHE_NAME_PREFIX
+            . sha1("$ascii:$server:$extraCommand");
         try {
             $item = $pool->getItem($cacheName);
             $item->set($data);
@@ -104,7 +133,9 @@ class Checker
 
     public function whois(
         string|Domain|Ip $address,
-        bool $useCache = true
+        bool $useCache = true,
+        ?string $server = null,
+        int $timeout = 15
     ): WhoisResult {
         $address = is_string($address) ? trim($address) : $address;
         if ($address === '' || is_object($address) && $address->getAddress() === '') {
@@ -117,7 +148,7 @@ class Checker
             // filter ip
             $ipAddress = IpValidator::filterIpv4($address);
             // if not ip4 -> check ipv6
-            $ipAddress = !$ipAddress && str_contains($ipAddress, ':')
+            $ipAddress = $ipAddress && str_contains($ipAddress, ':')
                 ? (IpValidator::isValidIpv6($address) ? $address : false)
                 : $ipAddress;
             if ($ipAddress) {
@@ -125,12 +156,6 @@ class Checker
             } else {
                 $address = new Domain($address);
             }
-        }
-
-        if ($useCache
-            && ($result = $this->fromCacheDomain($address))
-        ) {
-            return $result;
         }
 
         if ($address instanceof Domain) {
@@ -141,6 +166,14 @@ class Checker
                         'Domain name "%s" is invalid',
                         $address->getAddress()
                     )
+                );
+            }
+            if ($address->isLocal()) {
+                return new WhoisResult(
+                    $address,
+                    '[Local Domain]',
+                    DomainIpServer::DEFAULT_SERVER,
+                    null
                 );
             }
         } else {
@@ -156,20 +189,23 @@ class Checker
                 return new WhoisResult(
                     $address,
                     '[Local IP]',
-                    DomainIpServer::DEFAULT_SERVER
+                    DomainIpServer::DEFAULT_SERVER,
+                    null
                 );
             }
         }
 
         $isIp = $address instanceof Ip;
         $target = $isIp ? $address->getAddress() : $address->getAsciiName();
-        $extension = new DomainIpServer(
-            $this->getRequest(),
-            $address,
-            $this->getCache()
-        );
-
-        $server = $extension->getServer();
+        // check
+        $server = is_string($server) ? trim($server) : null;
+        $server = $server?:null;
+        $extraCommand = null;
+        if (!$server) {
+            $extension = $this->getDomainIpServer($address);
+            $server = $extension->getServer();
+            $extraCommand = $extension->getExtraCommand();
+        }
         if (!$server) {
             throw new RuntimeException(
                 sprintf(
@@ -180,13 +216,29 @@ class Checker
             );
         }
 
-        $response = $this->getRequest()->doRequest($server, $target);
+        if ($useCache
+            && ($result = $this->fromCacheDomain($address, $server, $extraCommand))
+        ) {
+            return $result;
+        }
+
+        $response = $this->getRequest()->doRequest(
+            $server,
+            $target,
+            $timeout,
+            $extraCommand
+        );
         if ($response['error']['code'] && $response['error']['message']) {
             throw new RuntimeException(
                 sprintf('Whois Request Error: %s', $response['error']['message'])
             );
         }
-        $result = new WhoisResult($address, trim($response['result']??''), $server);
+        $result = new WhoisResult(
+            $address,
+            trim($response['result']??''),
+            $server,
+            $extraCommand
+        );
         $this->saveCache($result);
         return $result;
     }

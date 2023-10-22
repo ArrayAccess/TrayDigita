@@ -3,36 +3,61 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Util\Whois;
 
+use ArrayAccess\TrayDigita\Util\Network\Dns;
+use JsonSerializable;
 use Serializable;
+use Stringable;
+use Throwable;
+use function is_bool;
+use function is_string;
 use function preg_match;
 use function serialize;
 use function sha1;
+use function strtolower;
 use function trim;
 use function unserialize;
 
-final class WhoisResult implements Serializable
+final class WhoisResult implements Serializable, Stringable, JsonSerializable
 {
     const TYPE_IP = 'ip';
     const TYPE_DOMAIN = 'domain';
 
-    protected string $data;
+    final const CACHE_IP_PREFIX = 'whois_result_ip_domain_';
 
-    protected string $hash;
+    private string $data;
 
-    protected string $server;
+    private string $hash;
+
+    private string $server;
+
+    private WhoisResult|false|null $alternativeResult = null;
 
     private ?string $currentHash = null;
 
     private ?string $alternativeWhoisServer = null;
 
+    private ?string $extraCommand;
+
     public function __construct(
         protected Domain|Ip $address,
         string $data,
-        string $server
+        string $server,
+        ?string $extraCommand
     ) {
+        $this->extraCommand = $extraCommand;
         $this->data = $data;
-        $this->server = $server;
-        $this->hash   = sha1(serialize([$server, $data, $address]));
+        $this->server = strtolower(trim($server));
+        $this->hash   = sha1(serialize([
+            $this->server,
+            $extraCommand,
+            $data,
+            $address
+        ]));
+    }
+
+    public function getExtraCommand(): ?string
+    {
+        return $this->extraCommand;
     }
 
     public function getServer(): string
@@ -54,8 +79,55 @@ final class WhoisResult implements Serializable
             $this->getData(),
             $match
         );
-        $this->alternativeWhoisServer = trim($match[1]??'');
-        return $this->alternativeWhoisServer;
+        $this->alternativeWhoisServer = strtolower(trim($match[1]??''));
+        return $this->alternativeWhoisServer?:null;
+    }
+
+
+    public function getAlternativeData(
+        Checker $checker,
+        bool $useCache = true
+    ): ?WhoisResult {
+        if ($this->alternativeResult !== null) {
+            return $this->alternativeResult;
+        }
+        $this->alternativeResult = false;
+        $alternateServer = $this->getAlternativeWhoisServer();
+        if (!$alternateServer || $alternateServer === $this->server) {
+            return $this->alternativeResult?:null;
+        }
+        try {
+            $cacheKey = self::CACHE_IP_PREFIX . sha1($alternateServer);
+            $cache = $checker->getCache();
+            $cacheItem = $cache?->getItem($cacheKey);
+            $cachedIp = $cacheItem?->get();
+            if ($useCache && $cacheItem && (is_string($cachedIp) || ($bool = is_bool($cachedIp)))) {
+                if (!empty($bool)) {
+                    return null;
+                }
+                $ip = $cachedIp;
+            } else {
+                $record = Dns::record('A', $alternateServer, timeout: 2)??[];
+                $record = reset($record) ?? [];
+                $ip = $record['ip'] ?? null;
+                if ($cacheItem) {
+                    $cacheItem->set($ip??false);
+                    $cacheItem->expiresAfter(3600);
+                    $cache->save($cacheItem);
+                }
+            }
+            if (!$ip || (new Ip($ip))->isLocal()) {
+                return null;
+            }
+        } catch (Throwable) {
+            return null;
+        }
+        return $this->alternativeResult = $checker
+            ->whois(
+                $this->address,
+                $useCache,
+                $alternateServer
+            );
     }
 
     public function getType(): string
@@ -79,6 +151,11 @@ final class WhoisResult implements Serializable
         return $this->isIp() && $this->getAddress()->isLocal();
     }
 
+    public function isLocalDomain(): bool
+    {
+        return $this->isDomain() && $this->getAddress()->isLocal();
+    }
+
     public function getData(): string
     {
         return $this->data;
@@ -97,7 +174,12 @@ final class WhoisResult implements Serializable
     public function isValid() : bool
     {
         if (!$this->currentHash) {
-            $this->currentHash = sha1(serialize([$this->server, $this->data, $this->address]));
+            $this->currentHash = sha1(serialize([
+                $this->server,
+                $this->extraCommand,
+                $this->data,
+                $this->address
+            ]));
         }
         return $this->hash === $this->currentHash;
     }
@@ -119,6 +201,8 @@ final class WhoisResult implements Serializable
             'hash' => $this->getHash(),
             'data' => $this->getData(),
             'server' => $this->getServer(),
+            'extra_command' => $this->getExtraCommand(),
+            'alternative_result' => $this->alternativeResult
         ];
     }
 
@@ -128,6 +212,18 @@ final class WhoisResult implements Serializable
         $this->address = $data['domain'];
         $this->hash = $data['hash'];
         $this->server = $data['server'];
+        $this->extraCommand = $data['extra_command']??null;
+        $this->alternativeResult = $data['alternative_result'];
         $this->alternativeWhoisServer = null;
+    }
+
+    public function __toString(): string
+    {
+        return $this->data;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->__serialize();
     }
 }

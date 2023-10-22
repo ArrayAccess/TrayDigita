@@ -25,6 +25,8 @@ abstract class AddressStorage implements Serializable, Stringable
 
     abstract public function isValid(): bool;
 
+    abstract public function isLocal() : bool;
+
     public function serialize(): ?string
     {
         return serialize($this->__serialize());
