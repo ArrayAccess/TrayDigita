@@ -20,6 +20,10 @@ interface KernelInterface extends RunnableInterface, TerminableInterface
      */
     const BASE_CONFIG_FILE_NAME = 'config.php';
 
+    public function registerControllerDirectory(string ...$directory);
+
+    public function removeControllerDirectory(string ...$directory);
+
     public function getStartMemory() : int;
 
     public function getStartTime() : float;

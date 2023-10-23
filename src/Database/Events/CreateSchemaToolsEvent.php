@@ -165,14 +165,14 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                 }
 
                 $validName = is_string($relationName) && $relationName !== '';
-
                 $targetTable = $this
                     ->connection
                     ->getEntityManager()
                     ->getClassMetadata($association['targetEntity'])
                     ->getTableName();
+                $removedForeign = [];
                 foreach ($foreignKeys as $foreignName => $foreignKey) {
-                    $name = $foreignKey->getName();
+                    $name = is_string($foreignName) ? $foreignName : $foreignKey->getName();
                     if (!str_starts_with(strtolower($name), 'fk_')
                         || $foreignKey->getForeignTableName() !== $targetTable
                     ) {
@@ -198,13 +198,16 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                         $opt['onDelete'] = $onDelete;
                     }
                     try {
+                        $opt['oldName'] = $foreignName;
+                        $validName = $validName ? $relationName : $foreignName;
                         $table->removeForeignKey($foreignName);
+                        $removedForeign[$name] = $validName;
                         $table->addForeignKeyConstraint(
                             $foreignKey->getForeignTableName(),
                             $foreignKey->getLocalColumns(),
                             $foreignKey->getForeignColumns(),
                             $opt,
-                            $validName ? $relationName : $foreignName
+                            $validName
                         );
                     } catch (Throwable) {
                     }

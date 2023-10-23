@@ -14,6 +14,8 @@ use Throwable;
 use function class_exists;
 use function is_bool;
 use function is_dir;
+use function trim;
+use function ucwords;
 
 class KernelControllerLoader extends AbstractLoaderNameBased
 {
@@ -21,19 +23,58 @@ class KernelControllerLoader extends AbstractLoaderNameBased
     {
         return $this->kernel->getControllerNameSpace();
     }
+    protected function doRegister(): bool
+    {
+        if (!$this->isProcessable()) {
+            return false;
+        }
+
+        // preprocess
+        $this->preProcess();
+        $mode = ucwords(trim($this->getMode()));
+        $manager = $this->getManager();
+        $mode && $manager?->dispatch(
+            "kernel.beforeRegisterControllers",
+            $this->kernel
+        );
+        try {
+            $maxDepth = 20;
+            foreach ($this->kernel->getControllersDirectories() as $dir) {
+                if (!is_dir($dir)) {
+                    continue;
+                }
+                foreach ($this
+                    ->createFinder(
+                        $dir,
+                        "<= $maxDepth",
+                        '/^[_A-za-z]([a-zA-Z0-9]+)?\.php$/'
+                    )
+                    ->files() as $file) {
+                    $this->loadService($file);
+                }
+            }
+            $mode && $manager?->dispatch(
+                "kernel.registerControllers",
+                $this->kernel
+            );
+        } finally {
+            $mode && $manager?->dispatch(
+                "kernel.afterRegisterControllers",
+                $this->kernel
+            );
+
+            // postprocess
+            $this->postProcess();
+        }
+        return true;
+    }
 
     /**
      * @return ?Finder
      */
     protected function getFileLists(): ?Finder
     {
-        $maxDepth = 20;
-        $directory = $this->getDirectory();
-        return !$directory || ! is_dir($directory)
-            ? null
-            : $this
-            ->createFinder($this->getDirectory(), "<= $maxDepth", '/^[_A-za-z]([a-zA-Z0-9]+)?\.php$/')
-            ->files();
+        return null;
     }
 
     /**
@@ -42,15 +83,6 @@ class KernelControllerLoader extends AbstractLoaderNameBased
     public function getRouter() : RouterInterface
     {
         return $this->kernel->getHttpKernel()->getRouter();
-    }
-
-    protected function getDirectory(): ?string
-    {
-        $namespace = $this->getNameSpace();
-        $directory =  $namespace
-            ? $this->kernel->getRegisteredDirectories()[$namespace]??null
-            : null;
-        return $directory && is_dir($directory) ? $directory : null;
     }
 
     protected function getContainer(): ContainerInterface
@@ -66,8 +98,7 @@ class KernelControllerLoader extends AbstractLoaderNameBased
     protected function isProcessable(): bool
     {
         $processable = $this->getNameSpace()
-            && $this->getDirectory()
-            && !$this->kernel->getConfigError();
+            && ! $this->kernel->getConfigError();
         if ($processable) {
             $canBeProcess = $this
                 ->getManager()

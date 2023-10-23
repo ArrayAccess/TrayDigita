@@ -12,6 +12,7 @@ use ArrayAccess\TrayDigita\Scheduler\Abstracts\Task;
 use ArrayAccess\TrayDigita\Scheduler\Interfaces\MessageInterface;
 use ArrayAccess\TrayDigita\Scheduler\Interfaces\RecordLoaderInterface;
 use ArrayAccess\TrayDigita\Scheduler\Interfaces\SchedulerTimeInterface;
+use ArrayAccess\TrayDigita\Scheduler\Loader\LocalRecordLoader;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;

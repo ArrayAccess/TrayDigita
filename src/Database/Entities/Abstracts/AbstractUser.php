@@ -80,8 +80,6 @@ abstract class AbstractUser extends AbstractEntity implements
     // MAXIMUM AUTH PERIOD is 10 minutes
     const MAX_AUTH_PERIOD = 600;
 
-    protected array $availableRoles = [];
-
     #[Id]
     #[GeneratedValue('AUTO')]
     #[Column(
@@ -301,11 +299,6 @@ abstract class AbstractUser extends AbstractEntity implements
         $this->attachment_id = null;
         $this->identity_number = null;
         $this->security_key = RandomString::char(128);
-    }
-
-    public function getAvailableRoles(): array
-    {
-        return $this->availableRoles;
     }
 
     public static function generateAuthCode(

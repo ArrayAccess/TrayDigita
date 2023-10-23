@@ -37,6 +37,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
+use function array_keys;
 use function date_default_timezone_get;
 use function date_default_timezone_set;
 use function define;
@@ -101,6 +102,11 @@ abstract class BaseKernel implements
     protected array $registeredDirectories = [];
 
     /**
+     * @var array<string>
+     */
+    protected array $controllersDirectories = [];
+
+    /**
      * @var array|string[]
      */
     protected array $allowedConfigExtension = [
@@ -130,6 +136,38 @@ abstract class BaseKernel implements
         if (in_array($extension, $this->allowedConfigExtension)) {
             $this->baseConfigFile = $baseConfigFileName;
         }
+    }
+
+    public function registerControllerDirectory(string ...$directory): array
+    {
+        foreach ($directory as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            $this->controllersDirectories[realpath($dir)] = $dir;
+        }
+        return $this->controllersDirectories;
+    }
+
+    public function getControllersDirectories(): array
+    {
+        return array_keys($this->controllersDirectories);
+    }
+
+    public function removeControllerDirectory(string ...$directory): array
+    {
+        $removed = [];
+        foreach ($directory as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            $dir = realpath($dir);
+            if (isset($this->controllersDirectories[$dir])) {
+                unset($this->controllersDirectories[$dir]);
+                $removed[] = $dir;
+            }
+        }
+        return $removed;
     }
 
     /**
@@ -808,6 +846,11 @@ abstract class BaseKernel implements
             // @dispatch(kernel.afterInitConfig)
             $manager->dispatch('kernel.afterInitConfig', $this);
         }
+        if (isset($this->registeredDirectories[$this->controllerNameSpace])) {
+            $this->registerControllerDirectory(
+                $this->registeredDirectories[$this->controllerNameSpace]
+            );
+        }
 
         // do register namespace first
         $this->registerAutoloaderNameSpace();
@@ -868,21 +911,14 @@ abstract class BaseKernel implements
                     } catch (Throwable) {
                     }
                 }
-                $poMoAdapter ??= new PoMoAdapter();
-                $jsonAdapter ??= new JsonAdapter();
+                $poMoAdapter ??= new PoMoAdapter($translator);
+                $jsonAdapter ??= new JsonAdapter($translator);
                 $translator->addAdapter($poMoAdapter);
                 $translator->addAdapter($jsonAdapter);
 
                 $languageDirectory = $config?->get('language');
                 if (is_string($languageDirectory) && is_dir($languageDirectory)) {
-                    $poMoAdapter->registerDirectory(
-                        $languageDirectory,
-                        TranslatorInterface::DEFAULT_DOMAIN
-                    );
-                    $jsonAdapter->registerDirectory(
-                        $languageDirectory,
-                        TranslatorInterface::DEFAULT_DOMAIN
-                    );
+                    $translator->registerDirectory(TranslatorInterface::DEFAULT_DOMAIN, $languageDirectory);
                 }
             }
             $manager?->dispatch('kernel.registerProviders', $this);

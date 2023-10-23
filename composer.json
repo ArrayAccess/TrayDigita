@@ -78,7 +78,8 @@
     "bin": ["bin/tray-digita"],
     "autoload": {
         "psr-4": {
-            "ArrayAccess\\TrayDigita\\": "src/"
+            "ArrayAccess\\TrayDigita\\": "src/",
+            "ArrayAccess\\TrayDigita\\App\\Modules\\": "app/Modules"
         }
     }
 }

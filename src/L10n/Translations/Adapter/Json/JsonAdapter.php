@@ -8,18 +8,17 @@ use ArrayAccess\TrayDigita\L10n\Languages\Locale;
 use ArrayAccess\TrayDigita\L10n\Translations\AbstractAdapter;
 use ArrayAccess\TrayDigita\L10n\Translations\Entries;
 use ArrayAccess\TrayDigita\L10n\Translations\Exceptions\UnsupportedLanguageException;
-use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\AdapterBasedFileInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\EntryInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
-use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
 use Throwable;
 use function is_dir;
 use function is_file;
 use function is_readable;
+use function is_string;
 use function realpath;
 use function sprintf;
 
-class JsonAdapter extends AbstractAdapter implements AdapterBasedFileInterface
+class JsonAdapter extends AbstractAdapter
 {
     /**
      * @var array<string,array<string, bool>>
@@ -32,24 +31,6 @@ class JsonAdapter extends AbstractAdapter implements AdapterBasedFileInterface
     private array $strict = [];
 
     private array $translations = [];
-
-    /**
-     *
-     * @param string $directory
-     * @param string $domain
-     * @param bool $strict
-     * @return bool
-     */
-    public function registerDirectory(string $directory, string $domain, bool $strict = false) : bool
-    {
-        if (!is_dir($directory)) {
-            return false;
-        }
-        $directory = realpath($directory)?:DataNormalizer::normalizeDirectorySeparator($directory, true);
-        $this->registeredDirectory[$domain][$directory] ??= false;
-        $this->strict[$domain][$directory] = $strict;
-        return true;
-    }
 
     public function getName(): string
     {
@@ -72,16 +53,17 @@ class JsonAdapter extends AbstractAdapter implements AdapterBasedFileInterface
 
     private function scanLanguage(string $domain, string $language) : ?Entries
     {
-        $entries = $this->translations[$domain][$language]??null;
-        if (!isset($this->registeredDirectory[$domain])) {
-            return $entries;
-        }
-
-        foreach ($this->registeredDirectory[$domain] as $directory => $status) {
-            if ($status === true) {
+        $entries     = $this->translations[$domain][$language]??null;
+        $directories = $this->translator->getRegisteredDirectories()[$domain]??[];
+        foreach ($directories as $directory) {
+            if (!is_string($directory) || !is_dir($directory)) {
                 continue;
             }
-            $this->registeredDirectory[$domain][$directory] = true;
+            $directory = realpath($directory);
+            if (!empty($this->registeredDirectory[$domain][$directory][$language])) {
+                continue;
+            }
+            $this->registeredDirectory[$domain][$directory][$language] = true;
             $file = "$directory/$domain-$language.json";
             $file = !is_file($file) || !is_readable($file)
                 ? "$directory/$domain-$language.json"

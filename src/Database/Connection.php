@@ -5,6 +5,7 @@ namespace ArrayAccess\TrayDigita\Database;
 
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
+use ArrayAccess\TrayDigita\Database\Factory\MetadataFactory;
 use ArrayAccess\TrayDigita\Database\Wrapper\DriverWrapper;
 use ArrayAccess\TrayDigita\Database\Wrapper\EntityManagerWrapper;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
@@ -13,6 +14,7 @@ use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
@@ -31,6 +33,7 @@ use Psr\Container\ContainerInterface;
 use SensitiveParameter;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
+use function array_keys;
 use function is_dir;
 use function is_string;
 use function is_subclass_of;
@@ -38,6 +41,7 @@ use function method_exists;
 use function mkdir;
 use function preg_match;
 use function preg_replace;
+use function realpath;
 use function strtolower;
 use function trim;
 
@@ -157,8 +161,14 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
                 ? $proxyNamesSpace
                 : preg_replace('~(.+)\\\[^\\\]+$~', '$1\\Storage\Proxy', __NAMESPACE__);
             if (!$metadata instanceof AttributeDriver) {
+                $entityDirectories = [];
+                if (is_string($entityDirectory) && is_dir($entityDirectory)) {
+                    $entityDirectories[] = realpath($entityDirectory)??
+                        DataNormalizer::normalizeUnixDirectorySeparator($entityDirectory, true);
+                }
+
                 $metadata = new AttributeDriver(
-                    [$entityDirectory],
+                    $entityDirectories,
                     true
                 );
             }
@@ -168,6 +178,7 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             $orm->setMetadataDriverImpl($metadata);
             $orm->setProxyDir($proxyPath);
             $orm->setProxyNamespace($proxyNamesSpace);
+            $orm->setClassMetadataFactoryName(MetadataFactory::class);
             // @dispatch(database.configureORMConfiguration)
             $this->dispatchCurrent($orm);
             return $orm;
@@ -175,6 +186,31 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             // @dispatch(database.afterConfigureORMConfiguration)
             $this->dispatchAfter($orm??null);
         }
+    }
+
+    public function registerEntityDirectory(string ...$directories): ?array
+    {
+        $driver = $this->getDefaultConfiguration()->getMetadataDriverImpl();
+        if ($driver instanceof AttributeDriver) {
+            $toRegistered = [];
+            foreach ($directories as $directory) {
+                if (!is_dir($directory)) {
+                    continue;
+                }
+                $directory = realpath($directory);
+                if (!$directory) {
+                    continue;
+                }
+                $toRegistered[$directory] = true;
+            }
+            if (empty($toRegistered)) {
+                return null;
+            }
+            $toRegistered = array_keys($toRegistered);
+            $driver->addPaths($toRegistered);
+            return $toRegistered;
+        }
+        return null;
     }
 
     public function getDatabaseConfig() : Config

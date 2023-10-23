@@ -39,8 +39,11 @@ class DatabaseAdapter extends AbstractAdapter
 
     private PluralForm $pluralForm;
 
-    public function __construct(Connection|DoctrineConnection $connection)
-    {
+    public function __construct(
+        TranslatorInterface $translator,
+        Connection|DoctrineConnection $connection
+    ) {
+        parent::__construct($translator);
         $this->connection = $connection;
         $this->pluralForm = new PluralForm(
             2,
@@ -56,11 +59,6 @@ class DatabaseAdapter extends AbstractAdapter
     public function getTableName(): string
     {
         return $this->tableName;
-    }
-
-    public function setTableName(string $tableName): void
-    {
-        $this->tableName = $tableName;
     }
 
     /**

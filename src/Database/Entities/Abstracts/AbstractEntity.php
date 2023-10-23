@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Database\Entities\Abstracts;
 
+use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Database\Entities\Traits\FieldNameGetter;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
@@ -258,6 +259,7 @@ class AbstractEntity implements JsonSerializable
             $this->getEntityBlacklistedFields(),
             'is_string'
         );
+
         $aliases = $this->getEntityFieldAliases();
         $fields = $this->getEntityDisplayFields();
         $className = $this::class;
@@ -268,28 +270,33 @@ class AbstractEntity implements JsonSerializable
                 }
                 // unset($fields['fieldsarray']);
             } else {
+                $container = $this instanceof ContainerIndicateInterface
+                    ? $this->getContainer()
+                    : null;
                 $columns = self::$columnsFields[$className];
                 // fallback default
-                $em = $this->getEntityManager()
-                    ??ContainerHelper::use(Connection::class)
+                $em = $this
+                    ->getEntityManager()
+                    ??ContainerHelper::use(Connection::class, $container)
                     ?->getEntityManager();
                 if ($em && empty($columns)) {
-                    $metadata = $em->getClassMetadata($className);
-                    foreach ($metadata->getFieldNames() as $item) {
-                        try {
-                            $mapping = $metadata->getFieldMapping($item);
-                        } catch (MappingException) {
-                            continue;
+                    foreach ($em->getMetadataFactory()->getAllMetadata() as $metadata) {
+                        foreach ($metadata->getFieldNames() as $item) {
+                            try {
+                                $mapping = $metadata->getFieldMapping($item);
+                            } catch (MappingException) {
+                                continue;
+                            }
+                            /** @noinspection DuplicatedCode */
+                            $fieldName = $mapping['fieldName']??null;
+                            $columnName = $mapping['columnName']??null;
+                            if (!$fieldName || !$columnName) {
+                                continue;
+                            }
+                            $columnName = strtolower($columnName);
+                            $columns[$fieldName] = $fieldName;
+                            self::$columnsFields[$className][$columnName] = $fieldName;
                         }
-                        /** @noinspection DuplicatedCode */
-                        $fieldName = $mapping['fieldName']??null;
-                        $columnName = $mapping['columnName']??null;
-                        if (!$fieldName || !$columnName) {
-                            continue;
-                        }
-                        $columnName = strtolower($columnName);
-                        $columns[$fieldName] = $fieldName;
-                        self::$columnsFields[$className][$columnName] = $fieldName;
                     }
                 }
                 foreach ($columns as $item) {

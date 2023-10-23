@@ -1,5 +1,4 @@
 <?php
-/** @noinspection PhpUnused */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\L10n\Translations\Adapter\Gettext;
@@ -13,20 +12,19 @@ use ArrayAccess\TrayDigita\L10n\PoMo\Translations as GettextTranslations;
 use ArrayAccess\TrayDigita\L10n\Translations\AbstractAdapter;
 use ArrayAccess\TrayDigita\L10n\Translations\Entries;
 use ArrayAccess\TrayDigita\L10n\Translations\Exceptions\UnsupportedLanguageException;
-use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\AdapterBasedFileInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\EntryInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
-use ArrayAccess\TrayDigita\Util\Filter\DataNormalizer;
 use function is_dir;
 use function is_file;
 use function is_readable;
+use function is_string;
 use function pathinfo;
 use function realpath;
 use function sprintf;
 use function substr;
 use const PATHINFO_EXTENSION;
 
-class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
+class PoMoAdapter extends AbstractAdapter
 {
     /**
      * @var array<string,array<string, bool>>
@@ -48,8 +46,9 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
      */
     private array $translations = [];
 
-    public function __construct()
+    public function __construct(TranslatorInterface $translator)
     {
+        parent::__construct($translator);
         $this->reader = new GettextReader(new TranslationFactory());
     }
 
@@ -166,38 +165,21 @@ class PoMoAdapter extends AbstractAdapter implements AdapterBasedFileInterface
         );
     }
 
-    /**
-     *
-     * @param string $directory
-     * @param string $domain
-     * @param bool $strict
-     * @return bool
-     */
-    public function registerDirectory(string $directory, string $domain, bool $strict = false) : bool
-    {
-        if (!is_dir($directory)) {
-            return false;
-        }
-        $directory = realpath($directory)?:DataNormalizer::normalizeDirectorySeparator($directory, true);
-        $this->registeredDirectory[$domain][$directory] ??= false;
-        $this->strict[$domain][$directory] = $strict;
-        return true;
-    }
-
     private function scanLanguage(string $domain, string $language) : ?Entries
     {
-        $entries = $this->translations[$domain][$language]??null;
-        if (!isset($this->registeredDirectory[$domain])) {
-            return $entries;
-        }
-
+        $entries     = $this->translations[$domain][$language]??null;
+        $directories = $this->translator->getRegisteredDirectories()[$domain]??[];
         $translations = null;
-        foreach ($this->registeredDirectory[$domain] as $directory => $status) {
-            if ($status === true) {
+        foreach ($directories as $directory) {
+            if (!is_string($directory) || !is_dir($directory)) {
+                continue;
+            }
+            $directory = realpath($directory);
+            if (!empty($this->registeredDirectory[$domain][$directory][$language])) {
                 continue;
             }
 
-            $this->registeredDirectory[$domain][$directory] = true;
+            $this->registeredDirectory[$domain][$directory][$language] = true;
             $file = "$directory/$domain-$language.mo";
             $file = !is_file($file) || !is_readable($file)
                 ? "$directory/$domain-$language.po"

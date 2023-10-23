@@ -267,6 +267,10 @@ final class Decorator
         return self::resolveDepend($name);
     }
 
+    /**
+     * @param string $name
+     * @return SystemContainerInterface
+     */
     private static function resolveInternal(string $name): SystemContainerInterface
     {
         $container = self::container();

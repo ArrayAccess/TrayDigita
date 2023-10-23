@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: TrayDigita 1.0.0\n"
-"POT-Creation-Date: 2023-10-22 12:20+0700\n"
+"POT-Creation-Date: 2023-10-24 06:36+0700\n"
 "PO-Revision-Date: 2023-09-24 19:00+0700\n"
 "Last-Translator: ArrayAccess\n"
 "Language-Team: ArrayAccess\n"
@@ -206,7 +206,7 @@ msgstr ""
 
 #: Console/Command/ApplicationChecker/CacheChecker.php:58
 #: Console/Command/ApplicationChecker/CacheChecker.php:94
-#: Console/Command/DatabaseChecker.php:1588
+#: Console/Command/DatabaseChecker.php:1600
 msgctxt "console"
 msgid "Error:"
 msgstr ""
@@ -636,8 +636,8 @@ msgstr ""
 #: Console/Command/ChecksumGenerator.php:134
 #: Console/Command/CommandGenerator.php:333
 #: Console/Command/ControllerGenerator.php:296
-#: Console/Command/DatabaseChecker.php:1255
-#: Console/Command/DatabaseChecker.php:1397
+#: Console/Command/DatabaseChecker.php:1267
+#: Console/Command/DatabaseChecker.php:1409
 #: Console/Command/DatabaseEventGenerator.php:330
 #: Console/Command/EntityGenerator.php:327
 #: Console/Command/MiddlewareGenerator.php:327
@@ -650,8 +650,8 @@ msgstr ""
 #: Console/Command/ChecksumGenerator.php:149
 #: Console/Command/CommandGenerator.php:346
 #: Console/Command/ControllerGenerator.php:309
-#: Console/Command/DatabaseChecker.php:1270
-#: Console/Command/DatabaseChecker.php:1412
+#: Console/Command/DatabaseChecker.php:1282
+#: Console/Command/DatabaseChecker.php:1424
 #: Console/Command/DatabaseEventGenerator.php:343
 #: Console/Command/EntityGenerator.php:340
 #: Console/Command/MiddlewareGenerator.php:342
@@ -664,8 +664,8 @@ msgstr ""
 #: Console/Command/ChecksumGenerator.php:161
 #: Console/Command/CommandGenerator.php:390
 #: Console/Command/ControllerGenerator.php:351
-#: Console/Command/DatabaseChecker.php:1282
-#: Console/Command/DatabaseChecker.php:1426
+#: Console/Command/DatabaseChecker.php:1294
+#: Console/Command/DatabaseChecker.php:1438
 #: Console/Command/DatabaseEventGenerator.php:387
 #: Console/Command/EntityGenerator.php:385
 #: Console/Command/MiddlewareGenerator.php:386
@@ -874,29 +874,29 @@ msgctxt "console"
 msgid "%s Controller successfully created!"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:85
+#: Console/Command/DatabaseChecker.php:95
 msgctxt "console"
 msgid "Check & validate database."
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:93
+#: Console/Command/DatabaseChecker.php:103
 msgctxt "console"
 msgid "Validate changed / difference about database schema"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:104
+#: Console/Command/DatabaseChecker.php:114
 #, php-format
 msgctxt "console"
 msgid "Print sql query create schema (should execute with %s command)"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:120
+#: Console/Command/DatabaseChecker.php:130
 #, php-format
 msgctxt "console"
 msgid "Dump create schema (should execute with %s & %s command)"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:140
+#: Console/Command/DatabaseChecker.php:150
 #, php-format
 msgctxt "console"
 msgid ""
@@ -904,13 +904,13 @@ msgid ""
 "command)"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:156
+#: Console/Command/DatabaseChecker.php:166
 #, php-format
 msgctxt "console"
 msgid "Optimize database when possible (should execute with %s command)"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:170
+#: Console/Command/DatabaseChecker.php:180
 #, php-format
 msgctxt "console"
 msgid ""
@@ -919,284 +919,284 @@ msgid ""
 "services."
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:248
-#: Console/Command/DatabaseChecker.php:1545
+#: Console/Command/DatabaseChecker.php:258
+#: Console/Command/DatabaseChecker.php:1557
 msgctxt "console"
 msgid "Can not get database object from container"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:259
-#: Console/Command/DatabaseChecker.php:1557
+#: Console/Command/DatabaseChecker.php:269
+#: Console/Command/DatabaseChecker.php:1569
 msgctxt "console"
 msgid "Database connection is not valid object from container"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:364
+#: Console/Command/DatabaseChecker.php:374
 msgctxt "console"
 msgid "No schema can be created"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:396
-#: Console/Command/DatabaseChecker.php:1360
-#: Console/Command/DatabaseChecker.php:1371
+#: Console/Command/DatabaseChecker.php:407
+#: Console/Command/DatabaseChecker.php:1372
+#: Console/Command/DatabaseChecker.php:1383
 msgctxt "console"
 msgid "No change into database schema"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:426
-#: Console/Command/DatabaseChecker.php:439
+#: Console/Command/DatabaseChecker.php:437
+#: Console/Command/DatabaseChecker.php:450
 #, php-format
 msgctxt "console"
 msgid "Table \"%s\" does not exist!"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:464
+#: Console/Command/DatabaseChecker.php:476
 #, php-format
 msgctxt "console"
 msgid "Table \"%s\" %s"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:475
+#: Console/Command/DatabaseChecker.php:487
 msgctxt "console"
 msgid "no difference"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:480
-#: Console/Command/DatabaseChecker.php:505
-#: Console/Command/DatabaseChecker.php:1918
+#: Console/Command/DatabaseChecker.php:492
+#: Console/Command/DatabaseChecker.php:517
+#: Console/Command/DatabaseChecker.php:1931
 msgctxt "console"
 msgid "NEED TO OPTIMIZE"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:497
+#: Console/Command/DatabaseChecker.php:509
 #, php-format
 msgctxt "console"
 msgid "Table \"%s\" need to be change"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:534
-#: Console/Command/DatabaseChecker.php:556
-#: Console/Command/DatabaseChecker.php:578
-#: Console/Command/DatabaseChecker.php:600
-#: Console/Command/DatabaseChecker.php:622
-#: Console/Command/DatabaseChecker.php:644
-#: Console/Command/DatabaseChecker.php:666
-#: Console/Command/DatabaseChecker.php:688
-#: Console/Command/DatabaseChecker.php:713
-#: Console/Command/DatabaseChecker.php:735
+#: Console/Command/DatabaseChecker.php:546
+#: Console/Command/DatabaseChecker.php:568
+#: Console/Command/DatabaseChecker.php:590
+#: Console/Command/DatabaseChecker.php:612
+#: Console/Command/DatabaseChecker.php:634
+#: Console/Command/DatabaseChecker.php:656
+#: Console/Command/DatabaseChecker.php:678
+#: Console/Command/DatabaseChecker.php:700
+#: Console/Command/DatabaseChecker.php:725
+#: Console/Command/DatabaseChecker.php:747
 msgctxt "console"
 msgid "Column"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:536
+#: Console/Command/DatabaseChecker.php:548
 msgctxt "console"
 msgid "type"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:538
-#: Console/Command/DatabaseChecker.php:560
-#: Console/Command/DatabaseChecker.php:582
-#: Console/Command/DatabaseChecker.php:604
-#: Console/Command/DatabaseChecker.php:626
-#: Console/Command/DatabaseChecker.php:648
-#: Console/Command/DatabaseChecker.php:670
-#: Console/Command/DatabaseChecker.php:693
-#: Console/Command/DatabaseChecker.php:717
-#: Console/Command/DatabaseChecker.php:739
+#: Console/Command/DatabaseChecker.php:550
+#: Console/Command/DatabaseChecker.php:572
+#: Console/Command/DatabaseChecker.php:594
+#: Console/Command/DatabaseChecker.php:616
+#: Console/Command/DatabaseChecker.php:638
+#: Console/Command/DatabaseChecker.php:660
+#: Console/Command/DatabaseChecker.php:682
+#: Console/Command/DatabaseChecker.php:705
+#: Console/Command/DatabaseChecker.php:729
+#: Console/Command/DatabaseChecker.php:751
 #, php-format
 msgctxt "console"
 msgid "change from: [%s] to [%s]"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:558
+#: Console/Command/DatabaseChecker.php:570
 msgctxt "console"
 msgid "default value"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:690
+#: Console/Command/DatabaseChecker.php:702
 msgctxt "console"
 msgid "scale"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:737
+#: Console/Command/DatabaseChecker.php:749
 msgctxt "console"
 msgid "comment"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:760
+#: Console/Command/DatabaseChecker.php:772
 msgctxt "console"
 msgid "Added Column"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:771
+#: Console/Command/DatabaseChecker.php:783
 msgctxt "console"
 msgid "Removed Column"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:782
+#: Console/Command/DatabaseChecker.php:794
 msgctxt "console"
 msgid "Renamed Column"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:784
+#: Console/Command/DatabaseChecker.php:796
 #, php-format
 msgctxt "console"
 msgid "from [%s] to [%s]"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:807
+#: Console/Command/DatabaseChecker.php:819
 msgctxt "console"
 msgid "Modify Index"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:809
+#: Console/Command/DatabaseChecker.php:821
 #, php-format
 msgctxt "console"
 msgid "from %s to %s"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:842
+#: Console/Command/DatabaseChecker.php:854
 msgctxt "console"
 msgid "Added Index"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:860
+#: Console/Command/DatabaseChecker.php:872
 msgctxt "console"
 msgid "Removed Index"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:880
+#: Console/Command/DatabaseChecker.php:892
 msgctxt "console"
 msgid "Renamed Index"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:901
+#: Console/Command/DatabaseChecker.php:913
 msgctxt "console"
 msgid "Modify ForeignKey"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:947
+#: Console/Command/DatabaseChecker.php:959
 msgctxt "console"
 msgid "Added ForeignKey"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:969
+#: Console/Command/DatabaseChecker.php:981
 msgctxt "console"
 msgid "Removed ForeignKey"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1006
-#: Console/Command/DatabaseChecker.php:1039
-#: Console/Command/DatabaseChecker.php:1073
+#: Console/Command/DatabaseChecker.php:1018
+#: Console/Command/DatabaseChecker.php:1051
+#: Console/Command/DatabaseChecker.php:1085
 #, php-format
 msgctxt "console"
 msgid "Table \"%s\" for %s & does not exist in schema"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1101
+#: Console/Command/DatabaseChecker.php:1113
 #, php-format
 msgctxt "console"
 msgid "Table \"%s\" for %s"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1148
+#: Console/Command/DatabaseChecker.php:1160
 msgctxt "console"
 msgid "Contains changed database schema, you can execute command :"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1173
-#: Console/Command/DatabaseChecker.php:1971
+#: Console/Command/DatabaseChecker.php:1185
+#: Console/Command/DatabaseChecker.php:1984
 msgctxt "console"
 msgid ""
 "Contains database table that can be optimized, you can execute command :"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1201
+#: Console/Command/DatabaseChecker.php:1213
 msgctxt "console"
 msgid "There are no tables that can be optimized"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1216
+#: Console/Command/DatabaseChecker.php:1228
 #, php-format
 msgctxt "console"
 msgid "%s does not yet support optimization"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1237
+#: Console/Command/DatabaseChecker.php:1249
 #, php-format
 msgctxt "console"
 msgid "Table \"%s\" can be freed up to : (%s)"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1291
-#: Console/Command/DatabaseChecker.php:1439
+#: Console/Command/DatabaseChecker.php:1303
+#: Console/Command/DatabaseChecker.php:1451
 msgctxt "console"
 msgid "PLEASE DO NOT CANCEL OPERATION!"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1299
+#: Console/Command/DatabaseChecker.php:1311
 msgctxt "console"
 msgid "Optimizing table"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1328
+#: Console/Command/DatabaseChecker.php:1340
 msgctxt "console"
 msgid "FAIL"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1338
-#: Console/Command/DatabaseChecker.php:1527
+#: Console/Command/DatabaseChecker.php:1350
+#: Console/Command/DatabaseChecker.php:1539
 msgctxt "console"
 msgid "ALL DONE!"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1381
+#: Console/Command/DatabaseChecker.php:1393
 msgctxt "console"
 msgid "Executed Command:"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1465
+#: Console/Command/DatabaseChecker.php:1477
 msgctxt "console"
 msgid "Executing:"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1483
-#: Console/Command/DatabaseChecker.php:1512
+#: Console/Command/DatabaseChecker.php:1495
+#: Console/Command/DatabaseChecker.php:1524
 msgctxt "console"
 msgid "Failed to execute command"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1582
+#: Console/Command/DatabaseChecker.php:1594
 msgctxt "console"
 msgid "Database connection error."
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1600
+#: Console/Command/DatabaseChecker.php:1612
 msgctxt "console"
 msgid "Database connection succeed"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1638
+#: Console/Command/DatabaseChecker.php:1650
 msgctxt "console"
 msgid "Database name"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1655
+#: Console/Command/DatabaseChecker.php:1667
 msgctxt "console"
 msgid "Database host"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1664
+#: Console/Command/DatabaseChecker.php:1676
 msgctxt "console"
 msgid "Database user"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1673
+#: Console/Command/DatabaseChecker.php:1685
 msgctxt "console"
 msgid "Database password"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1695
+#: Console/Command/DatabaseChecker.php:1707
 #: Console/Command/SchedulerAction.php:120
 #: Console/Command/SchedulerAction.php:204
 #: Console/Command/SchedulerAction.php:215
@@ -1207,82 +1207,82 @@ msgctxt "console"
 msgid "Unknown"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1704
+#: Console/Command/DatabaseChecker.php:1716
 msgctxt "console"
 msgid "Connection Object Info"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1712
+#: Console/Command/DatabaseChecker.php:1724
 msgctxt "console"
 msgid "Connection"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1766
+#: Console/Command/DatabaseChecker.php:1778
 msgctxt "console"
 msgid "ORM Configuration"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1772
+#: Console/Command/DatabaseChecker.php:1784
 msgctxt "console"
 msgid "Query Cache"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1773
+#: Console/Command/DatabaseChecker.php:1785
 msgctxt "console"
 msgid "Result Cache"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1774
+#: Console/Command/DatabaseChecker.php:1786
 msgctxt "console"
 msgid "Proxy Namespace"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1775
+#: Console/Command/DatabaseChecker.php:1787
 msgctxt "console"
 msgid "Proxy Directory"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1776
+#: Console/Command/DatabaseChecker.php:1788
 msgctxt "console"
 msgid "Metadata Driver"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1777
+#: Console/Command/DatabaseChecker.php:1789
 msgctxt "console"
 msgid "Repository Factory"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1778
+#: Console/Command/DatabaseChecker.php:1790
 msgctxt "console"
 msgid "Quote Strategy"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1779
+#: Console/Command/DatabaseChecker.php:1791
 msgctxt "console"
 msgid "Naming Factory"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1780
+#: Console/Command/DatabaseChecker.php:1792
 msgctxt "console"
 msgid "Schema Manager Factory"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1789
+#: Console/Command/DatabaseChecker.php:1801
 msgctxt "console"
 msgid "Not Set"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1799
+#: Console/Command/DatabaseChecker.php:1811
 msgctxt "console"
 msgid "Registered Schema / Entities"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1932
+#: Console/Command/DatabaseChecker.php:1945
 msgctxt "console"
 msgid "Changing"
 msgstr ""
 
-#: Console/Command/DatabaseChecker.php:1946
+#: Console/Command/DatabaseChecker.php:1959
 msgctxt "console"
 msgid "Contains changed database schema, you can check with command :"
 msgstr ""
@@ -1864,13 +1864,13 @@ msgctxt "console"
 msgid "Time %s secs; Memory Usage: %s; Memory Peak Usage: %s"
 msgstr ""
 
-#: Scheduler/Scheduler.php:168
+#: Scheduler/Scheduler.php:169
 #, php-format
 msgctxt "scheduler"
 msgid "Callback task must be contain return type or instance of: %s"
 msgstr ""
 
-#: Scheduler/Scheduler.php:445
+#: Scheduler/Scheduler.php:446
 #, php-format
 msgctxt "scheduler"
 msgid "Scheduler is on progress with (%s) task remaining"

@@ -23,6 +23,12 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\SchemaDiff;
+use Doctrine\DBAL\Schema\SchemaException;
+use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration;
 use Doctrine\ORM\EntityManager;
@@ -40,6 +46,7 @@ use Throwable;
 use function array_change_key_case;
 use function array_filter;
 use function array_map;
+use function array_merge;
 use function end;
 use function explode;
 use function implode;
@@ -50,11 +57,14 @@ use function max;
 use function memory_get_peak_usage;
 use function memory_get_usage;
 use function microtime;
+use function preg_match;
 use function preg_replace;
 use function round;
 use function rtrim;
 use function sprintf;
+use function str_starts_with;
 use function strtolower;
+use function substr_replace;
 use function trim;
 use const ARRAY_FILTER_USE_KEY;
 use const PHP_BINARY;
@@ -356,8 +366,8 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         }
 
         if ($optionSchemaDump) {
-            $sql = $currentSchema->toSql($platform);
-            if (empty($sql)) {
+            $schemaSQL = $currentSchema->toSql($platform);
+            if (empty($schemaSQL)) {
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
@@ -368,7 +378,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             }
             $output->writeln('');
             $formatter = new SqlFormatter(new CliHighlighter());
-            foreach ($sql as $query) {
+            foreach ($schemaSQL as $query) {
                 $query = rtrim($query, ';');
                 $output->writeln(
                     $formatter->format("$query;"),
@@ -388,8 +398,9 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 $clonedSchema,
                 $currentSchema
             );
-            $sql = $platform->getAlterSchemaSQL($schemaDiff);
-            if (empty($sql)) {
+            $this->compareSchemaFix($currentSchema, $clonedSchema, $schemaDiff);
+            $schemaSQL = $this->getAlterSQL($schemaDiff, $platform);
+            if (empty($schemaSQL)) {
                 $output->writeln(
                     sprintf(
                         '<info>%s</info>',
@@ -400,7 +411,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             }
             $output->writeln('');
             $formatter = new SqlFormatter(new CliHighlighter());
-            foreach ($sql as $query) {
+            foreach ($schemaSQL as $query) {
                 $query = rtrim($query, ';');
                 $output->writeln(
                     $formatter->format("$query;"),
@@ -451,6 +462,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 }
                 $currentTable = $currentSchema->getTable($meta->getTableName());
                 $tableDiff = $comparator->compareTables($table, $currentTable);
+                $this->compareSchemaTableFix($table, $currentTable, $tableDiff);
                 $isNeedOptimize = ($optimizeArray[strtolower($currentTable->getName())] ?? 0) > 0;
                 if ($isNeedOptimize) {
                     $containOptimize = true;
@@ -1352,7 +1364,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $clonedSchema,
             $currentSchema
         );
-
+        $this->compareSchemaFix($currentSchema, $clonedSchema, $schemaDiff);
         if ($schemaDiff->isEmpty()) {
             $output->writeln(
                 sprintf(
@@ -1363,7 +1375,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             return Command::SUCCESS;
         }
 
-        $schemaSQL = $platform->getAlterSchemaSQL($schemaDiff);
+        $schemaSQL = $this->getAlterSQL($schemaDiff, $platform);
         if (empty($schemaSQL)) {
             $output->writeln(
                 sprintf(
@@ -1458,22 +1470,22 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         $progressBar = !$output->isVerbose() ? $io->createProgressBar() : null;
         $progressBar?->setMaxSteps(count($schemaSQL));
         try {
-            foreach ($schemaSQL as $sql) {
+            foreach ($schemaSQL as $sqlQuery) {
                 $output->writeln(
                     sprintf(
                         '<info>%s</info> <comment>%s</comment>',
                         $this->translateContext('Executing:', 'console'),
-                        $sql
+                        $sqlQuery
                     ),
                     OutputInterface::VERBOSITY_VERY_VERBOSE
                 );
                 $progressBar?->advance();
                 if ($is_pdo) {
-                    $conn->exec($sql);
+                    $conn->exec($sqlQuery);
                     continue;
                 }
                 try {
-                    $conn->executeStatement($sql);
+                    $conn->executeStatement($sqlQuery);
                 } catch (Throwable $e) {
                     $progressBar?->finish();
                     $progressBar?->clear();
@@ -1880,6 +1892,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 $comparator = $schema->createComparator();
                 $tableDb = $schema->introspectTable($meta->getTableName());
                 $tableDiff = $comparator->compareTables($tableDb, $currentTable);
+                $this->compareSchemaTableFix($tableDb, $currentTable, $tableDiff);
                 if (!empty($tableDiff->changedColumns)
                     || !empty($tableDiff->renamedColumns)
                     || !empty($tableDiff->removedColumns)
@@ -1987,5 +2000,92 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             );
             $output->writeln('');
         }
+    }
+
+    private function compareSchemaTableFix(Table $realTable, Table $currentTable, TableDiff $diff): void
+    {
+        foreach ($currentTable->getForeignKeys() as $foreignKey) {
+            if (!$foreignKey->hasOption('oldName')) {
+                continue;
+            }
+            $oldName = $foreignKey->getOption('oldName');
+
+            if (!str_starts_with($oldName, 'fk_')) {
+                continue;
+            }
+
+            // fk_ to idx_
+            $oldName = substr_replace($oldName, 'idx_', 0, 3);
+            if (!$realTable->hasIndex($oldName)) {
+                continue;
+            }
+            $name = $foreignKey->getName();
+            if (!isset($diff->renamedIndexes[$oldName])) {
+                continue;
+            }
+
+            $data = $diff->renamedIndexes[$oldName];
+            unset($diff->renamedIndexes[$oldName]);
+            if (!isset($diff->addedIndexes[$name]) && !$realTable->hasIndex($name)) {
+                $diff->addedIndexes[$name] = $data;
+            }
+        }
+    }
+
+    private function compareSchemaFix(Schema $currentSchema, Schema $realSchema, SchemaDiff $diff): void
+    {
+        if (!empty($diff->changedTables)) {
+            foreach ($diff->changedTables as $k => $tableDiff) {
+                if (!$tableDiff instanceof TableDiff) {
+                    continue;
+                }
+                $theTable = $tableDiff->fromTable??null;
+                if (!$theTable instanceof Table) {
+                    continue;
+                }
+                if (!$realSchema->hasTable($theTable->getName())) {
+                    continue;
+                }
+                try {
+                    $this->compareSchemaTableFix(
+                        $theTable,
+                        $currentSchema->getTable($theTable->getName()),
+                        $tableDiff
+                    );
+                } catch (SchemaException) {
+                }
+                $diff->changedTables[$k] = $tableDiff;
+            }
+        }
+    }
+
+    /**
+     * @return array<string>
+     */
+    protected function getAlterSQL(SchemaDiff $diff, AbstractPlatform $platform): array
+    {
+        $sql = $platform->getAlterSchemaSQL($diff);
+        // we don't use event subscriber
+        $constraint = [];
+        $createOrAddIndex = [];
+        $dropIndex = [];
+        foreach ($sql as $key => $query) {
+            if (preg_match('~^\s*(CREATE|ADD|RENAME).+INDEX~i', $query)) {
+                $createOrAddIndex[] = $query;
+                unset($sql[$key]);
+                continue;
+            }
+            if (preg_match('~^\s*ALTER\s+(ADD|REMOVE).+CONSTRAINT~i', $query)) {
+                $constraint[] = $query;
+                unset($sql[$key]);
+                continue;
+            }
+            if (preg_match('~DROP.+INDEX~i', $query)) {
+                $dropIndex[] = $query;
+                unset($sql[$key]);
+            }
+        }
+
+        return array_merge($sql, $dropIndex, $createOrAddIndex, $constraint);
     }
 }

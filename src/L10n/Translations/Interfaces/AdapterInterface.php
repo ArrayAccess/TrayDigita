@@ -10,6 +10,11 @@ interface AdapterInterface
     public function getName() : string;
 
     /**
+     * @return TranslatorInterface
+     */
+    public function getTranslator() : TranslatorInterface;
+
+    /**
      * @param ?string $context
      * @param string $original
      *

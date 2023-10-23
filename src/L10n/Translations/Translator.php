@@ -13,10 +13,14 @@ use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use Throwable;
+use function array_unique;
+use function array_values;
 use function is_array;
+use function is_dir;
 use function is_float;
 use function is_int;
 use function is_object;
+use function realpath;
 use function round;
 use function spl_object_hash;
 use function sprintf;
@@ -45,6 +49,16 @@ class Translator implements TranslatorInterface, ManagerAllocatorInterface
      * @var array<string, array<string, bool>>
      */
     private array $adapterHash = [];
+
+    /**
+     * @var array<string, string[]>
+     */
+    private array $registeredDirectories = [];
+
+    /**
+     * @var array
+     */
+    private array $registeredAdapterDirectoryRegistered = [];
 
     /**
      * @param string $language
@@ -110,6 +124,30 @@ class Translator implements TranslatorInterface, ManagerAllocatorInterface
             );
         }
         $this->language = $language;
+    }
+
+    public function registerDirectory(string $domain, string ...$directory): bool
+    {
+        $this->registeredDirectories[$domain] ??= [];
+        $succeed = false;
+        foreach ($directory as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            $dir = realpath($dir);
+            $this->registeredDirectories[$domain][] = $dir;
+            $succeed = true;
+        }
+        $this->registeredDirectories[$domain] = array_values(array_unique($this->registeredDirectories[$domain]));
+        return $succeed;
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public function getRegisteredDirectories(): array
+    {
+        return $this->registeredDirectories;
     }
 
     public function setAdapter(string $name, AdapterInterface $adapter) : void

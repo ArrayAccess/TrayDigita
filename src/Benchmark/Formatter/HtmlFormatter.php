@@ -155,8 +155,8 @@ class HtmlFormatter implements MetadataFormatterInterface
                         $type = gettype($i);
                         $i = (string) $i;
                         $length = strlen($i);
-                        $i = strlen($i) > 300
-                            ? substr($i, 0, 300) . '...' : $i;
+                        $i = strlen($i) > 1024
+                            ? substr($i, 0, 1024) . '...' : $i;
                         $pre .= sprintf('%s: (<code>size=%d</code>) %s', $type, $length, htmlentities($i));
                     } elseif (is_array($i)) {
                         $pre .= sprintf('array: (<code>size=%d</code>)', count($i));

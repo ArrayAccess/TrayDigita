@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Http\Code;
+use ArrayAccess\TrayDigita\Http\Exceptions\HttpException;
 use ArrayAccess\TrayDigita\Module\Interfaces\ModuleInterface;
 use ArrayAccess\TrayDigita\Module\Modules;
 use ArrayAccess\TrayDigita\Responder\Interfaces\FileResponderInterface;
@@ -265,20 +266,28 @@ abstract class AbstractController implements ControllerInterface
                 } catch (Throwable) {
                     $_arguments = array_values($_arguments);
                 }
-                if ($refMethod->isPrivate()) {
-                    $response = (function ($method, ...$arguments) {
-                        return $this->$method(...$arguments);
-                    })->call(
-                        $this,
-                        $resolver,
-                        $refMethod->getName(),
-                        ...$_arguments
-                    );
-                } else {
-                    $response = $this->{$refMethod->getName()}(...$_arguments);
+                try {
+                    if ($refMethod->isPrivate()) {
+                        $response = (function ($method, ...$arguments) {
+                            return $this->$method(...$arguments);
+                        })->call(
+                            $this,
+                            $resolver,
+                            $refMethod->getName(),
+                            ...$_arguments
+                        );
+                    } else {
+                        $response = $this->{$refMethod->getName()}(...$_arguments);
+                    }
+                } catch (HttpException $e) {
+                    $response = $e;
+                    if (Code::statusMessage($e->getCode()) !== null) {
+                        $this->statusCode = $e->getCode();
+                    } else {
+                        $this->statusCode = 500;
+                    }
                 }
             }
-
             $statusCode = 200;
             if (is_int($this->statusCode)
                 && Code::statusMessage($this->statusCode) !== null
@@ -292,7 +301,10 @@ abstract class AbstractController implements ControllerInterface
 
             if (!$response instanceof ResponseInterface) {
                 $this->response ??= $this->getResponseFactory()->createResponse($statusCode);
-                if (is_iterable($response) || $response instanceof JsonSerializable) {
+                if (is_iterable($response)
+                    || $response instanceof JsonSerializable
+                    || $this->asJSON && $response instanceof Throwable
+                ) {
                     $this->response = $this
                         ->getJsonResponder()
                         ->serve(
@@ -320,12 +332,11 @@ abstract class AbstractController implements ControllerInterface
                     || $response instanceof Stringable
                     || is_object($response) && method_exists($response, '__tostring')
                 ) {
-                    $response = (string) $response;
                     $useJson = false;
                     if ($this->asJSON) {
                         try {
                             json_decode(
-                                $response,
+                                (string) $response,
                                 flags: JSON_THROW_ON_ERROR
                             );
                             $useJson = true;
@@ -333,14 +344,16 @@ abstract class AbstractController implements ControllerInterface
                                 ? $this->response->getBody()
                                 : $this->getStreamFactory()->createStream();
                             $body->write($response);
-                            $this->response = $this->getJsonResponder()->appendContentType(
-                                $this->response->withBody($body)
-                            );
+                            $this->response = $this->getJsonResponder()
+                                ->appendContentType(
+                                    $this->response->withBody($body)
+                                );
                         } catch (Throwable) {
                         }
                     }
                     if (!$useJson) {
-                        return $this->response = $this
+                        $response = (string) $response;
+                        $this->response = $this
                             ->getHtmlResponder()
                             ->serve($statusCode, $response, $this->response);
                     }

@@ -3,21 +3,10 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Database\Entities\Traits;
 
-use ArrayAccess\TrayDigita\Database\Entities\Abstracts\AbstractEntity;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\JoinTable;
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\MappingAttribute;
-use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\OneToOne;
-use ReflectionAttribute;
-use ReflectionObject;
+use ArrayAccess\TrayDigita\Database\Connection;
+use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Throwable;
-use function array_diff;
-use function array_map;
 use function in_array;
 use function is_string;
 use function str_replace;
@@ -35,101 +24,52 @@ trait FieldNameGetter
     // reference for set
     private static array $objectMethodSetFields = [];
 
-    private function configureMethodsParameterFields(): void
-    {
-        $className = $this::class;
-        if (!isset(self::$objectFields[$className])) {
-            /** @noinspection PhpInstanceofIsAlwaysTrueInspection */
-            $isAbstractEntity = $this instanceof AbstractEntity;
-            self::$objectFields[$className] = [];
+    private function createStaticCache(
+        ClassMetadataInfo $metadata
+    ): void {
+        $reflection = $metadata->getReflectionClass();
+        $className = $reflection->getName();
+        if (!isset(self::$columnsFields[$className])) {
             self::$columnsFields[$className] = [];
-            $ref = new ReflectionObject($this);
-            $prop = [];
-            $allowedMapping = [
-                Id::class,
-                JoinColumn::class,
-                ManyToOne::class,
-                ManyToMany::class,
-                OneToOne::class,
-                OneToMany::class,
-                Column::class,
-                JoinTable::class,
-            ];
-            $countAllowedMapping = count($allowedMapping);
-            foreach ($ref->getProperties() as $property) {
-                if ($property->isPrivate()) {
+            self::$objectFields[$className] = [];
+            foreach ($metadata->getFieldNames() as $item) {
+                try {
+                    $mapping = $metadata->getFieldMapping($item);
+                } catch (Throwable) {
                     continue;
                 }
-                $attr = array_map(fn ($e) => $e->getname(), $property
-                    ->getAttributes(
-                        MappingAttribute::class,
-                        ReflectionAttribute::IS_INSTANCEOF
-                    ));
-                if (empty($attr)) {
+                /** @noinspection DuplicatedCode */
+                $fieldName = $mapping['fieldName'] ?? null;
+                $columnName = $mapping['columnName'] ?? null;
+                if (!$fieldName || !$columnName) {
                     continue;
                 }
-                $count = array_diff($allowedMapping, $attr);
-                if (count($count) === $countAllowedMapping) {
-                    continue;
-                }
-                $name = $property->getName();
-                $key = strtolower($name);
-                $prop[$key] = $name;
+                $columnName = strtolower($columnName);
+                self::$objectFields[$className][$columnName] = $fieldName;
+                self::$columnsFields[$className][$columnName] = $fieldName;
             }
-
-            if ($isAbstractEntity
-                && ($metadata = $this
-                    ->getEntityManager()
-                    ?->getClassMetadata($this::class))
-            ) {
-                $prop = [];
-                foreach ($metadata->getFieldNames() as $item) {
-                    try {
-                        $mapping = $metadata->getFieldMapping($item);
-                    } catch (Throwable) {
-                        continue;
-                    }
-                    /** @noinspection DuplicatedCode */
-                    $fieldName = $mapping['fieldName']??null;
-                    $columnName = $mapping['columnName']??null;
-                    if (!$fieldName || !$columnName) {
-                        continue;
-                    }
-                    $columnName = strtolower($columnName);
-                    $prop[$columnName] = $fieldName;
-                    self::$columnsFields[$className][$columnName] = $fieldName;
+            foreach ($metadata->getAssociationMappings() as $associationMapping) {
+                $fieldName = $associationMapping['fieldName'] ?? null;
+                if (!is_string($fieldName)
+                    || !$reflection->hasProperty($fieldName)
+                    || $reflection->getProperty($fieldName)->isPrivate()
+                ) {
+                    continue;
                 }
-
-                foreach ($metadata->getAssociationMappings() as $associationMapping) {
-                    $fieldName = $associationMapping['fieldName']??null;
-                    if (!is_string($fieldName)
-                        || !$ref->hasProperty($fieldName)
-                        || $ref->getProperty($fieldName)->isPrivate()
-                    ) {
-                        continue;
-                    }
-
-                    $lower = strtolower($fieldName);
-                    $prop[$lower] ??= $ref->getProperty($fieldName)->getName();
-                }
+                $lower = strtolower($fieldName);
+                self::$objectFields[$className][$lower] ??= $reflection->getProperty($fieldName)->getName();
             }
-
-            self::$objectFields[$className] = $prop;
         }
 
-        if (!isset(self::$objectMethodIsGetFields[$className])
-            || !isset(self::$objectMethodSetFields[$className])
-        ) {
+        if (!isset(self::$objectMethodIsGetFields[$className])) {
             $getMethods = [];
             $setMethods = [];
-            $ref ??= new ReflectionObject($this);
-            foreach ($ref->getMethods() as $method) {
+            foreach ($reflection->getMethods() as $method) {
                 if (!$method->isPublic()
                     || $method->getNumberOfRequiredParameters() > 0
                 ) {
                     continue;
                 }
-
                 $methodName = $method->getName();
                 $lowerMethodName = strtolower($methodName);
                 $substrStart = str_starts_with($lowerMethodName, 'get')
@@ -150,6 +90,17 @@ trait FieldNameGetter
             self::$objectMethodIsGetFields[$className] = $getMethods;
             self::$objectMethodSetFields[$className] = $setMethods;
         }
+    }
+
+    private function configureMethodsParameterFields(): void
+    {
+        $className = $this::class;
+        if (isset(self::$objectFields[$className])) {
+            return;
+        }
+        $em = $this->getEntityManager()
+            ?? ContainerHelper::service(Connection::class)->getEntityManager();
+        $this->createStaticCache($em->getClassMetadata($className));
     }
 
     public function get(string $name, &$found = null)

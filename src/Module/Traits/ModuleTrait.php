@@ -25,7 +25,7 @@ trait ModuleTrait
 
     public function getKernel()
     {
-        return ContainerHelper::use(
+        return ContainerHelper::service(
             KernelInterface::class,
             $this->getContainer()
         );

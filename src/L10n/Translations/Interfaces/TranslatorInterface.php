@@ -22,6 +22,18 @@ interface TranslatorInterface
     public function setAdapter(string $name, AdapterInterface $adapter);
 
     /**
+     * @param string $domain
+     * @param string ...$directory
+     * @return bool
+     */
+    public function registerDirectory(string $domain, string ...$directory) : bool;
+
+    /**
+     * @return array<string, string[]>
+     */
+    public function getRegisteredDirectories() : array;
+
+    /**
      * @param AdapterInterface $adapter
      * @param string|null $name
      * @return bool true if successfully registered

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\HttpKernel\Helper;
 
-use ArrayAccess\TrayDigita\Cache\Cache;
+use ArrayAccess\TrayDigita\Cache\Entities;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
