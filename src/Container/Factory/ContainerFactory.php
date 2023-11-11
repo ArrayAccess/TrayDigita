@@ -18,7 +18,7 @@ use ArrayAccess\TrayDigita\Benchmark\Injector\ManagerProfiler;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\ProfilerInterface;
 use ArrayAccess\TrayDigita\Benchmark\Profiler;
 use ArrayAccess\TrayDigita\Benchmark\Waterfall;
-use ArrayAccess\TrayDigita\Cache\Entities;
+use ArrayAccess\TrayDigita\Cache\Cache;
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Console\Application;
 use ArrayAccess\TrayDigita\Container\Container;

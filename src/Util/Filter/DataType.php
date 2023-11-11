@@ -5,7 +5,6 @@ namespace ArrayAccess\TrayDigita\Util\Filter;
 
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
-use function error_clear_last;
 use function is_array;
 use function is_int;
 use function is_numeric;
@@ -76,9 +75,7 @@ class DataType
      */
     public static function isValidRegExP(string $regexP): bool
     {
-        set_error_handler(static function () {
-            error_clear_last();
-        });
+        set_error_handler(static fn () => null);
         $result = preg_match($regexP, '', flags: PREG_NO_ERROR) !== false;
         restore_error_handler();
 

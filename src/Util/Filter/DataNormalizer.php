@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Util\Filter;
 
+use ArrayAccess\TrayDigita\Exceptions\Runtime\MaximumCallstackExceeded;
 use function array_keys;
 use function array_merge_recursive;
 use function array_pop;
@@ -12,6 +13,7 @@ use function array_values;
 use function clearstatcache;
 use function explode;
 use function file_exists;
+use function idn_to_ascii;
 use function implode;
 use function in_array;
 use function is_dir;
@@ -19,7 +21,6 @@ use function is_iterable;
 use function is_string;
 use function iterator_to_array;
 use function mt_rand;
-use function parse_url;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
@@ -27,6 +28,7 @@ use function preg_replace_callback;
 use function realpath;
 use function rtrim;
 use function sprintf;
+use function str_contains;
 use function str_replace;
 use function strlen;
 use function strpos;
@@ -220,9 +222,9 @@ final class DataNormalizer
      * @version 1.1
      *
      * Modified by Scott Reilly (coffee2code) 02 Aug 2004
-     *      1.1  Fixed handling of append/stack pop order of end text
-     *           Added Cleaning Hooks
-     *      1.0  First Version
+     *      1.1 Fixed handling append/stack pop order of end text
+     *          Added Cleaning Hooks
+     *      1.0 First Version
      *
      * @author Leonard Lin <leonard@acm.org>
      * @license GPL
@@ -333,7 +335,8 @@ final class DataNormalizer
                 } else {
                     // Else it's not a single-entity tag
                     // ---------
-                    // If the top of the stack is the same as the tag we want to push, close previous tag
+                    // If the top of the stack is the same as the tag we want to push,
+                    // close the previous tag
                     if ($stackSize > 0 && !in_array($tag, $nestable_tags)
                         && $tagStack[$stackSize - 1] === $tag
                     ) {
@@ -383,33 +386,36 @@ final class DataNormalizer
     public static function splitCrossDomain(string $domain): ?string
     {
         // make it domain lower
-        $domain = strtolower($domain);
-        $domain = preg_replace('~^\s*(?:(http|ftp)s?|sftp|xmp)://~i', '', $domain);
-        $domain = preg_replace('~/.*$~', '', $domain);
-
-        if ($domain === '127.0.0.1' || $domain === 'localhost') {
-            return $domain;
-        }
-        if (Ip::version($domain) !== false) {
-            return $domain;
-        }
-        $parse = parse_url('https://' . $domain . '/');
-        $domain = $parse['host'] ?? null;
-        if ($domain === null) {
+        $domain = strtolower(trim($domain));
+        if ($domain === '') {
             return null;
         }
-
-        $domain = preg_replace('~[\~!@#$%^&*()+`{}\]\[/\';<>,\"?=|\\\]~', '', $domain);
-        if (str_contains($domain, '.')) {
-            if (preg_match('~(.*\.)+(.*\.)+(.*)~', $domain)) {
-                $return = '.' . preg_replace('~(.*\.)+(.*\.)+(.*)~', '$2$3', $domain);
-            } else {
-                $return = '.' . $domain;
-            }
-        } else {
-            $return = $domain;
+        preg_match(
+            '~^(?:(?:[a-z]*:)?//)?([^?#/]+)(?:[#?/]|$)~',
+            $domain,
+            $match
+        );
+        $host = $match[1]??null;
+        if (!$host) {
+            return null;
         }
-        return $return;
+        if ($host === '127.0.0.1' || $host === 'localhost') {
+            return $host;
+        }
+        if (Ip::version($host) !== null) {
+            return $host;
+        }
+        // ascii domain
+        if (idn_to_ascii($host) === false) {
+            return null;
+        }
+        if (!str_contains($host, '.')) {
+            return $host;
+        }
+        if (preg_match('~^[^.]+\.([^.]+\..+)$~', $host, $match)) {
+            $host = $match[2].$match[3];
+        }
+        return '.' . $host;
     }
 
     /**
@@ -452,14 +458,25 @@ final class DataNormalizer
      * @param callable $callable must be returning true for valid
      * @return string
      */
-    public static function uniqueSlugCallback(string $slug, callable $callable): string
-    {
+    public static function uniqueSlugCallback(
+        string $slug,
+        callable $callable,
+        int $maxIteration = 4096
+    ): string {
+        $maxIteration = min(128, $maxIteration);
+        // maximum set to 8192
+        $maxIteration = max($maxIteration, 8192);
         $separator = '-';
         $inc = 1;
         $slug = self::normalizeSlug($slug);
         $baseSlug = $slug;
         while (!$callable($slug)) {
-            $slug = $baseSlug . $separator . $inc++;
+            if ($inc++ > $maxIteration) {
+                throw new MaximumCallstackExceeded(
+                    'Unique slug iteration exceeded'
+                );
+            }
+            $slug = $baseSlug . $separator . $inc;
         }
 
         return $slug;
@@ -486,7 +503,7 @@ final class DataNormalizer
      * @param string $directory
      * @param bool $allowedSpace
      * @return ?string null if directory does not exist,
-     *                      returning full path for save.
+     *                      returning a full path for save.
      */
     public static function resolveFileDuplication(
         string $fileName,
@@ -497,8 +514,8 @@ final class DataNormalizer
             return null;
         }
 
-        $directory = self::normalizeDirectorySeparator($directory);
-        $directory = realpath($directory) ?: rtrim($directory, DIRECTORY_SEPARATOR);
+        $directory = self::normalizeDirectorySeparator($directory, true);
+        $directory = realpath($directory) ?: $directory;
         $directory .= DIRECTORY_SEPARATOR;
         $paths = explode('.', $fileName);
         $extension = null;
@@ -514,7 +531,8 @@ final class DataNormalizer
         $c = 1;
         $filePath = $extension ? "$fileName.$extension" : $fileName;
         while (file_exists($directory . $filePath)) {
-            $newFile = "$fileName-" . $c++;
+            $c++;
+            $newFile = "$fileName-$c";
             $filePath = $extension ? "$newFile.$extension" : $newFile;
         }
 

@@ -34,6 +34,11 @@ class Manager implements ManagerInterface
 
     protected array $events = [];
 
+    /**
+     * @var array<string, array<int, array<string, int>>>
+     */
+    private array $eventOnce = [];
+
     protected array $currents = [];
 
     /**
@@ -159,8 +164,11 @@ class Manager implements ManagerInterface
         ];
     }
 
-    public function attach(string $eventName, $eventCallback, int $priority = 10): string
-    {
+    public function attach(
+        string $eventName,
+        $eventCallback,
+        int $priority = 10
+    ): string {
         $callable = $this->generateCallableId($eventCallback);
         if ($callable === null) {
             throw new InvalidCallbackException(
@@ -171,6 +179,14 @@ class Manager implements ManagerInterface
         $id = array_shift($callable);
         $eventCallback = array_shift($callable);
         $this->events[$eventName][$priority][$id][] = $eventCallback;
+        return $id;
+    }
+
+    public function attachOnce(string $eventName, $eventCallback, int $priority = 10): string
+    {
+        $id = $this->attach(...func_get_args());
+        $this->eventOnce[$eventName][$priority][$id] ??= 0;
+        $this->eventOnce[$eventName][$priority][$id]++;
         return $id;
     }
 
@@ -422,6 +438,7 @@ class Manager implements ManagerInterface
             }
 
             $this->currents[$eventName] ??= [];
+            // sorting
             ksort($this->events[$eventName]);
             // make temporary to prevent remove
             $originalParam = $param;
@@ -433,21 +450,12 @@ class Manager implements ManagerInterface
                 }
                 foreach ($callableList as $id => $eventCallback) {
                     unset($eventCallback[$id]);
-
-                    // prevent loops to call dispatch same
-                    //if (isset($this->currents[$eventName][$priority][$id])) {
-                    //    continue;
-                    //}
-
                     if (!isset($this->records[$eventName][$id][$priority])) {
                         $this->records[$eventName][$id][$priority] = 0;
                     }
 
                     foreach ($eventCallback as $inc => $callable) {
                         // prevent loops to call dispatch same increment
-                        //if (isset($this->currents[$eventName][$priority][$id][$inc])) {
-                        //    continue;
-                        //}
                         if (!isset($this->currents[$eventName][$priority][$id][$inc])) {
                             $this->currents[$eventName][$priority][$id][$inc] = 0;
                         }
@@ -482,7 +490,6 @@ class Manager implements ManagerInterface
                                 && is_object($callable[0])
                                 && is_string($callable[1] ?? null)
                                 && str_contains($callable[1], '::')
-                                // && !is_callable($callable)
                             ) {
                                 $obj = $callable[0];
                                 $methods = explode('::', $callable[1], 2);
@@ -509,7 +516,23 @@ class Manager implements ManagerInterface
                             $this->currentEvent = null;
                             $this->currentEventId = null;
                             $this->currentEventName = null;
+                            // unset
                             unset($this->currents[$eventName][$priority][$id][$inc]);
+                            if ($this->currents[$eventName][$priority][$id] === []) {
+                                unset($this->currents[$eventName][$priority][$id]);
+                            }
+                            if (isset($this->eventOnce[$eventName][$priority][$id])) {
+                                $this->eventOnce[$eventName][$priority][$id]--;
+                                if ($this->eventOnce[$eventName][$priority][$id] <= 0) {
+                                    unset($this->eventOnce[$eventName][$priority][$id]);
+                                }
+                                if ([] === $this->eventOnce[$eventName][$priority]) {
+                                    unset($this->eventOnce[$eventName][$priority]);
+                                }
+                                if ([] === $this->eventOnce[$eventName]) {
+                                    unset($this->eventOnce[$eventName]);
+                                }
+                            }
 
                             // @onDispatched
                             $this->dispatchListener?->onFinishDispatch(

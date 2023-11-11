@@ -24,7 +24,6 @@ use function array_unshift;
 use function chdir;
 use function defined;
 use function dirname;
-use function error_clear_last;
 use function escapeshellcmd;
 use function exec;
 use function fclose;
@@ -248,7 +247,7 @@ final class BuiltInWebServer extends Command
         $host = $input->getOption('host');
         $host = strtolower(trim($host??'')?:'127.0.0.1');
         $isIp = Ip::isValidIpv4($host);
-        $isLocal = $isIp && Ip::isLocalIP($host);
+        $isLocal = $isIp && Ip::isLocalIP4($host);
         if (!$isIp && $host !== 'localhost') {
             $output->writeln('');
             $output->writeln(sprintf(
@@ -397,7 +396,7 @@ final class BuiltInWebServer extends Command
             );
             return self::FAILURE;
         }
-        set_error_handler(fn () => error_clear_last());
+        set_error_handler(static fn () => null);
         $ports = $port === 'auto' ? range(8000, 9000) : [$port];
         shuffle($ports);
         array_unshift(

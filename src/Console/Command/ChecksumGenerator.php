@@ -24,7 +24,6 @@ use function basename;
 use function clearstatcache;
 use function date;
 use function dirname;
-use function error_clear_last;
 use function fclose;
 use function filemtime;
 use function fopen;
@@ -166,7 +165,7 @@ class ChecksumGenerator extends Command
         }
 
 
-        set_error_handler(static fn() => error_clear_last());
+        set_error_handler(static fn() => null);
         try {
             if (!$printOnly) {
                 if (!is_dir($checksumDirectory)) {

@@ -115,16 +115,16 @@ class ContainerResolver implements ContainerIndicateInterface
                 }
             }
 
-            if (empty($arguments) && is_callable($callable)) {
+            if (is_callable($callable)) {
                 $arguments = $this
                     ->resolveArguments(
                         (is_string($callable) || $callable instanceof Closure)
                             ? new ReflectionFunction($callable)
                             : new ReflectionMethod(...$callable),
+                        $arguments,
                         $arguments
                     );
             }
-
             $value = is_callable($callable) ? $callable(...$arguments) : $callable;
         }
         $this->allocateService($value);

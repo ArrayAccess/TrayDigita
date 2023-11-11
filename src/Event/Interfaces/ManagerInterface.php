@@ -23,6 +23,23 @@ interface ManagerInterface extends Countable
      */
     public function attach(string $eventName, $eventCallback, int $priority = 10) : string;
 
+    /**
+     * Attach the event & then remove after dispatched
+     *
+     * @param string $eventName
+     * @param $eventCallback
+     * @param int $priority
+     * @return string
+     */
+    public function attachOnce(string $eventName, $eventCallback, int $priority = 10) : string;
+
+    /**
+     * Check if has events
+     *
+     * @param string $eventName
+     * @param $eventCallback
+     * @return bool
+     */
     public function has(string $eventName, $eventCallback = null) : bool;
 
     /**

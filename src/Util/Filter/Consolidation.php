@@ -410,6 +410,22 @@ class Consolidation
         return $result;
     }
 
+    /**
+     * Call the callble with hide the error
+     *
+     * @param callable $callback
+     * @param ...$args
+     */
+    public static function callNoError(callable $callback, ...$args)
+    {
+        set_error_handler(static fn () => null);
+        try {
+            return $callback(...$args);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
     public static function namespace(string|object $fullClassName) : string|false
     {
         if (is_object($fullClassName)) {

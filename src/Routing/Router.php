@@ -763,17 +763,13 @@ class Router implements RouterInterface, ManagerAllocatorInterface, ContainerAll
             $pattern = "#$pattern#";
         }
 
-        set_error_handler(static function () {
-            error_clear_last();
-        });
-
+        set_error_handler(static fn () => null);
         preg_match(
             $pattern,
             $path,
             $match,
             PREG_NO_ERROR
         );
-
         // restore
         restore_error_handler();
         if (empty($match)) {

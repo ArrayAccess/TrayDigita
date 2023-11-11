@@ -5,5 +5,9 @@ namespace ArrayAccess\TrayDigita\Auth\Roles\Interfaces;
 
 interface IdentityInterface
 {
-    public function getId() : int;
+    /**
+     * @return int
+     * @noinspection PhpMissingReturnTypeInspection
+     */
+    public function getId();
 }

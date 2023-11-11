@@ -95,7 +95,7 @@ class FileResponder implements FileResponderInterface
         }
         $this->file = $file;
         $this->attachmentFileName = $this->file->getBasename();
-        $this->size = $this->valid() ? $this->file->getSize() : 0;
+        $this->size = $this->valid() ? ($this->file->getSize()?:0) : 0;
     }
 
     public function getFile(): SplFileInfo
@@ -409,9 +409,22 @@ class FileResponder implements FileResponderInterface
         $ranges = [];
         // header for multi-bytes
         $headers = [];
-        $total = 0;
+        $total = $fileSize;
         $rangeTotal = 0;
-
+        // if empty
+        if ($total === 0) {
+            // set content length
+            $this->sendHeaderContentLength($total);
+            // send mimetype header
+            $this->sendHeaderMimeType();
+            // send etag
+            $this->sendHeaderEtag();
+            // send last modifier
+            $this->sendHeaderLastModified();
+            // send attachment header
+            $this->sendHeaderAttachment();
+            $this->stopRequest();
+        }
         /**
          * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
          */
@@ -425,6 +438,7 @@ class FileResponder implements FileResponderInterface
         $maxRangeRequest = $maxRange;
         $minRangeRequest = null;
         if ($maxRanges > 0 && $rangeHeader && preg_match('~^bytes=(.+)$~i', $rangeHeader, $match)) {
+            $total = 0;
             $rangeHeader = array_map('trim', explode(',', trim($match[1])));
             foreach ($rangeHeader as $range) {
                 $range = trim($range);
@@ -524,6 +538,7 @@ class FileResponder implements FileResponderInterface
                     $this->sendHeader('Content-Range', "bytes $startingPoint-$end/$fileSize");
                 }
             }
+
             // set content length
             $this->sendHeaderContentLength($total);
             // send mimetype header
@@ -543,11 +558,15 @@ class FileResponder implements FileResponderInterface
 
             $sock = $this->getSock();
             $sock->fseek($startingPoint);
-            while (!$sock->eof()) {
+            while (!$sock->eof() && $total > 0) {
                 $read = 4096;
                 if ($total < $read) {
                     $read = $total;
                     $total = 0;
+                }
+                // stop
+                if ($read < 1) {
+                    break;
                 }
                 echo $sock->fread($read);
             }
