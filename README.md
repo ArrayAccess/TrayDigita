@@ -44,11 +44,15 @@ Read the: **[Console](CONSOLE.md)**
 
 ## Translation
 
-Read the : **[Translation](TRANSLATION.md)**
+Read the: **[Translation](TRANSLATION.md)**
 
 ## Coding Standard
 
-Read the : **[Coding Standard](CODING_STANDARD.md)**
+Read the: **[Coding Standard](CODING_STANDARD.md)**
+
+## Contributing
+
+Read the: **[Contribute](CONTRIBUTING.md)**
 
 ## Available Modules
 
