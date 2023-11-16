@@ -64,7 +64,7 @@ class Cache implements AdapterInterface, ContainerIndicateInterface
 {
     use ManagerAllocatorTrait;
 
-    const DEFAULT_NAMESPACE = 'caches';
+    public const DEFAULT_NAMESPACE = 'caches';
 
     private ?AdapterInterface $adapter = null;
     private int $defaultLifetime = 0;

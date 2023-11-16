@@ -8,13 +8,17 @@ use Psr\Http\Message\StreamInterface;
 
 interface ImageAdapterInterface
 {
-    const MODE_AUTO = 1;
-    const MODE_CROP = 2;
-    const MODE_ORIENTATION_LANDSCAPE = 3;
-    const MODE_ORIENTATION_PORTRAIT = 4;
-    const MODE_ORIENTATION_SQUARE = 5;
+    public const MODE_AUTO = 1;
 
-    const IMAGE_TYPE_LIST = [
+    public const MODE_CROP = 2;
+
+    public const MODE_ORIENTATION_LANDSCAPE = 3;
+
+    public const MODE_ORIENTATION_PORTRAIT = 4;
+
+    public const MODE_ORIENTATION_SQUARE = 5;
+
+    public const IMAGE_TYPE_LIST = [
         IMAGETYPE_GIF => 'gif',
         IMAGETYPE_JPEG => 'jpg',
         IMAGETYPE_JPEG2000 => 'jpe',
@@ -35,7 +39,7 @@ interface ImageAdapterInterface
         IMAGETYPE_WEBP => 'webp'
     ];
 
-    const MIME_TYPES = [
+    public const MIME_TYPES = [
         "image/bmp" => [
             "bmp"
         ],

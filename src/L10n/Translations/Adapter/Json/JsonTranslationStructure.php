@@ -34,22 +34,33 @@ class JsonTranslationStructure
     /**
      * maximum 4MB
      */
-    const MAX_FILE_SIZE = 4194304;
+    public const MAX_FILE_SIZE = 4194304;
 
-    const DEFAULT_DOMAIN = 'default';
-    const LANGUAGE_KEY = 'lang';
-    const REVISION_KEY = 'translation-revision-date';
-    const GENERATOR_KEY = 'generator';
-    const LOCALE_DATA_KEY = 'locale_data';
-    const MESSAGES_KEY = 'messages';
-    const DOMAIN_KEY = 'domain';
-    const PLURAL_FORMS_KEY = 'plural-forms';
-    const VERSION_KEY = 'version';
-    const CREATION_DATE_KEY = 'creation-date';
-    const COMMENT_KEY = 'comment';
-    const REFERENCE_KEY = 'reference';
+    public const DEFAULT_DOMAIN = 'default';
 
-    const SCHEMA = [
+    public const LANGUAGE_KEY = 'lang';
+
+    public const REVISION_KEY = 'translation-revision-date';
+
+    public const GENERATOR_KEY = 'generator';
+
+    public const LOCALE_DATA_KEY = 'locale_data';
+
+    public const MESSAGES_KEY = 'messages';
+
+    public const DOMAIN_KEY = 'domain';
+
+    public const PLURAL_FORMS_KEY = 'plural-forms';
+
+    public const VERSION_KEY = 'version';
+
+    public const CREATION_DATE_KEY = 'creation-date';
+
+    public const COMMENT_KEY = 'comment';
+
+    public const REFERENCE_KEY = 'reference';
+
+    public const SCHEMA = [
         "translation-revision-date" => "string",
         "generator" => "string",
         "locale_data" => [

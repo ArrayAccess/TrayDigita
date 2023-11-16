@@ -5,7 +5,7 @@ namespace ArrayAccess\TrayDigita\Auth\Roles;
 
 final class SuperAdminRole extends AbstractRole
 {
-    const NAME = 'superadmin';
+    public const NAME = 'superadmin';
 
     protected string $identity = self::NAME;
 

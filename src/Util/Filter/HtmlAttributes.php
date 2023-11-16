@@ -27,7 +27,7 @@ use const JSON_UNESCAPED_SLASHES;
 
 class HtmlAttributes
 {
-    final const HTML_ATTRIBUTES = [
+    final public const HTML_ATTRIBUTES = [
         "accept" => "accept",
         "accept-charset" => "accept-charset",
         "accesskey" => "accesskey",
@@ -197,21 +197,21 @@ class HtmlAttributes
         "wrap" => "wrap"
     ];
 
-    const ATTRIBUTES_BOOLEAN_TRUE_TYPES = [
+    public const ATTRIBUTES_BOOLEAN_TRUE_TYPES = [
         "checked" => "",
         "readonly" => "",
         "selected" => "",
         "disabled" => ""
     ];
 
-    const ATTRIBUTES_NUMERIC_TYPES = [
+    public const ATTRIBUTES_NUMERIC_TYPES = [
         'width' => true,
         'height' => true,
         'size' => true,
         "high" => true,
     ];
 
-    const ATTRIBUTES_INTEGER_TYPES = [
+    public const ATTRIBUTES_INTEGER_TYPES = [
         'rowspan' => true,
         'rows' => true,
         'cols' => true,
@@ -220,7 +220,7 @@ class HtmlAttributes
         'minlength' => true,
     ];
 
-    const NO_ATTRIBUTES = [
+    public const NO_ATTRIBUTES = [
         'class',
         'id'
     ];

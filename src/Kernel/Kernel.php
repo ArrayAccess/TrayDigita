@@ -8,8 +8,9 @@ use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 
 class Kernel extends AbstractKernel
 {
-    const VERSION = '1.0.0';
-    const NAME = 'TrayDigita';
+    public const VERSION = '1.0.0';
+
+    public const NAME = 'TrayDigita';
 
     final public function __construct(
         ?string $baseConfigFileName = KernelInterface::BASE_CONFIG_FILE_NAME

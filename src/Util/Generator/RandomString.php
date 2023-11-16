@@ -18,12 +18,17 @@ use function strlen;
 
 class RandomString implements Stringable
 {
-    const HEX = 'abcdef0123456789';
-    const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const SPECIAL_CHAR = '~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/';
-    const DEFAULT_CHAR = self::ALPHA_NUMERIC . self::SPECIAL_CHAR;
+    public const HEX = 'abcdef0123456789';
+
+    public const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    public const SPECIAL_CHAR = '~`!@#$%^&*()_-+={[}]|\:;"\'<,>.?/';
+
+    public const DEFAULT_CHAR = self::ALPHA_NUMERIC . self::SPECIAL_CHAR;
 
     /**
+     * Random chars
+     *
      * @param int $length
      * @param string|null $char
      * @return string
@@ -35,10 +40,10 @@ class RandomString implements Stringable
         }
 
         $chars = $char?:self::DEFAULT_CHAR;
-        $charactersLength = strlen($chars);
+        $characterLength = strlen($chars);
         $randomString = '';
         for ($i = 0; $i < $length; $i++) {
-            $randomString .= $chars[rand(0, $charactersLength - 1)];
+            $randomString .= $chars[rand(0, $characterLength - 1)];
         }
         return $randomString;
     }

@@ -7,7 +7,7 @@ use ArrayAccess\TrayDigita\Module\Modules;
 
 interface ModuleInterface
 {
-    const DEFAULT_PRIORITY = 10;
+    public const DEFAULT_PRIORITY = 10;
 
     public function __construct(Modules $modules);
 

@@ -69,7 +69,7 @@ use const PHP_SAPI;
 
 class Consolidation
 {
-    final const BLACKLISTED_NAME = [
+    final public const BLACKLISTED_NAME = [
         'array',
         'iterable',
         'string',
@@ -411,12 +411,13 @@ class Consolidation
     }
 
     /**
-     * Call the callble with hide the error
+     * Call the callable with hide the error
      *
      * @param callable $callback
      * @param ...$args
+     * @return mixed
      */
-    public static function callNoError(callable $callback, ...$args)
+    public static function callNoError(callable $callback, ...$args): mixed
     {
         set_error_handler(static fn () => null);
         try {
@@ -536,7 +537,7 @@ class Consolidation
     }
 
     /**
-     * Doing include file with no $this object
+     * Doing includes file with no $this object
      *
      * @param string $file
      * @param bool $once
@@ -629,21 +630,21 @@ class Consolidation
     /**
      * Convert number of bytes the largest unit bytes will fit into.
      *
-     * It is easier to read 1 kB than 1024 bytes and 1 MB than 1048576 bytes. Converts
-     * number of bytes to human-readable number by taking the number of that unit
+     * It is easier to read 1 kB than 1024 bytes and 1 MB than 1048576 bytes.
+     * Convert the number of bytes to human-readable number by taking the number of that unit
      * that the bytes will go into it. Supports TB value.
      *
      * Please note that integers in PHP are limited to 32 bits, unless they are on
-     * 64 bit architecture, then they have 64 bit size. If you need to place the
-     * larger size then what PHP integer type will hold, then use a string. It will
-     * be converted to a double, which should always have 64 bit length.
+     * 64-bit architecture, then they have 64-bit size. If you need to place the
+     * larger size, then what PHP integer type will hold, then use a string. It will
+     * be converted to a double, which should always have 64-bit length.
      *
      * Technically the correct unit names for powers of 1024 are KiB, MiB etc.
      *
      * @param int|float $bytes         Number of bytes. Note max integer size for integers.
      * @param int $decimals      Optional. Precision of number of decimal places. Default 0.
      * @param string     $decimalPoint Optional decimal point
-     * @param string $thousandSeparator Optional thousand separator
+     * @param string $thousandSeparator Optional a thousand separator
      * @param bool $removeZero if decimal contain zero, remove it
      *
      * @return string size unit
@@ -758,27 +759,27 @@ class Consolidation
     ): array {
         $regexP = $regexP && DataType::isValidRegExP($regexP) ? $regexP : null;
         $reflectionObject = new ReflectionObject($object);
-        if ($reflectionObject->isInternal()) {
-            return get_object_vars($object);
-        }
-        $oldInfo = (fn() => get_object_vars($this))->call($object);
-        if (!is_array($oldInfo)) {
-            return [];
-        }
         $info = [];
-        foreach ($oldInfo as $item => $value) {
-            unset($oldInfo[$item]);
-            $keyItem = $item;
-            if ($reflectionObject->hasProperty($item)
-            && !($prop = $reflectionObject->getProperty($item))->isPublic()) {
-                $className = $prop->getDeclaringClass()->getName();
-                $keyItem = "$item:$className";
-                $keyItem = $prop->isPrivate() ? "$keyItem:private" : (
-                    $prop->isProtected() ? "$keyItem:protected" : $item
+        foreach ($reflectionObject->getProperties() as $property) {
+            // no display if not initialized
+            if (($value = $property->getValue()) === null
+                && !$property->isInitialized()
+            ) {
+                continue;
+            }
+            $key = $property->getName();
+            $keyItem = $key;
+            if (!$property->isPublic()) {
+                $className = $property->getDeclaringClass()->getName();
+                $keyItem = "$keyItem:$className";
+                $keyItem = $property->isPrivate() ? "$keyItem:private" : (
+                    $property->isProtected()
+                        ? "$keyItem:protected"
+                        : $key
                 );
             }
             $info[$keyItem] = $value;
-            if ($detectParent && in_array($item, $excludeKeys)) {
+            if ($detectParent && in_array($key, $excludeKeys)) {
                 continue;
             }
             if (is_object($value)) {
@@ -789,10 +790,9 @@ class Consolidation
                 );
                 continue;
             }
-            $contains = $detectParent && (in_array($item, $keyRedacted)
-                    || (is_string($item)
-                        && $regexP
-                        && preg_match($regexP, $item)
+            $contains = $detectParent && (in_array($key, $keyRedacted)
+                    || ($regexP
+                        && preg_match($regexP, $key)
                     ));
             if (!is_array($value)) {
                 if (!$contains) {
@@ -802,14 +802,14 @@ class Consolidation
                 continue;
             }
 
-            foreach ($value as $key => $v) {
+            foreach ($value as $subKey => $v) {
                 if ($contains) {
-                    $info[$keyItem][$key] = sprintf('(%s : <redacted>)', gettype($v));
+                    $info[$keyItem][$subKey] = sprintf('(%s : <redacted>)', gettype($v));
                     continue;
                 }
                 if (!$detectSubKey) {
                     if (is_object($v)) {
-                        $info[$keyItem][$key] = sprintf(
+                        $info[$keyItem][$subKey] = sprintf(
                             'object[%s](%s)',
                             spl_object_hash($v),
                             $v::class
@@ -817,12 +817,12 @@ class Consolidation
                     }
                     continue;
                 }
-                if (in_array($key, $keyRedacted)
-                    || (is_string($key)
+                if (in_array($subKey, $keyRedacted)
+                    || (is_string($subKey)
                         && $regexP
-                        && preg_match($regexP, $key)
+                        && preg_match($regexP, $subKey)
                     )) {
-                    $info[$keyItem][$key] = sprintf('(%s : <redacted>)', gettype($v));
+                    $info[$keyItem][$subKey] = sprintf('(%s : <redacted>)', gettype($v));
                 }
             }
         }

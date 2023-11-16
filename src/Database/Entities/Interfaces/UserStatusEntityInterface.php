@@ -8,37 +8,37 @@ interface UserStatusEntityInterface
     /**
      * Active status
      */
-    const ACTIVE = 'active';
+    public const ACTIVE = 'active';
 
     /**
      * Deleted status
      */
-    const DELETED = 'deleted';
+    public const DELETED = 'deleted';
 
     /**
      * Banned status
      */
-    const BANNED = 'banned';
+    public const BANNED = 'banned';
 
     /**
      * Suspended status
      */
-    const SUSPENDED = 'suspended';
+    public const SUSPENDED = 'suspended';
 
     /**
      * Expired User
      */
-    const EXPIRED = 'expired';
+    public const EXPIRED = 'expired';
 
     /**
      * Status is pending review
      */
-    const PENDING = 'pending';
+    public const PENDING = 'pending';
 
     /**
      * Status is unknown
      */
-    const UNKNOWN = 'unknown';
+    public const UNKNOWN = 'unknown';
 
     public function getStatus() : string;
 

@@ -7,7 +7,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 
 class DataBlob extends Data
 {
-    const NAME = 'data_blob';
+    public const NAME = 'data_blob';
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {

@@ -5,10 +5,10 @@ namespace ArrayAccess\TrayDigita\Benchmark\Interfaces;
 
 interface DurationInterface
 {
-    const NUMERIC_INFO = 1;
-    const NUMERIC_NOTICE = 5;
-    const NUMERIC_WARNING = 10;
-    const NUMERIC_CRITICAL = 20;
+    public const NUMERIC_INFO = 1;
+    public const NUMERIC_NOTICE = 5;
+    public const NUMERIC_WARNING = 10;
+    public const NUMERIC_CRITICAL = 20;
 
     public function getStartTime(): float;
 

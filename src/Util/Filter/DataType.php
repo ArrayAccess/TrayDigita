@@ -46,6 +46,8 @@ class DataType
     }
 
     /**
+     * Validate if html response content type
+     *
      * @param $response
      *
      * @return bool
@@ -76,7 +78,7 @@ class DataType
     public static function isValidRegExP(string $regexP): bool
     {
         set_error_handler(static fn () => null);
-        $result = preg_match($regexP, '', flags: PREG_NO_ERROR) !== false;
+        $result = (bool) preg_match($regexP, '', flags: PREG_NO_ERROR) !== false;
         restore_error_handler();
 
         return $result;
@@ -191,7 +193,7 @@ class DataType
             $semicolon = strpos($data, ';');
             $brace = strpos($data, '}');
 
-            // Either ; or } must exist.
+            // Either ";" or "}" must exist.
             if (false === $semicolon && false === $brace
                 || false !== $semicolon && $semicolon < 3
                 || false !== $brace && $brace < 4
@@ -219,7 +221,6 @@ class DataType
             case 'i':
             case 'd':
                 $end = $strict ? '$' : '';
-
                 return (bool)preg_match("/^$token:[0-9.E-]+;$end/", $data);
         }
 
@@ -229,7 +230,7 @@ class DataType
     /**
      * Un-serialize value only if it was serialized.
      *
-     * @param string $original Maybe un-serialized original, if is needed.
+     * @param string $original Maybe serialized original, if is needed.
      *
      * @return mixed  Un-serialized data can be any type.
      */
@@ -266,8 +267,8 @@ class DataType
      *
      * @return mixed A scalar data
      * @uses for ( un-compress serialize values )
-     * This method to use safe as safe data on database. Value that has been
-     * Serialized will be double serialize to make sure data is stored as original
+     * This method to use safe as safe data on a database. The Value that has been
+     * Serialized will be double-serialized to make sure data is stored as original
      *
      *
      */

@@ -5,11 +5,11 @@ namespace ArrayAccess\TrayDigita\L10n\Translations\Interfaces;
 
 interface TranslatorInterface
 {
-    const DEFAULT_DOMAIN = 'default';
+    public const DEFAULT_DOMAIN = 'default';
 
-    const DEFAULT_LANGUAGE = 'en';
+    public const DEFAULT_LANGUAGE = 'en';
 
-    const SYSTEM_LANGUAGE = 'en';
+    public const SYSTEM_LANGUAGE = 'en';
 
     public function getLanguage() : string;
 

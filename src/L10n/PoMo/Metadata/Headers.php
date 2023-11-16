@@ -1,5 +1,4 @@
 <?php
-/** @noinspection PhpUndefinedClassInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\L10n\PoMo\Metadata;
@@ -10,6 +9,7 @@ use ArrayAccess\TrayDigita\L10n\Languages\Locale;
 use ArrayAccess\TrayDigita\L10n\PoMo\Helper\PluralParser;
 use Countable;
 use IteratorAggregate;
+use ReturnTypeWillChange;
 use Traversable;
 use function array_keys;
 use function array_merge;
@@ -33,7 +33,7 @@ final class Headers implements ArrayAccess, Countable, IteratorAggregate
     /**
      * @var array<string,string>
      */
-    const PRESERVE_HEADER_NAME = [
+    public const PRESERVE_HEADER_NAME = [
         'project-id-version' => 'Project-Id-Version',
         'last-translator' => 'Last-Translator',
         'language-team' => 'Language-Team',
@@ -44,7 +44,7 @@ final class Headers implements ArrayAccess, Countable, IteratorAggregate
         PluralForm::HEADER_KEY_LOWERCASE => self::HEADER_PLURAL,
     ];
 
-    const DEFAULT_HEADERS = [
+    public const DEFAULT_HEADERS = [
         'Project-Id-Version' => '',
         'Last-Translator' => '',
         'Language-Team' => '',
@@ -164,7 +164,7 @@ final class Headers implements ArrayAccess, Countable, IteratorAggregate
     protected function normalizeKey(string $name) : string
     {
         $name = trim($name);
-        $name = preg_replace('~[ ]~', ' ', $name);
+        $name = preg_replace('~\s+~', '-', $name);
         if (isset(self::PRESERVE_HEADER_NAME[strtolower($name)])) {
             return self::PRESERVE_HEADER_NAME[strtolower($name)];
         }

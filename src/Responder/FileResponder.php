@@ -54,7 +54,7 @@ class FileResponder implements FileResponderInterface
 {
     protected SplFileInfo $file;
 
-    const DEFAULT_MIMETYPE = 'application/octet-stream';
+    public const DEFAULT_MIMETYPE = 'application/octet-stream';
 
     protected string $attachmentFileName;
 
@@ -81,7 +81,7 @@ class FileResponder implements FileResponderInterface
     /**
      * Default allowed method
      */
-    const ALLOWED_METHODS = [
+    public const ALLOWED_METHODS = [
         'OPTIONS',
         'HEAD',
         'POST',

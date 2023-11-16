@@ -39,7 +39,7 @@ class Authenticator
     /**
      * Default period range seconds
      */
-    const PERIOD = 30;
+    public const PERIOD = 30;
 
     /**
      * @param int $time

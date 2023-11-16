@@ -72,13 +72,13 @@ abstract class AbstractUser extends AbstractEntity implements
         PasswordTrait,
         ManagerAllocatorTrait;
 
-    const DEFAULT_AUTH_LENGTH = 32;
-    const MINIMUM_AUTH_LENGTH = 10;
+    public const DEFAULT_AUTH_LENGTH = 32;
+    public const MINIMUM_AUTH_LENGTH = 10;
 
-    const AUTH_PERIOD = 30;
+    public const AUTH_PERIOD = 30;
 
     // MAXIMUM AUTH PERIOD is 10 minutes
-    const MAX_AUTH_PERIOD = 600;
+    public const MAX_AUTH_PERIOD = 600;
 
     #[Id]
     #[GeneratedValue('AUTO')]

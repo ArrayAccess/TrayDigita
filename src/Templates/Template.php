@@ -37,7 +37,7 @@ final class Template extends AbstractTemplate
     /**
      * @max size is 500KB
      */
-    const MAX_FILE_SIZE = 512000;
+    public const MAX_FILE_SIZE = 512000;
 
     private ?bool $metadataValid = null;
 

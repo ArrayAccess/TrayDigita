@@ -17,7 +17,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 abstract class AbstractMiddleware implements MiddlewareInterface, ManagerIndicateInterface, ContainerIndicateInterface
 {
-    const DEFAULT_PRIORITY = 10;
+    public const DEFAULT_PRIORITY = 10;
 
     /**
      * @var int The middleware priority

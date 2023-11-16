@@ -42,9 +42,9 @@ use function trim;
  */
 class Logger extends AbstractLogger implements ResettableInterface, ContainerIndicateInterface
 {
-    const DEFAULT_NAME = 'default';
+    public const DEFAULT_NAME = 'default';
 
-    const DEFAULT_LEVEL = Level::Critical;
+    public const DEFAULT_LEVEL = Level::Critical;
 
     protected ?Monolog $logger = null;
 

@@ -5,7 +5,7 @@ namespace ArrayAccess\TrayDigita\Benchmark\Interfaces;
 
 interface MicrotimeConversionInterface
 {
-    const EXPONENT = 1000;
+    public const EXPONENT = 1000;
 
     /**
      * @return float calculate and exponent to 1000 that means on milliseconds

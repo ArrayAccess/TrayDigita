@@ -27,7 +27,7 @@ abstract class AbstractTemplateRule
 
     private bool $filteredRequiredFiles = false;
 
-    final const METADATA_JSON = 'template.json';
+    final public const METADATA_JSON = 'template.json';
 
     protected string $jsonPath = self::METADATA_JSON;
 

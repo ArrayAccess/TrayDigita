@@ -58,7 +58,7 @@ final class BuiltInWebServer extends Command
         ContainerAllocatorTrait,
         TranslatorTrait;
 
-    const BLACKLIST_PORT = [
+    public const BLACKLIST_PORT = [
         80 => 'HTTP',
         443 => 'HTTPS',
         3306 => 'MySQL',

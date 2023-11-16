@@ -16,7 +16,7 @@ use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
  */
 class BenchmarkEventDispatchListener implements EventDispatchListenerInterface
 {
-    const GROUP_NAME = 'manager';
+    public const GROUP_NAME = 'manager';
 
     use ProfilingTrait;
 

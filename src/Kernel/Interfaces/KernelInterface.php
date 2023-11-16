@@ -9,16 +9,18 @@ use ArrayAccess\TrayDigita\HttpKernel\Interfaces\TerminableInterface;
 
 interface KernelInterface extends RunnableInterface, TerminableInterface
 {
-    const CONFIG_UNAVAILABLE = 'UNAVAILABLE';
-    const CONFIG_NOT_FILE = 'NOT_FILE';
-    const CONFIG_NOT_ITERABLE = 'NOT_ITERABLE';
+    public const CONFIG_UNAVAILABLE = 'UNAVAILABLE';
 
-    const CONFIG_EMPTY_FILE = 'EMPTY_FILE';
+    public const CONFIG_NOT_FILE = 'NOT_FILE';
+
+    public const CONFIG_NOT_ITERABLE = 'NOT_ITERABLE';
+
+    public const CONFIG_EMPTY_FILE = 'EMPTY_FILE';
 
     /**
      * Base config file name
      */
-    const BASE_CONFIG_FILE_NAME = 'config.php';
+    public const BASE_CONFIG_FILE_NAME = 'config.php';
 
     public function registerControllerDirectory(string ...$directory);
 

@@ -37,9 +37,9 @@ class Stream implements StreamInterface
      * @see http://php.net/manual/function.fopen.php
      * @see http://php.net/manual/en/function.gzopen.php
      */
-    const READABLE_MODES = '~r|a\+|ab\+|w\+|wb\+|x\+|xb\+|c\+|cb\+~';
+    public const READABLE_MODES = '~r|a\+|ab\+|w\+|wb\+|x\+|xb\+|c\+|cb\+~';
 
-    const WRITABLE_MODES = '~a|w|r\+|rb\+|rw|x|c~';
+    public const WRITABLE_MODES = '~a|w|r\+|rb\+|rw|x|c~';
 
     /**
      * @var resource

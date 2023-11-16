@@ -22,11 +22,15 @@ use const CASE_UPPER;
 
 class UUID implements Stringable
 {
-    const V5 = 5;
-    const V4 = 4;
-    const V3 = 3;
+    public const V5 = 5;
+
+    public const V4 = 4;
+
+    public const V3 = 3;
 
     /**
+     * Validate UUID
+     *
      * @param string $uuid
      * @param int|null $case CASE_LOWER|CASE_UPPER
      * @return bool|int

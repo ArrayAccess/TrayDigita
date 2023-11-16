@@ -35,21 +35,21 @@ class Chunk implements ManagerAllocatorInterface, ContainerIndicateInterface
     use ManagerAllocatorTrait,
         TranslatorTrait;
 
-    const SUFFIX_STORAGE_DIRECTORY = 'chunk_uploads';
+    public const SUFFIX_STORAGE_DIRECTORY = 'chunk_uploads';
 
     /**
      * 5 Hours
      */
-    const MAX_AGE_FILE = 18000;
+    public const MAX_AGE_FILE = 18000;
 
-    const MIN_FILE_SIZE = 1024;
+    public const MIN_FILE_SIZE = 1024;
 
-    const DEFAULT_MIN_FILE_SIZE = 512000;
+    public const DEFAULT_MIN_FILE_SIZE = 512000;
 
     /**
      * Maximum size for unlink
      */
-    const DEFAULT_MAX_DELETE_COUNT = 50;
+    public const DEFAULT_MAX_DELETE_COUNT = 50;
 
     /**
      * @var string

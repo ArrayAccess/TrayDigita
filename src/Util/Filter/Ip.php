@@ -34,10 +34,11 @@ use function trim;
 
 class Ip
 {
-    const IP4 = 4;
-    const IP6 = 6;
+    public const IP4 = 4;
 
-    const IPV4_LOCAL_REGEX = '~^
+    public const IP6 = 6;
+
+    public const IPV4_LOCAL_REGEX = '~^
         (?:
             (?:0?[01]?0|127|255)\.(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])
             | 192\.168

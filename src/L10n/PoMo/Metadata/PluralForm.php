@@ -11,14 +11,14 @@ use function sprintf;
 
 final class PluralForm
 {
-    const DEFAULT_PLURAL_COUNT = 2;
-    const DEFAULT_EXPRESSION   = 'n != 1';
-    const DEFAULT_PLURAL_FORMS = 'nplurals='
+    public const DEFAULT_PLURAL_COUNT = 2;
+    public const DEFAULT_EXPRESSION   = 'n != 1';
+    public const DEFAULT_PLURAL_FORMS = 'nplurals='
     . self::DEFAULT_PLURAL_COUNT
     . ';plural='
     . self::DEFAULT_EXPRESSION;
-    const HEADER_KEY = 'Plural-Forms';
-    const HEADER_KEY_LOWERCASE = 'plural-forms';
+    public const HEADER_KEY = 'Plural-Forms';
+    public const HEADER_KEY_LOWERCASE = 'plural-forms';
 
     private ?Throwable $error;
 

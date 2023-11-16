@@ -7,18 +7,18 @@ use SensitiveParameter;
 
 interface NonceInterface
 {
-    const NONCE_VALID = true;
-    const NONCE_EXPIRED = 0;
-    const NONCE_INVALID = false;
+    public const NONCE_VALID = true;
+    public const NONCE_EXPIRED = 0;
+    public const NONCE_INVALID = false;
 
-    const DEFAULT_PERIOD_SECONDS = 21600; // 6 hours
+    public const DEFAULT_PERIOD_SECONDS = 21600; // 6 hours
 
-    const MAXIMUM_PERIOD_SECONDS = 604800; // 7 days
+    public const MAXIMUM_PERIOD_SECONDS = 604800; // 7 days
 
-    const MINIMUM_PERIOD_SECONDS = 30;
+    public const MINIMUM_PERIOD_SECONDS = 30;
 
     /**
-     * Create new nonce object
+     * Create a new nonce object
      *
      * @param string $nonceKey
      * @param string $saltKey

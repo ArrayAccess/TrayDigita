@@ -16,16 +16,20 @@ use function trim;
 
 class PluralParser
 {
-    const PLURAL_OPERATOR = 1;
-    const PLURAL_VALUE = 2;
-    const PLURAL_VAR = 3;
+    public const PLURAL_OPERATOR = 1;
+
+    public const PLURAL_VALUE = 2;
+
+    public const PLURAL_VAR = 3;
 
     /**
      * Operation characters
      */
-    const OP_CHARS = '|&><!=%?:';
-    const NUMERIC_CHARS = '0123456789';
-    const OP_PRECEDENCE = [
+    public const OP_CHARS = '|&><!=%?:';
+
+    public const NUMERIC_CHARS = '0123456789';
+
+    public const OP_PRECEDENCE = [
         '%'  => 6,
         '<'  => 5,
         '<=' => 5,

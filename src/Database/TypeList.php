@@ -12,11 +12,14 @@ use Doctrine\DBAL\Types\Type;
 final class TypeList
 {
     private static bool $registered = false;
-    const DATA = Data::NAME;
-    const YEAR = Year::NAME;
-    const DATA_BLOB = DataBlob::NAME;
 
-    const TYPES = [
+    public const DATA = Data::NAME;
+
+    public const YEAR = Year::NAME;
+
+    public const DATA_BLOB = DataBlob::NAME;
+
+    public const TYPES = [
         self::DATA => Data::class,
         self::DATA_BLOB => DataBlob::class,
         self::YEAR => Year::class,

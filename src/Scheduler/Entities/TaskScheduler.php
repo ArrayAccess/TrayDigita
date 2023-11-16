@@ -54,7 +54,7 @@ use Doctrine\ORM\Mapping\Table;
 #[HasLifecycleCallbacks]
 class TaskScheduler extends AbstractEntity
 {
-    const TABLE_NAME = 'task_schedulers';
+    public const TABLE_NAME = 'task_schedulers';
     
     #[Id]
     #[Column(

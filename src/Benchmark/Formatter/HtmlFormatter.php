@@ -27,7 +27,7 @@ use function substr;
 
 class HtmlFormatter implements MetadataFormatterInterface
 {
-    const BLACKLISTED_OBJECT = [
+    public const BLACKLISTED_OBJECT = [
         ProfilerInterface::class,
         GroupInterface::class,
         RecordInterface::class,

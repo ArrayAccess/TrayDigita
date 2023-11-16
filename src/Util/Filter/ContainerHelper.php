@@ -11,13 +11,17 @@ use Psr\Container\ContainerInterface;
 use Throwable;
 use function is_object;
 
+/**
+ * @template TObject of Object
+ */
 class ContainerHelper
 {
     /**
-     * @template T of object
-     * @param class-string<T>|string $name
+     * Get container or null
+     *
+     * @param class-string<TObject>|string $name
      * @param ?ContainerInterface $container
-     * @return T|mixed|null
+     * @return TObject|mixed|null
      */
     public static function getNull(
         string $name,
@@ -32,11 +36,12 @@ class ContainerHelper
     }
 
     /**
-     * @template T of object
-     * @param string|class-string<T> $id
-     * @param object|object<T>|class-string<T>|string $expect
+     * Expect the container
+     *
+     * @param string|class-string<TObject> $id
+     * @param object|object<TObject>|class-string<TObject>|string $expect
      * @param ?ContainerInterface $container
-     * @return T|mixed
+     * @return TObject|mixed
      * @return bool|mixed|object|null
      */
     public static function expect(
@@ -51,10 +56,11 @@ class ContainerHelper
     }
 
     /**
-     * @template T of object
-     * @param object|object<T>|class-string<T>|string $expect
+     * Use container expect
+     *
+     * @param object|object<TObject>|class-string<TObject>|string $expect
      * @param ?ContainerInterface $container
-     * @return T|mixed
+     * @return TObject|mixed
      * @return bool|mixed|object|null
      */
     public static function use(
@@ -66,10 +72,11 @@ class ContainerHelper
     }
 
     /**
-     * @template T of object
-     * @param string|class-string<T> $expect
+     * Getting service
+     *
+     * @param string|class-string<TObject> $expect
      * @param ContainerInterface|null $container
-     * @return mixed|T
+     * @return mixed|TObject
      */
     public static function service(
         string $expect,
@@ -83,7 +90,7 @@ class ContainerHelper
 
     /**
      * Get object instance or create if not available until interfaces
-     * beware using this method, it will check interface tree.
+     * beware using this method, it will check an interface tree.
      *
      * @template O of object
      * @param class-string<O>|object $classString
@@ -103,12 +110,13 @@ class ContainerHelper
     }
 
     /**
-     * @template T of object
-     * @param callable|array|class-string<T>|mixed $callable
+     * Resolve the callable
+     *
+     * @param callable|array|class-string<TObject>|mixed $callable
      * @param ContainerInterface|null $container
      * @param array $arguments
      * @param ?array $fallback
-     * @return array|T|mixed
+     * @return array|TObject|mixed
      * @throws Throwable
      */
     public static function resolveCallable(

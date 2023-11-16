@@ -5,17 +5,25 @@ namespace ArrayAccess\TrayDigita\L10n\PoMo\Metadata;
 
 class Attributes
 {
-    const MESSAGE_ID = 'msgid';
-    const PLURAL_ID = 'msgid_plural';
-    const TRANSLATION = 'msgstr';
-    const CONTEXT = 'msgctx';
-    const COMMENTS = '#';
-    const COMMENTED_TRANSLATIONS = '#~';
-    const EXTRACTED_COMMENTS = '#.';
-    const FLAGS = '#,';
-    const REFERENCES = '#:';
+    public const MESSAGE_ID = 'msgid';
 
-    const FLAG_LISTS = [
+    public const PLURAL_ID = 'msgid_plural';
+
+    public const TRANSLATION = 'msgstr';
+
+    public const CONTEXT = 'msgctx';
+
+    public const COMMENTS = '#';
+
+    public const COMMENTED_TRANSLATIONS = '#~';
+
+    public const EXTRACTED_COMMENTS = '#.';
+
+    public const FLAGS = '#,';
+
+    public const REFERENCES = '#:';
+
+    public const FLAG_LISTS = [
         'fuzzy',
         'c-format',
         'no-c-format',

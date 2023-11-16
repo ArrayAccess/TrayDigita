@@ -14,8 +14,9 @@ use function is_file;
 
 class ImageResizerFactory implements ImageResizerFactoryInterface
 {
-    const USE_GD = 1;
-    const USE_IMAGICK = 2;
+    public const USE_GD = 1;
+
+    public const USE_IMAGICK = 2;
 
     /**
      * @var int|false|null USE_GD|USE_IMAGICK

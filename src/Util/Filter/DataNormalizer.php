@@ -16,6 +16,7 @@ use function file_exists;
 use function idn_to_ascii;
 use function implode;
 use function in_array;
+use function is_array;
 use function is_dir;
 use function is_iterable;
 use function is_string;
@@ -39,7 +40,7 @@ use const DIRECTORY_SEPARATOR;
 
 final class DataNormalizer
 {
-    const CONVERSION_TABLES = [
+    public const CONVERSION_TABLES = [
         'À' => 'A',
         'Á' => 'A',
         'Â' => 'A',
@@ -107,6 +108,8 @@ final class DataNormalizer
     ];
 
     /**
+     * Normalize the filename
+     *
      * @param string $string
      * @param bool $allowSpace
      * @return string
@@ -152,10 +155,21 @@ final class DataNormalizer
         );
     }
 
-    public static function splitStringToArray($string): ?array
+    /**
+     * Splitting the string or iterable to array
+     *
+     * @param mixed $string
+     * @param string $separator
+     * @return array|null returning null if not an iterable or string
+     */
+    public static function splitStringToArray(mixed $string, string $separator = ' '): ?array
     {
+        // don't process an array
+        if (is_array($string)) {
+            return $string;
+        }
         if (is_string($string)) {
-            return explode(' ', $string);
+            return explode($separator, $string);
         }
         if (is_iterable($string)) {
             return iterator_to_array($string);
@@ -176,7 +190,7 @@ final class DataNormalizer
     ): string {
         $sanitized = trim($class);
         $classes = [];
-        foreach (explode(' ', $sanitized) as $className) {
+        foreach (self::splitStringToArray($sanitized) as $className) {
             $className = trim($className);
             if ($className === '') {
                 continue;
@@ -419,6 +433,8 @@ final class DataNormalizer
     }
 
     /**
+     * Normalize slug / url suffix
+     *
      * @param string $slug
      * @return string
      */
@@ -437,16 +453,21 @@ final class DataNormalizer
     }
 
     /**
+     * Create unique slug
+     *
      * @param string $slug
-     * @param array $slugCollections
+     * @param iterable $slugCollections
      * @return string
      */
-    public static function uniqueSlug(string $slug, array $slugCollections): string
+    public static function uniqueSlug(string $slug, iterable $slugCollections): string
     {
         $separator = '-';
         $inc = 1;
         $slug = self::normalizeSlug($slug);
         $baseSlug = $slug;
+        $slugCollections = is_array($slugCollections)
+            ? $slugCollections
+            : iterator_to_array($slugCollections);
         while (in_array($slug, $slugCollections)) {
             $slug = $baseSlug . $separator . $inc++;
         }
@@ -456,6 +477,7 @@ final class DataNormalizer
     /**
      * @param string $slug
      * @param callable $callable must be returning true for valid
+     * @param int $maxIteration
      * @return string
      */
     public static function uniqueSlugCallback(
@@ -482,6 +504,13 @@ final class DataNormalizer
         return $slug;
     }
 
+    /**
+     * Replace `\/` with directory separator
+     *
+     * @param string $string
+     * @param bool $removeLastSeparator
+     * @return string
+     */
     public static function normalizeDirectorySeparator(
         string $string,
         bool $removeLastSeparator = false
@@ -490,6 +519,13 @@ final class DataNormalizer
         return $removeLastSeparator ? rtrim($string, DIRECTORY_SEPARATOR) : $string;
     }
 
+    /**
+     * Replace `\` with slash
+     *
+     * @param string $string
+     * @param bool $removeLastSeparator
+     * @return string
+     */
     public static function normalizeUnixDirectorySeparator(
         string $string,
         bool $removeLastSeparator = false
@@ -542,6 +578,8 @@ final class DataNormalizer
     }
 
     /**
+     * Create a notation string to array with certain delimiter
+     *
      * @param array $array
      * @param string $delimiter
      *

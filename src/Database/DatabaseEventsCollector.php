@@ -19,11 +19,13 @@ use function strtolower;
 
 class DatabaseEventsCollector
 {
-    const REGISTERED_NONE = 0;
-    const REGISTERED_SUBSCRIBER = 1;
-    const REGISTERED_EVENT = 2;
+    public const REGISTERED_NONE = 0;
 
-    const PROVIDERS = [
+    public const REGISTERED_SUBSCRIBER = 1;
+
+    public const REGISTERED_EVENT = 2;
+
+    public const PROVIDERS = [
         CreateSchemaToolsEvent::class,
         PostLoadEvent::class,
     ];

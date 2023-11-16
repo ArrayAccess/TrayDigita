@@ -11,7 +11,7 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
 trait CallStackTraceTrait
 {
-    const MAX_CALLSTACK = 256;
+    public const MAX_CALLSTACK = 256;
 
     protected array $callStackIncrement = [];
 

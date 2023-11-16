@@ -30,7 +30,7 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
 class Manager implements ManagerInterface
 {
-    const MAX_LOOP = 255;
+    public const MAX_LOOP = 255;
 
     protected array $events = [];
 

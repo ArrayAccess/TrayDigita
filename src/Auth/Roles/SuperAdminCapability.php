@@ -7,7 +7,7 @@ use ArrayAccess\TrayDigita\Auth\Roles\Interfaces\RoleInterface;
 
 final class SuperAdminCapability extends AbstractCapability
 {
-    const NAME = 'superadmin';
+    public const NAME = 'superadmin';
 
     protected string $identity = self::NAME;
 

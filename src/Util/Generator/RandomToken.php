@@ -26,13 +26,18 @@ use const PASSWORD_DEFAULT;
 
 class RandomToken
 {
-    const A_MONTH_IN_SECOND = 18144000;
-    const A_WEEK_IN_SECOND = 604800;
-    const A_DAY_IN_SECOND = 86400;
-    const AN_HOUR_IN_SECOND = 3600;
-    const A_MINUTE_IN_SECOND = 3600;
+    public const A_MONTH_IN_SECOND = 18144000;
+
+    public const A_WEEK_IN_SECOND = 604800;
+
+    public const A_DAY_IN_SECOND = 86400;
+
+    public const AN_HOUR_IN_SECOND = 3600;
+
+    public const A_MINUTE_IN_SECOND = 3600;
+
     // 128 BytesLength
-    const BYTES_LENGTH = 16;
+    public const BYTES_LENGTH = 16;
 
     /**
      * @var string[]

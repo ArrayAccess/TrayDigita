@@ -28,7 +28,7 @@ use const UPLOAD_ERR_PARTIAL;
 
 class UploadedFile implements UploadedFileInterface
 {
-    const ERRORS = [
+    public const ERRORS = [
         UPLOAD_ERR_OK,
         UPLOAD_ERR_INI_SIZE,
         UPLOAD_ERR_FORM_SIZE,

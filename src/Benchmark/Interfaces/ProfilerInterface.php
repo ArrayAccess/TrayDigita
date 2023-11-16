@@ -19,7 +19,7 @@ interface ProfilerInterface extends
     ClearableInterface,
     JsonSerializable
 {
-    const DEFAULT_NAME = 'default';
+    public const DEFAULT_NAME = 'default';
 
     /**
      * Disable profiler record

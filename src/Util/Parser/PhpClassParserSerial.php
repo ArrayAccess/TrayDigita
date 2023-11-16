@@ -25,7 +25,7 @@ use function unserialize;
 final class PhpClassParserSerial implements Serializable
 {
     // 500KB
-    const MAX_FILE_SIZE = 512000;
+    public const MAX_FILE_SIZE = 512000;
 
     private static ?Parser $parser = null;
 

@@ -34,7 +34,7 @@ use function sprintf;
 
 final class Decorator
 {
-    const DEFAULT_NAME = 'default';
+    public const DEFAULT_NAME = 'default';
 
     protected Kernel $defaultKernel;
 

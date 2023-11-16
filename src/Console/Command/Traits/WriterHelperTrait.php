@@ -16,10 +16,10 @@ use function sprintf;
 
 trait WriterHelperTrait
 {
-    const MODE_SUCCESS = true;
-    const MODE_WARNING = 3;
-    const MODE_INFO = 4;
-    const MODE_DANGER = false;
+    public const MODE_SUCCESS = true;
+    public const MODE_WARNING = 3;
+    public const MODE_INFO = 4;
+    public const MODE_DANGER = false;
 
     protected string $spacing = '    ';
 

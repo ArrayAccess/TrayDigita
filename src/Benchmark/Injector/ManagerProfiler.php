@@ -32,7 +32,7 @@ class ManagerProfiler implements EventDispatchListenerInterface
     /**
      * Profiler Default
      */
-    const PROVIDERS = [
+    public const PROVIDERS = [
         DatabaseProfilerInjector::class,
         KernelProfilerInjector::class,
         MiddlewareProfilerInjector::class,

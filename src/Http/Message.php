@@ -24,7 +24,7 @@ class Message implements MessageInterface
 {
     use HttpAssertionTrait;
 
-    const DEFAULT_PROTOCOL_VERSION = '1.1';
+    public const DEFAULT_PROTOCOL_VERSION = '1.1';
 
     protected string $protocolVersion = self::DEFAULT_PROTOCOL_VERSION;
 

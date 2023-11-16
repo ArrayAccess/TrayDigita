@@ -70,7 +70,7 @@ class Router implements RouterInterface, ManagerAllocatorInterface, ContainerAll
         getRouteFactory as getDefaultRouteFactory;
     }
 
-    const REGEX_DELIMITER = [
+    public const REGEX_DELIMITER = [
         self::DEFAULT_DELIMITER,
         '~',
         '@',
@@ -80,7 +80,7 @@ class Router implements RouterInterface, ManagerAllocatorInterface, ContainerAll
         '%'
     ];
 
-    const DEFAULT_DELIMITER = '#';
+    public const DEFAULT_DELIMITER = '#';
 
     protected array $registeredControllers = [];
 

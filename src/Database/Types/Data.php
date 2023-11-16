@@ -11,7 +11,7 @@ use function stream_get_contents;
 
 class Data extends TextType
 {
-    const NAME = 'data';
+    public const NAME = 'data';
 
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {

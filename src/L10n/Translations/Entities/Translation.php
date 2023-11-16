@@ -52,7 +52,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
 #[HasLifecycleCallbacks]
 class Translation extends AbstractEntity
 {
-    const TABLE_NAME = 'translations';
+    public const TABLE_NAME = 'translations';
     
     #[Id]
     #[GeneratedValue('AUTO')]

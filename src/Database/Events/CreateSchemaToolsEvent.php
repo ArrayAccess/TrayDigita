@@ -47,7 +47,7 @@ use function trim;
 #[SubscribeEvent]
 class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
 {
-    const DOCTRINE_VERSION = 2;
+    public const DOCTRINE_VERSION = 2;
 
     protected function getManager() : ?ManagerInterface
     {

@@ -16,28 +16,28 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
 final class Runner
 {
-    final const STATUS_QUEUE = 0;
+    final public const STATUS_QUEUE = 0;
 
-    final const STATUS_SUCCESS = 1;
+    final public const STATUS_SUCCESS = 1;
 
-    final const STATUS_FAILURE = 2;
+    final public const STATUS_FAILURE = 2;
 
-    final const STATUS_STOPPED = 3;
+    final public const STATUS_STOPPED = 3;
 
-    final const STATUS_PROGRESS = 4;
+    final public const STATUS_PROGRESS = 4;
 
-    final const STATUS_UNKNOWN = 5;
+    final public const STATUS_UNKNOWN = 5;
 
-    final const STATUS_EXITED = 6;
+    final public const STATUS_EXITED = 6;
 
-    final const STATUS_SKIPPED = 7;
+    final public const STATUS_SKIPPED = 7;
 
     // maximum running time
-    final const MAXIMUM_RUNNING_TIME = 3600; // 1 hour
+    final public const MAXIMUM_RUNNING_TIME = 3600; // 1 hour
 
-    final const PREVIOUS_MIN_TIME = 1694019600; // 2023-09-07
+    final public const PREVIOUS_MIN_TIME = 1694019600; // 2023-09-07
 
-    final const PERFORM_RESTORE = [
+    final public const PERFORM_RESTORE = [
         self::STATUS_SUCCESS,
         self::STATUS_FAILURE,
         self::STATUS_UNKNOWN,

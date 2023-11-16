@@ -7,7 +7,7 @@ use ArrayAccess\TrayDigita\Routing\Router;
 
 interface RouteInterface
 {
-    const DEFAULT_PRIORITY = 10;
+    public const DEFAULT_PRIORITY = 10;
 
     /**
      * @param array<string>|string $methods route methods

@@ -17,7 +17,7 @@ use function strlen;
 
 class Year extends DateTimeType
 {
-    const NAME = 'year';
+    public const NAME = 'year';
 
     /**
      * {@inheritDoc}

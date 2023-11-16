@@ -85,7 +85,7 @@ use function is_string;
 
 class ContainerFactory implements ContainerFactoryInterface
 {
-    final const DEFAULT_SERVICES = [
+    final public const DEFAULT_SERVICES = [
         // factory
         RouteFactoryInterface::class => RouteFactory::class,
         ServerRequestFactoryInterface::class => ServerRequestFactory::class,
@@ -155,7 +155,7 @@ class ContainerFactory implements ContainerFactoryInterface
         AssetsJsCssQueue::class => AssetsJsCssQueue::class,
     ];
 
-    const DEFAULT_SERVICE_ALIASES = [
+    public const DEFAULT_SERVICE_ALIASES = [
         // factory
         'routeFactory' => RouteFactoryInterface::class,
         routeFactory::class => RouteFactoryInterface::class,

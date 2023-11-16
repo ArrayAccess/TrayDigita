@@ -23,9 +23,9 @@ use function trim;
 
 class Route implements RouteInterface
 {
-    const DEFAULT_PRIORITY = 10;
+    public const DEFAULT_PRIORITY = 10;
 
-    const PLACEHOLDERS = [
+    public const PLACEHOLDERS = [
         '?:id:' => '(?:.+)?',
         '?:num:' => '(?:\d+)?',
         '?:any:' => '(?:.*)?',

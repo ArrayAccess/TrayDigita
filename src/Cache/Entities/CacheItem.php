@@ -34,7 +34,7 @@ use Doctrine\ORM\Mapping\Table;
 #[HasLifecycleCallbacks]
 class CacheItem extends AbstractEntity
 {
-    const TABLE_NAME = 'cache_items';
+    public const TABLE_NAME = 'cache_items';
 
     #[Id]
     #[Column(

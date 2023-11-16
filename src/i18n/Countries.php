@@ -16,7 +16,7 @@ class Countries
     /**
      * @var array[]
      */
-    const LISTS = [
+    final public const LISTS = [
         "AN" => [
             "name" => "Netherlands Antilles",
             "continent" => [

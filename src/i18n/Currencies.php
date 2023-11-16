@@ -9,7 +9,7 @@ use function trim;
 
 class Currencies
 {
-    const LIST = [
+    public const LIST = [
         "BDT" => [
             "code" => "BDT",
             "name" => "Bangladeshi Taka",

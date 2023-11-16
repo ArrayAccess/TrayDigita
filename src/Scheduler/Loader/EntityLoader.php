@@ -26,10 +26,10 @@ use const DIRECTORY_SEPARATOR;
 
 class EntityLoader extends LocalRecordLoader
 {
-    const FINISH = 'finish';
-    const PROGRESS = 'progress';
-    const SKIPPED = 'skipped';
-    const EXITED = 'exited';
+    public const FINISH = 'finish';
+    public const PROGRESS = 'progress';
+    public const SKIPPED = 'skipped';
+    public const EXITED = 'exited';
 
     private bool $checkedEntity = false;
 

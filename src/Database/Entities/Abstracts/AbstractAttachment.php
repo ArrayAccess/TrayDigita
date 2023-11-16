@@ -61,9 +61,9 @@ abstract class AbstractAttachment extends AbstractEntity implements
 {
     use AvailabilityStatusTrait;
 
-    const TYPE_DATA = 'data';
-    const TYPE_UPLOAD = 'upload';
-    const TYPE_AVATAR = 'avatar';
+    public const TYPE_DATA = 'data';
+    public const TYPE_UPLOAD = 'upload';
+    public const TYPE_AVATAR = 'avatar';
 
     #[Id]
     #[GeneratedValue('AUTO')]

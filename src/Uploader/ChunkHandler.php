@@ -38,17 +38,23 @@ use const JSON_UNESCAPED_SLASHES;
 
 class ChunkHandler
 {
-    const STATUS_WAITING = 0;
-    const STATUS_CHECKING = 1;
-    const STATUS_NOT_READY = 2;
-    const STATUS_READY = 7;
-    const STATUS_BEGIN = 9;
-    const STATUS_RESUME = 17;
-    const STATUS_FAIL = -1;
+    public const STATUS_WAITING = 0;
 
-    const MAX_INCREMENT = 1000;
+    public const STATUS_CHECKING = 1;
 
-    const INCREMENT_SEPARATOR = '@';
+    public const STATUS_NOT_READY = 2;
+
+    public const STATUS_READY = 7;
+
+    public const STATUS_BEGIN = 9;
+
+    public const STATUS_RESUME = 17;
+
+    public const STATUS_FAIL = -1;
+
+    public const MAX_INCREMENT = 1000;
+
+    public const INCREMENT_SEPARATOR = '@';
 
     /**
      * @var string

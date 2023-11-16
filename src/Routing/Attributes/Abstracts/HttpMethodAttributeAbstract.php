@@ -13,7 +13,7 @@ abstract readonly class HttpMethodAttributeAbstract implements HttpMethodAttribu
 {
     public array $methods;
 
-    const ANY_METHODS = [
+    public const ANY_METHODS = [
         'DELETE',
         'HEAD',
         'POST',

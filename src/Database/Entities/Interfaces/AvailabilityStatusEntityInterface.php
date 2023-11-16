@@ -8,47 +8,47 @@ interface AvailabilityStatusEntityInterface
     /**
      * Active status
      */
-    const ACTIVE = 'active';
+    public const ACTIVE = 'active';
 
     /**
      * Disabled status
      */
-    const DISABLED = 'disabled';
+    public const DISABLED = 'disabled';
 
     /**
      * Closed status
      */
-    const CLOSED = 'closed';
+    public const CLOSED = 'closed';
 
     /**
      * Published status
      */
-    const PUBLISHED = 'published';
+    public const PUBLISHED = 'published';
 
     /**
      * Deleted status
      */
-    const DELETED = 'deleted';
+    public const DELETED = 'deleted';
 
     /**
      * Draft status
      */
-    const DRAFT = 'draft';
+    public const DRAFT = 'draft';
 
     /**
      * Status is pending review
      */
-    const PENDING = 'pending';
+    public const PENDING = 'pending';
 
     /**
      * Status is expired
      */
-    const EXPIRED = 'expired';
+    public const EXPIRED = 'expired';
 
     /**
      * Status is unknown
      */
-    const UNKNOWN = 'unknown';
+    public const UNKNOWN = 'unknown';
 
     public function getStatus() : string;
 

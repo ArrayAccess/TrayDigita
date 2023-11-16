@@ -43,7 +43,7 @@ class Profiler implements ProfilerInterface
      */
     private SplObjectStorage $aggregators;
 
-    const PROVIDERS = [
+    public const PROVIDERS = [
         DatabaseAggregator::class,
         KernelAggregator::class,
         MiddlewareAggregator::class,

@@ -15,8 +15,9 @@ use function trim;
 
 class GettextReader
 {
-    const MO = 'mo';
-    const PO = 'po';
+    public const MO = 'mo';
+
+    public const PO = 'po';
 
     private TranslationFactoryInterface $translationFactory;
 

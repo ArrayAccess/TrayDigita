@@ -40,7 +40,7 @@ use Doctrine\ORM\Mapping\Table;
 #[HasLifecycleCallbacks]
 class LogItem extends AbstractEntity
 {
-    const TABLE_NAME = 'log_items';
+    public const TABLE_NAME = 'log_items';
     
     #[Id]
     #[GeneratedValue('AUTO')]

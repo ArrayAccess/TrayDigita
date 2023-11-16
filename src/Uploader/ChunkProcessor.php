@@ -22,7 +22,7 @@ use function sprintf;
 
 final class ChunkProcessor
 {
-    const X_REQUEST_ID = 'X-Request-Id';
+    public const X_REQUEST_ID = 'X-Request-Id';
 
     public readonly RequestIdHeader $requestIdHeader;
 

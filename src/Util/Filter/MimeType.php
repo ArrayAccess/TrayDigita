@@ -30,7 +30,8 @@ use const PATHINFO_EXTENSION;
  */
 final class MimeType
 {
-    const DEFAULT_MIME_TYPES_FILE =  __DIR__ . '/data/mime.types';
+    public const DEFAULT_MIME_TYPES_FILE =  __DIR__ . '/data/mime.types';
+
     /**
      * @var ?array
      */

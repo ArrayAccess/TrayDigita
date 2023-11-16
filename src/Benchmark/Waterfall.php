@@ -47,9 +47,9 @@ class Waterfall implements ContainerAllocatorInterface
     use TranslatorTrait,
         ContainerAllocatorTrait;
 
-    const UNKNOWN_SEVERITY_CLASSNAME = 'severity-unknown';
+    public const UNKNOWN_SEVERITY_CLASSNAME = 'severity-unknown';
 
-    const SEVERITY_HTML_CLASS_NAMES = [
+    public const SEVERITY_HTML_CLASS_NAMES = [
         SeverityInterface::CRITICAL => 'severity-critical',
         SeverityInterface::WARNING => 'severity-warning',
         SeverityInterface::NOTICE => 'severity-notice',

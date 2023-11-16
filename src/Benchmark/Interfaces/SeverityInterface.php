@@ -5,11 +5,11 @@ namespace ArrayAccess\TrayDigita\Benchmark\Interfaces;
 
 interface SeverityInterface
 {
-    const CRITICAL = 1;
-    const WARNING = 3;
-    const NOTICE = 5;
-    const INFO = 6;
-    const NONE = 0;
+    public const CRITICAL = 1;
+    public const WARNING = 3;
+    public const NOTICE = 5;
+    public const INFO = 6;
+    public const NONE = 0;
 
     /**
      * @return int

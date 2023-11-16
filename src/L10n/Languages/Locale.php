@@ -88,7 +88,7 @@ class Locale
         return $currentLocale?:null;
     }
 
-    final const LANGUAGES = [
+    final public const LANGUAGES = [
         "af" => [
             "id" => "af",
             "name" => "Afrikaans",

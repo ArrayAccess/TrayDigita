@@ -19,7 +19,7 @@ abstract class Task
      * Minimum interval
      * @final
      */
-    final const MINIMUM_INTERVAL_TIME = 5;
+    final public const MINIMUM_INTERVAL_TIME = 5;
 
     /**
      * Name of scheduler.
