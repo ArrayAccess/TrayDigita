@@ -30,6 +30,7 @@
         "psr/http-message": "^2",
         "psr/http-factory": "^1",
         "psr/http-server-middleware": "^1",
+        "psr/cache": "^3",
         "psr/container": "^2",
         "psr/log": "^3",
         "psr/http-client": "^1",
@@ -55,7 +56,8 @@
         "ext-gd": "To support image generation & manipulation",
         "ext-sodium": "Provides strong encryption capabilities in an easy and consistent way",
         "league/oauth2-server": "Compliant implementation of an OAuth 2.0 authorization server written in PHP which makes working with OAuth 2.0 trivial",
-        "doctrine/migrations": "Allows you to easily update your production databases through a nice programmatic interface"
+        "doctrine/migrations": "Allows you to easily update your production databases through a nice programmatic interface",
+        "arrayaccess/dns-client" : "Allows you to resolve dns client faster & timedout support based on object oriented"
     },
     "conflict": {
         "doctrine/migrations" : "< 3"
