@@ -40,7 +40,7 @@ then follow the steps
 
 ## Console & Generator
 
-Read the : **[Console](CONSOLE.md)**
+Read the: **[Console](CONSOLE.md)**
 
 ## Translation
 
@@ -52,5 +52,7 @@ Read the : **[Coding Standard](CODING_STANDARD.md)**
 
 ## Available Modules
 
+- Core Module [https://github.com/ArrayAccess/TrayDigita-Core-Module](https://github.com/ArrayAccess/TrayDigita-Core-Module)
 - Media Module [https://github.com/ArrayAccess/TrayDigita-Media-Module](https://github.com/ArrayAccess/TrayDigita-Media-Module)
 - Users Module [https://github.com/ArrayAccess/TrayDigita-Users-Module](https://github.com/ArrayAccess/TrayDigita-Users-Module)
+- Posts Module [https://github.com/ArrayAccess/TrayDigita-Posts-Module](https://github.com/ArrayAccess/TrayDigita-Posts-Module)
