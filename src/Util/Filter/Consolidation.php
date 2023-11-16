@@ -15,6 +15,7 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionObject;
 use Stringable;
+use Throwable;
 use function array_key_exists;
 use function array_values;
 use function class_exists;
@@ -761,9 +762,14 @@ class Consolidation
         $reflectionObject = new ReflectionObject($object);
         $info = [];
         foreach ($reflectionObject->getProperties() as $property) {
+            if ($property->isPrivate()) {
+                /** @noinspection PhpExpressionResultUnusedInspection */
+                $property->setAccessible(true);
+            }
             // no display if not initialized
-            if (($value = $property->getValue()) === null
-                && !$property->isInitialized()
+            if ($property->isStatic()
+                || ($value = $property->getValue($object)) === null
+                && !$property->isInitialized($object)
             ) {
                 continue;
             }
