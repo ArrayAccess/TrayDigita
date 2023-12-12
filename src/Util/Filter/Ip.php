@@ -240,12 +240,12 @@ class Ip
             $flexBits -= 4;
             $pos -= 1;
         }
-        $lastAddrBin = inet_pton($lastAddrHex);
-        if (!$lastAddrBin) {
+        $lastAddrBin = hex2bin($lastAddrHex);
+        $lastAddr = inet_ntop($lastAddrBin);
+        if (!$lastAddr) {
             return null;
         }
-        $lastAddr = inet_ntop($lastAddrBin);
-        return !$lastAddr ? null : [$firstAddr, $lastAddr];
+        return [$firstAddr, $lastAddr];
     }
 
     /**

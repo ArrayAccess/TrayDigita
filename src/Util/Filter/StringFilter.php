@@ -431,7 +431,7 @@ final class StringFilter
         }
 
         // if validate DNS
-        if ($validateDNSSR === true && !@checkdnsrr($explode[0])) {
+        if ($validateDNSSR === true && !@checkdnsrr($explode[1])) {
             return false;
         }
 
