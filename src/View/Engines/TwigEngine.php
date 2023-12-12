@@ -7,7 +7,6 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use ArrayAccess\TrayDigita\View\Twig\Loader\FileLoader;
 use ArrayAccess\TrayDigita\View\Twig\TwigEnvironment;
-use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\AbstractExtension;
 use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\ContentDispatcher;
 use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\HtmlTagAttributes;
 use ArrayAccess\TrayDigita\View\Twig\TwigExtensions\Miscellaneous;
@@ -33,7 +32,8 @@ final class TwigEngine extends AbstractEngine
     ];
 
     /**
-     * @var array<class-string<AbstractExtension>
+     * @var array<class-string<\ArrayAccess\TrayDigita\View\Twig\TwigExtensions\AbstractExtension>
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     protected array $extensionClasses = [
         HtmlTagAttributes::class,

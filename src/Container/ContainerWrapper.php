@@ -9,9 +9,7 @@ use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Traits\ContainerDecorator;
 use ArrayAccess\TrayDigita\Exceptions\Logical\InvokeAbleException;
 use ArrayAccess\TrayDigita\Traits\Service\CallStackTraceTrait;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use SensitiveParameter;
 use Throwable;
 use function array_key_exists;
@@ -204,9 +202,11 @@ final class ContainerWrapper implements SystemContainerInterface
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      * @throws Throwable
+     * @noinspection PhpFullyQualifiedNameUsageInspection
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
     public function offsetGet(mixed $offset): mixed
     {

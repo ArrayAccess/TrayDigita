@@ -37,6 +37,14 @@
             <property name="ConstantVisibility" value="1"/>
         </properties>
     </rule>
+    <!-- constant visibility -->
+    <rule ref="PSR12.Properties">
+        <properties>
+            <property name="UseSpacing" value="1"/>
+            <property name="ConstantVisibility" value="1"/>
+            <property name="MethodVisibility" value="1"/>
+        </properties>
+    </rule>
     <!-- detect spacing -->
     <rule ref="SlevomatCodingStandard.Namespaces.UseSpacing">
         <properties>
@@ -61,7 +69,15 @@
             <property name="ignoreUnusedValuesWhenOnlyKeysAreUsedInForeach" value="true"/>
         </properties>
     </rule>
+    <!-- detect unused variables -->
+    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable">
+        <properties>
+            <property name="ignoreUnusedValuesWhenOnlyKeysAreUsedInForeach" value="true"/>
+        </properties>
+    </rule>
     <!-- we use strict! disallow equal operator, use identical for better code -->
     <rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators"/>
+    <!-- detected unused use -->
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
 </ruleset>
 <!-- end -->

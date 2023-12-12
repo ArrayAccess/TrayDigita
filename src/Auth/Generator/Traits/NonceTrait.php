@@ -6,7 +6,7 @@ namespace ArrayAccess\TrayDigita\Auth\Generator\Traits;
 use ArrayAccess\TrayDigita\Auth\Generator\Interfaces\NonceInterface;
 use ArrayAccess\TrayDigita\Exceptions\Logical\OutOfRangeException;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
-use ArrayAccess\TrayDigita\Util\Generator\RandomString;
+use ArrayAccess\TrayDigita\Util\Generator\Random;
 use SensitiveParameter;
 use function dechex;
 use function hash_equals;
@@ -109,7 +109,7 @@ trait NonceTrait
 
     protected function generateInternalNonce($action): string
     {
-        $random  = RandomString::randomHex(16);
+        $random  = Random::hex(16);
         $expired = time() + $this->getExpiration();
         $expired += (int) hexdec(substr($random, -8));
         $data = [

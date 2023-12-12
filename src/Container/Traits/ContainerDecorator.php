@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Container\Traits;
 
-use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
-use ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\UnsupportedArgumentException;
 use ReflectionClass;
 use ReflectionObject;
@@ -24,6 +22,13 @@ use function is_string;
 use function sprintf;
 use function strtolower;
 
+/**
+ * Container decorator
+ *
+ * @template ContainerFrozenException of \ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException
+ * @template ContainerNotFoundException of ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException
+ * @noinspection PhpFullyQualifiedNameUsageInspection
+ */
 trait ContainerDecorator
 {
     /**
@@ -45,6 +50,12 @@ trait ContainerDecorator
      */
     abstract public function get(string $id);
 
+    /**
+     * Check if container has object instance
+     *
+     * @param string $id
+     * @return bool
+     */
     abstract public function has(string $id) : bool;
 
     private function assertAnonymous(object $object): void

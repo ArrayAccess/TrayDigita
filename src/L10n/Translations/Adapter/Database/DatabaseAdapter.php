@@ -13,10 +13,8 @@ use ArrayAccess\TrayDigita\L10n\Translations\Exceptions\UnsupportedLanguageExcep
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\EntryInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use Doctrine\DBAL\Connection as DoctrineConnection;
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Throwable;
@@ -26,19 +24,37 @@ use function trim;
 
 class DatabaseAdapter extends AbstractAdapter
 {
+    /**
+     * @var DoctrineConnection|Connection $connection The database connection
+     */
     protected DoctrineConnection|Connection $connection;
 
+    /**
+     * @var string $tableName The table name
+     */
     protected string $tableName = 'translations';
 
     /**
-     * @var array<array<Entries|false>>
+     * @var array<array<Entries|false>> $records The records
      */
     private array $records = [];
 
+    /**
+     * @var bool $initSchema The init schema
+     */
     private bool $initSchema = false;
 
+    /**
+     * @var PluralForm $pluralForm The plural form
+     */
     private PluralForm $pluralForm;
 
+    /**
+     * DatabaseAdapter constructor.
+     *
+     * @param TranslatorInterface $translator
+     * @param Connection|DoctrineConnection $connection
+     */
     public function __construct(
         TranslatorInterface $translator,
         Connection|DoctrineConnection $connection
@@ -51,11 +67,17 @@ class DatabaseAdapter extends AbstractAdapter
         );
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getName(): string
     {
         return 'Database';
     }
 
+    /**
+     * @return string The table name
+     */
     public function getTableName(): string
     {
         return $this->tableName;
@@ -154,8 +176,9 @@ class DatabaseAdapter extends AbstractAdapter
     }
 
     /**
-     * @throws SchemaException
-     * @throws Exception
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     private function addTableToSchema(Schema $schema): void
     {
@@ -244,8 +267,11 @@ class DatabaseAdapter extends AbstractAdapter
     }
 
     /**
-     * @throws SchemaException
-     * @throws Exception
+     * Configure schema
+     *
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     protected function configureSchema(): void
     {
@@ -314,8 +340,9 @@ class DatabaseAdapter extends AbstractAdapter
     }
 
     /**
-     * @throws SchemaException
-     * @throws Exception
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function save(string $language, string $domain, Entry $entry): int
     {
@@ -394,8 +421,11 @@ class DatabaseAdapter extends AbstractAdapter
     protected array $deferredSave = [];
 
     /**
-     * @throws SchemaException
-     * @throws Exception
+     * Save deferred
+     *
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function saveDeferred(string $language, string $domain, Entry $entry): void
     {
@@ -410,6 +440,11 @@ class DatabaseAdapter extends AbstractAdapter
         $this->deferredSave[$locale][$domain][$entry->getOriginal()] = $entry;
     }
 
+    /**
+     * Commit deferred
+     *
+     * @return void
+     */
     public function commit(): void
     {
         foreach ($this->deferredSave as $locale => $entries) {
@@ -424,11 +459,19 @@ class DatabaseAdapter extends AbstractAdapter
         }
     }
 
+    /**
+     * Clear the records
+     *
+     * @return void
+     */
     public function clear(): void
     {
         $this->records = [];
     }
 
+    /**
+     * Magic method __destruct, clear the records
+     */
     public function __destruct()
     {
         $this->clear();

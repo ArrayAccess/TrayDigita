@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Util\Filter;
 
 use ArrayAccess\TrayDigita\Exceptions\Runtime\MaximumCallstackExceeded;
+use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use function array_keys;
 use function array_merge_recursive;
 use function array_pop;
@@ -19,6 +20,7 @@ use function in_array;
 use function is_array;
 use function is_dir;
 use function is_iterable;
+use function is_numeric;
 use function is_string;
 use function iterator_to_array;
 use function mt_rand;
@@ -30,13 +32,18 @@ use function realpath;
 use function rtrim;
 use function sprintf;
 use function str_contains;
+use function str_pad;
+use function str_repeat;
 use function str_replace;
 use function strlen;
 use function strpos;
 use function strtolower;
+use function strtoupper;
+use function strval;
 use function substr;
 use function trim;
 use const DIRECTORY_SEPARATOR;
+use const PHP_INT_MAX;
 
 final class DataNormalizer
 {
@@ -604,5 +611,91 @@ final class DataNormalizer
         }
 
         return Consolidation::convertNotationValue($result);
+    }
+
+    /**
+     * Convert a number if contain scientific notation to standard notation
+     * e.g.: 1.2e+3 to 1200
+     *
+     * @param mixed $number
+     * @return ?string
+     */
+    public static function number(mixed $number) : ?string
+    {
+        if (!is_numeric($number)) {
+            return null;
+        }
+
+        // replace E to e
+        $number = str_replace('E', 'e', strval($number));
+        // Convert a number in scientific notation to standard notation
+        if (str_contains($number, 'e')) {
+            [$mantissa, $exponent] = explode('e', $number);
+            if (($minus = $mantissa[0] === '-') || $mantissa[0] === '+') {
+                $mantissa = substr($mantissa, 1);
+            }
+            if (($isDecimalPoint = $exponent[0] === '-') || $exponent[0] === '+') {
+                $exponent = substr($exponent, 1);
+            }
+            $exponent = (int)$exponent;
+            if ($exponent >= PHP_INT_MAX) {
+                throw new RuntimeException(
+                    'Exponent is too large'
+                );
+            }
+            $mantissa = str_replace('.', '', $mantissa);
+            if ($isDecimalPoint) {
+                // - is decimal point, convert mantissa
+                $mantissa = substr(str_repeat('0', $exponent - 1) . $mantissa, 0, $exponent + 1);
+                $mantissa = '0.' . $mantissa;
+            } else {
+                $mantissa = str_pad($mantissa, $exponent, '0');
+                if (strlen($mantissa) > $exponent) {
+                    $mantissa = substr($mantissa, 0, $exponent+1)
+                        . '.'
+                        . substr($mantissa, $exponent + 1, strlen($mantissa) - $exponent);
+                }
+                // trim right padding
+                $mantissa = rtrim($mantissa, '.0');
+            }
+
+            $number = $minus ? '-' . $mantissa : $mantissa;
+        }
+
+        return $number;
+    }
+
+    /**
+     * Filter the relative path
+     *
+     * @param string $path
+     * @return ?string string if valid relative path
+     */
+    public static function relativePath(string $path): ?string
+    {
+        $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+        if (Consolidation::isWindows()) {
+            preg_match('~^([A-Za-z]+)(:\\\.*)$~', $path, $match);
+            if (empty($match)) {
+                return null;
+            }
+            return strtoupper($match[1]) . $match[2];
+        }
+        return str_starts_with($path, '/') ? $path : null;
+    }
+
+    /**
+     * Filter the absolute path
+     *
+     * @param string $path
+     * @return string|null
+     */
+    public static function normalizeRelativePath(string $path): ?string
+    {
+        $normalized = self::relativePath($path);
+        // replace multiple directory separator to single
+        $normalized = preg_replace('~[/\\\\]+~', DIRECTORY_SEPARATOR, $normalized);
+        // trim last directory separator
+        return rtrim($normalized, DIRECTORY_SEPARATOR);
     }
 }

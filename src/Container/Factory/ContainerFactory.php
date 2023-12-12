@@ -23,7 +23,6 @@ use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Console\Application;
 use ArrayAccess\TrayDigita\Container\Container;
 use ArrayAccess\TrayDigita\Container\ContainerWrapper;
-use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
 use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerFactoryInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
@@ -83,8 +82,14 @@ use Symfony\Component\Console\Application as SymfonyConsole;
 use function array_merge;
 use function is_string;
 
+/**
+ * Class ContainerFactory create the container
+ */
 class ContainerFactory implements ContainerFactoryInterface
 {
+    /**
+     * @var array list of default services
+     */
     final public const DEFAULT_SERVICES = [
         // factory
         RouteFactoryInterface::class => RouteFactory::class,
@@ -155,6 +160,9 @@ class ContainerFactory implements ContainerFactoryInterface
         AssetsJsCssQueue::class => AssetsJsCssQueue::class,
     ];
 
+    /**
+     * @var array|string[] list of default service aliases
+     */
     public const DEFAULT_SERVICE_ALIASES = [
         // factory
         'routeFactory' => RouteFactoryInterface::class,
@@ -250,7 +258,14 @@ class ContainerFactory implements ContainerFactoryInterface
         'assetsQueue' => AssetsJsCssQueue::class
     ];
 
+    /**
+     * @var array list of default services
+     */
     protected array $defaultServices = self::DEFAULT_SERVICES;
+
+    /**
+     * @var array|string[] list of default service aliases
+     */
     protected array $defaultServiceAliases = self::DEFAULT_SERVICE_ALIASES;
 
     public function __construct()
@@ -258,10 +273,13 @@ class ContainerFactory implements ContainerFactoryInterface
     }
 
     /**
+     * Create the container
+     *
      * @param array{string: mixed} $definitions
      * @param array $aliases
      * @return ContainerInterface
-     * @throws ContainerFrozenException
+     * @throws \ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function createContainer(
         array $definitions = [],
@@ -286,8 +304,11 @@ class ContainerFactory implements ContainerFactoryInterface
     }
 
     /**
+     * Create default container
+     *
      * @return SystemContainerInterface
-     * @throws ContainerFrozenException
+     * @throws \ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function createDefault(): SystemContainerInterface
     {

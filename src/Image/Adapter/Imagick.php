@@ -8,22 +8,27 @@ use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use ArrayAccess\TrayDigita\Image\Exceptions\ImageIsNotSupported;
 use ArrayAccess\TrayDigita\Image\Exceptions\UnsupportedAdapter;
 use Imagick as ImagickAlias;
-use ImagickException;
 
 class Imagick extends AbstractImageAdapter
 {
     /**
-     * @var ?array
+     * @var ?array $last_set_image last set image
      */
     private ?array $last_set_image = null;
 
+    /**
+     * @inheritdoc
+     */
     public function getSupportedMimeTypeExtensions(): array
     {
         return array_keys(self::MIME_TYPES);
     }
 
     /**
-     * @throws ImagickException
+     * Get imagemagick resource
+     *
+     * @throws \ImagickException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     protected function getImageMagicK() : ?ImagickAlias
     {
@@ -39,7 +44,9 @@ class Imagick extends AbstractImageAdapter
     }
 
     /**
-     * @throws ImagickException
+     * @inheritdoc
+     * @throws \ImagickException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function resize(
         int $width,
@@ -95,6 +102,8 @@ class Imagick extends AbstractImageAdapter
     }
 
     /**
+     * @inheritdoc
+     *
      * @param string $target
      * @param int $quality
      * @param bool $overwrite
@@ -102,7 +111,8 @@ class Imagick extends AbstractImageAdapter
      * @param bool $strip
      *
      * @return ?array{"width":int,"height":int,"path":string,"type":string}
-     * @throws ImagickException
+     * @throws \ImagickException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function saveTo(
         string $target,
@@ -205,6 +215,9 @@ class Imagick extends AbstractImageAdapter
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function clearResource(): void
     {
         $this->resource?->destroy();

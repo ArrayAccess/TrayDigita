@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Benchmark;
 
-use ArrayAccess\TrayDigita\Benchmark\Interfaces\GroupInterface;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\ProfilerInterface;
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
@@ -13,10 +12,11 @@ use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
  * @uses Profiler::hasGroup()
  * @method static bool hasGroup(string $name)
  * @uses Profiler::group()
- * @method static GroupInterface group(string $id)
+ * @method static \ArrayAccess\TrayDigita\Benchmark\Interfaces\GroupInterface group(string $id)
  * @uses Profiler::getGroups()
- * @method static array<string, GroupInterface> getGroups()
+ * @method static array<string, \ArrayAccess\TrayDigita\Benchmark\Interfaces\GroupInterface> getGroups()
  * @mixin Profiler
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  */
 final class Benchmark
 {

@@ -15,7 +15,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\PostLoadEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\ObjectManager;
-use ReflectionNamedType;
 use ReflectionObject;
 use ReflectionUnionType;
 use function is_a;
@@ -31,6 +30,12 @@ class PostLoadEvent extends DatabaseEvent implements EventSubscriber
         return ContainerHelper::use(ManagerInterface::class, $this->getConnection()->getContainer());
     }
 
+    /**
+     * Event postLoad
+     *
+     * @param PostLoadEventArgs $eventArgs
+     * @return void
+     */
     public function postLoad(PostLoadEventArgs $eventArgs): void
     {
         $manager = $this->getManager();
@@ -70,7 +75,8 @@ class PostLoadEvent extends DatabaseEvent implements EventSubscriber
                         ? ($method->getParameters()[0] ?? null)
                         : null;
                     /**
-                     * @var ReflectionNamedType[] $type
+                     * @var \ReflectionNamedType[] $type
+                     * @noinspection PhpFullyQualifiedNameUsageInspection
                      */
                     $type = $refMethod
                         ? (

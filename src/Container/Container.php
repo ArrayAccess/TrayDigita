@@ -10,7 +10,6 @@ use ArrayAccess\TrayDigita\Container\Traits\ContainerDecorator;
 use ArrayAccess\TrayDigita\Exceptions\Logical\InvokeAbleException;
 use ArrayAccess\TrayDigita\Traits\Service\CallStackTraceTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
-use Psr\Container\ContainerExceptionInterface;
 use SensitiveParameter;
 use Throwable;
 use function array_key_exists;
@@ -303,7 +302,9 @@ class Container implements SystemContainerInterface
     }
 
     /**
-     * @throws ContainerExceptionInterface|Throwable
+     * @inheritdoc
+     * @throws \Psr\Container\ContainerExceptionInterface|Throwable
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function offsetGet(mixed $offset): mixed
     {

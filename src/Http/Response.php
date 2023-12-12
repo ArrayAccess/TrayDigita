@@ -6,7 +6,6 @@ namespace ArrayAccess\TrayDigita\Http;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InvalidArgumentException;
 use ArrayAccess\TrayDigita\Http\Traits\HttpStreamHelperTrait;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 use function is_int;
 
 class Response extends Message implements ResponseInterface
@@ -26,11 +25,12 @@ class Response extends Message implements ResponseInterface
     /**
      * @param int $status  Status code
      * @param array<string, string|string[]> $headers Response headers
-     * @param string|resource|StreamInterface|null $body Response body
+     * @param string|resource|\Psr\Http\Message\StreamInterface|null $body Response body
      * @param string $version Protocol version
      * @param ?string $reason  Reason phrase (when empty a default will be used based on the status code)
      *
      * @noinspection PhpMissingParamTypeInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function __construct(
         int $status = 200,

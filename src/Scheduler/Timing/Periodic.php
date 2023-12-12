@@ -9,7 +9,6 @@ use ArrayAccess\TrayDigita\Scheduler\Runner;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
-use Exception;
 use function array_unique;
 use function array_values;
 use function date;
@@ -29,6 +28,7 @@ final class Periodic implements SchedulerTimeInterface
     protected ?int $hour;
 
     protected ?int $minutes;
+
     private int $totalDaysCurrentMonth;
 
     private int $currentDayOfTheMonth;
@@ -122,7 +122,8 @@ final class Periodic implements SchedulerTimeInterface
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function getNextRunDate(?DateTimeZone $timezone = null) : DateTime
     {

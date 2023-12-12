@@ -200,7 +200,7 @@ class RandomToken
     public static function create(string $privateKey, int $expiredAfter = self::A_DAY_IN_SECOND): string
     {
         $secretKey = static::hashKey($privateKey);
-        $iv = RandomString::bytes(static::BYTES_LENGTH);
+        $iv = Random::bytes(static::BYTES_LENGTH);
         $secretHex = hex2bin(static::hashKey($secretKey.$iv));
         $currentTime = self::getUTCTime();
         $randomStart = (string) mt_rand(1000000000, 9999999999);

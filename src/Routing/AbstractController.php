@@ -27,7 +27,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use ReflectionException;
 use ReflectionMethod;
 use Stringable;
 use Throwable;
@@ -209,7 +208,8 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @throws ReflectionException
+     * @throws \ReflectionException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function dispatch(
         RouteInterface $route,

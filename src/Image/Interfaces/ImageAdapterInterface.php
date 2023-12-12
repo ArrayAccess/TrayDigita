@@ -6,39 +6,63 @@ namespace ArrayAccess\TrayDigita\Image\Interfaces;
 use ArrayAccess\TrayDigita\Image\Factory\ImageResizerFactory;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * Image adapter interface
+ */
 interface ImageAdapterInterface
 {
+    /**
+     * @var int MODE_AUTO auto mode
+     */
     public const MODE_AUTO = 1;
 
+    /**
+     * @var int MODE_CROP crop mode
+     */
     public const MODE_CROP = 2;
 
+    /**
+     * @var int MODE_ORIENTATION_LANDSCAPE landscape mode
+     */
     public const MODE_ORIENTATION_LANDSCAPE = 3;
 
+    /**
+     * @var int MODE_ORIENTATION_PORTRAIT portrait mode
+     */
     public const MODE_ORIENTATION_PORTRAIT = 4;
 
+    /**
+     * @var int MODE_ORIENTATION_SQUARE square mode
+     */
     public const MODE_ORIENTATION_SQUARE = 5;
 
+    /**
+     * @var array<int, string> list of image type
+     */
     public const IMAGE_TYPE_LIST = [
-        IMAGETYPE_GIF => 'gif',
-        IMAGETYPE_JPEG => 'jpg',
-        IMAGETYPE_JPEG2000 => 'jpe',
-        IMAGETYPE_PNG => 'png',
-        IMAGETYPE_SWF => 'swf',
-        IMAGETYPE_PSD => 'psd',
-        IMAGETYPE_BMP => 'bmp',
+        IMAGETYPE_GIF => 'gif', # gif
+        IMAGETYPE_JPEG => 'jpg', # jpg
+        IMAGETYPE_JPEG2000 => 'jpe', # jp2
+        IMAGETYPE_PNG => 'png', # png
+        IMAGETYPE_SWF => 'swf', # swf
+        IMAGETYPE_PSD => 'psd', # psd
+        IMAGETYPE_BMP => 'bmp', # bmp
         IMAGETYPE_TIFF_II => 'tiff', # intel byte order
         IMAGETYPE_TIFF_MM => 'tiff', # motorola byte order
-        IMAGETYPE_JP2 => 'jp2',
-        IMAGETYPE_JPX => 'jpx',
-        IMAGETYPE_JB2 => 'jb2',
-        IMAGETYPE_SWC => 'swc',
-        IMAGETYPE_IFF => 'iff',
-        IMAGETYPE_WBMP => 'wbmp',
-        IMAGETYPE_XBM => 'xbm',
-        IMAGETYPE_ICO => 'ico',
-        IMAGETYPE_WEBP => 'webp'
+        IMAGETYPE_JP2 => 'jp2', # jp2
+        IMAGETYPE_JPX => 'jpx', # jpx
+        IMAGETYPE_JB2 => 'jb2', # jb2
+        IMAGETYPE_SWC => 'swc', # swc
+        IMAGETYPE_IFF => 'iff', # iff
+        IMAGETYPE_WBMP => 'wbmp', # wbmp
+        IMAGETYPE_XBM => 'xbm', # xbm
+        IMAGETYPE_ICO => 'ico', # ico
+        IMAGETYPE_WEBP => 'webp' # webp
     ];
 
+    /**
+     * @var array<string, array<string>> list of mime types
+     */
     public const MIME_TYPES = [
         "image/bmp" => [
             "bmp"
@@ -197,53 +221,72 @@ interface ImageAdapterInterface
     ];
 
     /**
+     * Get current image width
+     *
      * @return int new width
      */
     public function getWidth() : int;
 
     /**
+     * Get current image height
+     *
      * @return int new height
      */
     public function getHeight() : int;
 
     /**
+     * Get supported mime type extensions
+     *
      * @return array<string>
      */
     public function getSupportedMimeTypeExtensions() : array;
 
     /**
-     * @param string $mimeType
+     * Check if mime type supported
      *
+     * @param string $mimeType
      * @return bool
      */
     public function isMimeTypeSupported(string $mimeType) : bool;
 
     /**
+     * Get original width
+     *
      * @return int returning null if file / resource invalid
      */
     public function getOriginalWidth() : int;
 
     /**
+     * Get original height
+     *
      * @return int returning null if file / resource invalid
      */
     public function getOriginalHeight() : int;
 
     /**
+     * Get the image ratio
+     *
      * @return array{"width":float,"height":float}
      */
     public function getRatio() : array;
 
     /**
-     * @return array
+     * Get original ratio
+     *
+     * @return array the original ratio
      */
     public function getOriginalRatio() : array;
 
     /**
+     * Get orientation
+     *
      * @return int MODE_ORIENTATION_LANDSCAPE|MODE_ORIENTATION_PORTRAIT|MODE_ORIENTATION_SQUARE
      */
     public function getOrientation() : int;
 
     /**
+     * Get original orientation
+     *
      * @return int MODE_ORIENTATION_LANDSCAPE|MODE_ORIENTATION_PORTRAIT|MODE_ORIENTATION_SQUARE
      */
     public function getOriginalOrientation() : int;
@@ -291,6 +334,8 @@ interface ImageAdapterInterface
     public function resize(int $width, int $height, int $mode = self::MODE_AUTO, bool $optimize = false) : static;
 
     /**
+     * Save image to target file
+     *
      * @param string $target
      * @param int $quality
      * @param false $overwrite
@@ -306,6 +351,8 @@ interface ImageAdapterInterface
     ) : ?array;
 
     /**
+     * Save image to stream
+     *
      * @param string $extension
      * @param int $quality
      *
@@ -317,6 +364,8 @@ interface ImageAdapterInterface
     ) : ?array;
 
     /**
+     * Create image from stream
+     *
      * @param StreamInterface $stream
      * @param ImageResizerFactory $resizer
      *
@@ -325,6 +374,8 @@ interface ImageAdapterInterface
     public static function fromStream(StreamInterface $stream, ImageResizerFactory $resizer) : static;
 
     /**
+     * Create image from file
+     *
      * @param string $imageFile
      * @param ImageResizerFactory $resizer
      *

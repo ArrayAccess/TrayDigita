@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita;
 
 use ArrayAccess\TrayDigita\Console\Application;
-use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Http\Exceptions\HttpException;
 use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
@@ -13,7 +12,6 @@ use Composer\Autoload\ClassLoader;
 use Exception;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Throwable;
 use function chdir;
 use function class_exists;
 use function define;
@@ -43,9 +41,12 @@ final class Bin
     }
 
     /**
+     * Run application
+     *
+     * @throws \Throwable
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
-     * @throws Throwable
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     final public static function run()
     {
@@ -157,7 +158,8 @@ final class Bin
         $kernel->boot();
 
         /**
-         * @var SystemContainerInterface $container
+         * @var \ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface $container
+         * @noinspection PhpFullyQualifiedNameUsageInspection
          */
         $container = $kernel->getContainer();
         $manager = $kernel->getManager();

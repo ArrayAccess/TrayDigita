@@ -37,7 +37,6 @@ use function array_pop;
 use function asort;
 use function defined;
 use function dirname;
-use function error_clear_last;
 use function implode;
 use function in_array;
 use function is_bool;

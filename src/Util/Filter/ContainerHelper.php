@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Util\Filter;
 
 use ArrayAccess\TrayDigita\Container\ContainerWrapper;
-use ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException;
-use ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
 use Psr\Container\ContainerInterface;
 use Throwable;
@@ -13,6 +11,9 @@ use function is_object;
 
 /**
  * @template TObject of Object
+ * @template ContainerFrozenException of \ArrayAccess\TrayDigita\Container\Exceptions\ContainerFrozenException
+ * @template ContainerNotFoundException of \ArrayAccess\TrayDigita\Container\Exceptions\ContainerNotFoundException
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  */
 class ContainerHelper
 {

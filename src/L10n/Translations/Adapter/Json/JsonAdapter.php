@@ -21,23 +21,33 @@ use function sprintf;
 class JsonAdapter extends AbstractAdapter
 {
     /**
-     * @var array<string,array<string, bool>>
+     * @var array<string,array<string, bool>> The registered directories
      */
     private array $registeredDirectory = [];
 
     /**
-     * @var array<string, string<bool>>
+     * @var array<string, string<bool>> The strict mode
      */
     private array $strict = [];
 
+    /**
+     * The translations entries
+     *
+     * @var array<string,array<string, Entries>>
+     */
     private array $translations = [];
 
+    /**
+     * @inheritdoc
+     */
     public function getName(): string
     {
         return 'Json';
     }
 
     /**
+     * Get translation language
+     *
      * @param string $language
      * @param string $domain
      *
@@ -51,6 +61,13 @@ class JsonAdapter extends AbstractAdapter
         return !$language ? null : $this->scanLanguage($domain, $language);
     }
 
+    /**
+     * Scan language from domain and language
+     *
+     * @param string $domain
+     * @param string $language
+     * @return ?Entries The entries or null
+     */
     private function scanLanguage(string $domain, string $language) : ?Entries
     {
         $entries     = $this->translations[$domain][$language]??null;
@@ -101,12 +118,27 @@ class JsonAdapter extends AbstractAdapter
         return $entries?:null;
     }
 
+    /**
+     * Create json translation from file
+     *
+     * @param string $file The file
+     * @return JsonTranslationStructure
+     */
     public function createJsonTranslationFromFile(
         string $file
     ): JsonTranslationStructure {
         return JsonTranslationStructure::loadFromFile($file);
     }
 
+    /**
+     * Add translation from file
+     *
+     * @param string $file The file
+     * @param string|null $fallbackLanguage
+     * @param string|null $forceLanguage
+     * @param string|null $forceDomain
+     * @return Entries
+     */
     public function addFromFile(
         string $file,
         ?string $fallbackLanguage = null,
@@ -121,6 +153,15 @@ class JsonAdapter extends AbstractAdapter
         );
     }
 
+    /**
+     * Add translation from json translation
+     *
+     * @param JsonTranslationStructure $translation
+     * @param string|null $fallbackLanguage
+     * @param string|null $forceLanguage
+     * @param string|null $forceDomain
+     * @return Entries
+     */
     public function addFromJsonTranslation(
         JsonTranslationStructure $translation,
         ?string $fallbackLanguage = null,
@@ -157,6 +198,9 @@ class JsonAdapter extends AbstractAdapter
         return $translations;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function find(
         string $language,
         string $original,
@@ -168,6 +212,9 @@ class JsonAdapter extends AbstractAdapter
             ->entry(self::generateId($context, $original));
     }
 
+    /**
+     * @inheritdoc
+     */
     public function all(string $language, string $domain = TranslatorInterface::DEFAULT_DOMAIN): Entries
     {
         return $this->getTranslationLanguage($language, $domain)?:new Entries();

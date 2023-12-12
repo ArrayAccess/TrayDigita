@@ -1,11 +1,9 @@
 <?php
-/** @noinspection PhpDeprecationInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Event;
 
 use ArrayAccess\TrayDigita\Benchmark\Interfaces\ProfilerInterface;
-use ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface;
 use ArrayAccess\TrayDigita\Benchmark\Traits\ProfilingTrait;
 use ArrayAccess\TrayDigita\Event\Interfaces\EventDispatchListenerInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
@@ -21,7 +19,8 @@ class BenchmarkEventDispatchListener implements EventDispatchListenerInterface
     use ProfilingTrait;
 
     /**
-     * @var array<RecordInterface[]>
+     * @var array<\ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface[]>
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     private array $benchmarkRecordLists = [];
 
@@ -44,6 +43,7 @@ class BenchmarkEventDispatchListener implements EventDispatchListenerInterface
         ...$arguments
     ): void {
         if ($manager->insideOf($eventName)) {
+            /** @noinspection PhpDeprecationInspection */
             $this->benchmarkRecordLists[$eventName][$id] ??= $this->benchmarkStart(
                 name: $eventName,
                 group: self::GROUP_NAME,

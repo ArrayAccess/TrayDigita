@@ -1,10 +1,10 @@
 <?php
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Benchmark\Injector\Injection;
 
 use ArrayAccess\TrayDigita\Benchmark\Injector\ManagerProfiler;
-use ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use SensitiveParameter;
 use function array_merge;
@@ -19,23 +19,38 @@ use function trim;
 abstract class AbstractBasedCoreInjector extends AbstractManagerProfilingListener
 {
     /**
-     * @var array<string, RecordInterface>
+     * @var array<string, \ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface>
      */
     protected array $recordsBenchmarks = [];
 
     /**
-     * @var array<string, array<string, RecordInterface>>
+     * @var array<string, array<string, \ArrayAccess\TrayDigita\Benchmark\Interfaces\RecordInterface>>
      */
     protected array $singleBenchmarks = [];
 
+    /**
+     * @var array <string, array<string, int>> list of listened benchmark
+     */
     protected static array $listenedBenchmark = [];
 
+    /**
+     * @var array<string, float> list of start benchmark
+     */
     private array $startBenchmarks = [];
 
+    /**
+     * @var string|null core directory
+     */
     private ?string $coreDirectory = null;
 
     protected bool $coreOnly = true;
 
+    /**
+     * Check if allowed group
+     *
+     * @param string $group group name
+     * @return bool true if allowed
+     */
     abstract protected function isAllowedGroup(string $group) : bool;
 
     protected function isAllowedName(string $group, string $name) : bool

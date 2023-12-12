@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Traits\Database;
 
 use ArrayAccess\TrayDigita\Database\Connection;
-use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerInterface;
@@ -15,7 +14,7 @@ trait ConnectionTrait
 
     /**
      * @return Connection
-     * @uses Decorator::resolveInternal()
+     * @uses \ArrayAccess\TrayDigita\Kernel\Decorator::resolveInternal()
      */
     public function getConnection() : Connection
     {

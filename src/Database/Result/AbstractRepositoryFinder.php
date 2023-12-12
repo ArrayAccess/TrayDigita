@@ -13,8 +13,6 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\Common\Collections\Expr\CompositeExpression;
 use Doctrine\Common\Collections\Selectable;
-use Doctrine\DBAL\Exception;
-use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectRepository;
 use function is_string;
@@ -55,8 +53,9 @@ abstract class AbstractRepositoryFinder
      * @param array<string, string<Criteria::ASC|Criteria::DESC>> $orderBy
      * @param CompositeExpression|Comparison ...$expressions
      * @return LazyResultCriteria
-     * @throws Exception
-     * @throws SchemaException
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function search(
         string $searchQuery,

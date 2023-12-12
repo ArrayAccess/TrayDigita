@@ -8,9 +8,7 @@ use ArrayAccess\TrayDigita\Http\RequestResponseExceptions\RequestSpecializedCode
 use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
-use ArrayAccess\TrayDigita\Kernel\Kernel;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use RuntimeException;
@@ -50,9 +48,10 @@ final class Web
     }
 
     /**
-     * @return ResponseInterface|false
+     * @return \Psr\Http\Message\ResponseInterface|false
      * @noinspection PhpMissingReturnTypeInspection
      * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     final public static function serve()
     {
@@ -155,7 +154,8 @@ final class Web
             }
 
             /**
-             * @var Kernel $kernel
+             * @var \ArrayAccess\TrayDigita\Kernel\Kernel $kernel
+             * @noinspection PhpFullyQualifiedNameUsageInspection
              */
             $kernel = Decorator::kernel();
             $kernel->init();

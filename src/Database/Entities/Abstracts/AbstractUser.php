@@ -14,7 +14,7 @@ use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InvalidUsernameException;
 use ArrayAccess\TrayDigita\Traits\Container\ContainerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\StringFilter;
-use ArrayAccess\TrayDigita\Util\Generator\RandomString;
+use ArrayAccess\TrayDigita\Util\Generator\Random;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -298,7 +298,7 @@ abstract class AbstractUser extends AbstractEntity implements
         $this->role = null;
         $this->attachment_id = null;
         $this->identity_number = null;
-        $this->security_key = RandomString::char(128);
+        $this->security_key = Random::char(128);
     }
 
     public static function generateAuthCode(

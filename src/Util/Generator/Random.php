@@ -14,9 +14,10 @@ use function mt_rand;
 use function openssl_random_pseudo_bytes;
 use function rand;
 use function random_bytes;
+use function random_int;
 use function strlen;
 
-class RandomString implements Stringable
+class Random implements Stringable
 {
     public const HEX = 'abcdef0123456789';
 
@@ -87,11 +88,34 @@ class RandomString implements Stringable
         }
     }
 
-    public static function randomHex(int $length) : string
+    public static function hex(int $length) : string
     {
         return self::char($length, self::HEX);
     }
 
+    /**
+     * Generate a random int
+     *
+     * @param int $min
+     * @param int $max
+     * @return int
+     */
+    public static function int(int $min, int $max): int
+    {
+        try {
+            if (self::$randomizer || class_exists(Randomizer::class)) {
+                self::$randomizer ??= new Randomizer();
+                return self::$randomizer->getInt($min, $max);
+            }
+            return random_int($min, $max);
+        } catch (Throwable) {
+            return mt_rand($min, $max);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function __toString() : string
     {
         return self::char();

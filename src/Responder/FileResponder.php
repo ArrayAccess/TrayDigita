@@ -10,7 +10,7 @@ use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Responder\Interfaces\FileResponderInterface;
 use ArrayAccess\TrayDigita\Uploader\Exceptions\SourceFileFailException;
 use ArrayAccess\TrayDigita\Util\Filter\MimeType;
-use ArrayAccess\TrayDigita\Util\Generator\RandomString;
+use ArrayAccess\TrayDigita\Util\Generator\Random;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -188,7 +188,7 @@ class FileResponder implements FileResponderInterface
 
     public function getBoundary(): string
     {
-        return $this->boundary ??= md5(RandomString::bytes(16));
+        return $this->boundary ??= md5(Random::bytes(16));
     }
 
     /**

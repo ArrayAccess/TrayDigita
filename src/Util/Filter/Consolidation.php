@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpComposerExtensionStubsInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Util\Filter;
@@ -11,23 +12,26 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionFunction;
 use ReflectionObject;
 use Stringable;
-use Throwable;
 use function array_key_exists;
 use function array_values;
+use function bcadd;
+use function bccomp;
+use function bcmul;
 use function class_exists;
-use function doubleval;
+use function dirname;
 use function explode;
 use function file_exists;
+use function function_exists;
 use function get_class;
 use function get_object_vars;
 use function gettype;
 use function implode;
 use function in_array;
 use function ini_get;
+use function intdiv;
 use function intval;
 use function is_array;
 use function is_callable;
@@ -56,6 +60,8 @@ use function spl_object_hash;
 use function sprintf;
 use function str_contains;
 use function str_ends_with;
+use function str_pad;
+use function str_repeat;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
@@ -66,7 +72,10 @@ use function substr;
 use function trim;
 use function urlencode;
 use const DIRECTORY_SEPARATOR;
+use const PHP_INT_MAX;
+use const PHP_INT_SIZE;
 use const PHP_SAPI;
+use const STR_PAD_LEFT;
 
 class Consolidation
 {
@@ -428,49 +437,81 @@ class Consolidation
         }
     }
 
-    public static function namespace(string|object $fullClassName) : string|false
-    {
-        if (is_object($fullClassName)) {
-            return (new ReflectionObject($fullClassName))->getNamespaceName();
-        }
-        if (!self::isValidClassName($fullClassName)) {
-            return false;
-        }
-        $className = ltrim($fullClassName, '\\');
-        return preg_replace('~^(.+)?\\\[^\\\]+$~', '$1', $className);
-    }
+    /**
+     * @var array<string, string>
+     */
+    private static array $cachedClasses = [];
 
-    public static function isValidClassName(string $className) : bool
+    /**
+     * Filter the class name
+     *
+     * @param class-string|object $className
+     * @return ?string string if valid class name
+     */
+    public static function className(string|object $className): ?string
     {
-        return (bool) preg_match(
-            '~^\\\?[A-Z-a-z_\x80-\xff]+[A-Z-a-z_0-9\x80-\xff]*(?:\\\[A-Z-a-z_\x80-\xff]+[A-Z-a-z_0-9\x80-\xff]*)*$~',
-            $className
+        if (is_object($className)) {
+            return $className::class;
+        }
+        preg_match(
+            '~^\\\?([A-Z-a-z_\x80-\xff]+[A-Z-a-z_0-9\x80-\xff]*(?:\\\[A-Z-a-z_\x80-\xff]+[A-Z-a-z_0-9\x80-\xff]*)*)$~',
+            $className,
+            $match
         );
+        if (empty($match)) {
+            return null;
+        }
+        $lowerClassName = strtolower($match[1]);
+        if (isset(self::$cachedClasses[$lowerClassName])) {
+            return self::$cachedClasses[$lowerClassName];
+        }
+        if (class_exists($match[1])) {
+            return self::$cachedClasses[$lowerClassName] = (new ReflectionClass($match[1]))->getName();
+        }
+
+        return $match[1];
     }
 
     /**
+     * Get class short name
+     *
      * @param string|object $fullClassName
-     * @param bool $real
-     * @return string
+     * @return ?string string if valid class name
      */
     public static function classShortName(
-        string|object $fullClassName,
-        bool $real = false
-    ): string {
-        if (is_object($fullClassName)) {
-            if ($real) {
-                return (new ReflectionObject($fullClassName))->getShortName();
-            }
-            $fullClassName = $fullClassName::class;
-        } elseif ($real && class_exists($fullClassName)) {
-            return (new ReflectionClass($fullClassName))->getShortName();
+        string|object $fullClassName
+    ): ?string {
+        $fullClassName = self::className($fullClassName);
+        if (!$fullClassName) {
+            return '';
         }
-
         return str_contains($fullClassName, '\\')
             ? substr(
                 strrchr($fullClassName, '\\'),
                 1
             ) : $fullClassName;
+    }
+
+    /**
+     * Filter the namespace
+     *
+     * @param string|object $fullClassName Full Class Name
+     * @return ?string string if valid namespace
+     */
+    public static function namespace(string|object $fullClassName): ?string
+    {
+        $className = self::className($fullClassName);
+        if (!$className) {
+            return null;
+        }
+        $className = str_replace('\\', '/', $className);
+        return str_replace('/', '\\', dirname($className));
+    }
+
+
+    public static function isValidClassName(string $className) : bool
+    {
+        return self::className($className) !== null;
     }
 
     public static function isValidFunctionName(string $name) : bool
@@ -502,6 +543,53 @@ class Consolidation
     public static function isUnix() : bool
     {
         return DIRECTORY_SEPARATOR === '/';
+    }
+
+    /**
+     * Check if data is Hex
+     *
+     * @param string $str
+     * @return bool
+     */
+    public static function isHex(string $str): bool
+    {
+        return !preg_match('~[^a-fA-F0-9]+~', $str);
+    }
+
+    /**
+     * Check if data is (or contains) Binary
+     *
+     * @param string $str
+     * @return bool
+     */
+    public static function isBinary(string $str): bool
+    {
+        return preg_match('~[^\x20-\x7E]~', $str) > 0;
+    }
+
+    /**
+     * Check if data is Base 64
+     *
+     * @param string $str
+     * @return bool
+     */
+    public static function isBase64(string $str): bool
+    {
+        return preg_match(
+            '~^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$~',
+            $str
+        ) > 0;
+    }
+
+    /**
+     * check if data is https? url
+     *
+     * @param string $str
+     * @return bool
+     */
+    public static function isHttpUrl(string $str): bool
+    {
+        return preg_match('~^https?://[^.]+\.(.+)$~i', $str) > 0;
     }
 
     /**
@@ -592,7 +680,8 @@ class Consolidation
      * @param object $object
      *
      * @return Closure
-     * @throws RuntimeException|ReflectionException
+     * @throws RuntimeException|\ReflectionException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public static function objectBinding(
         Closure $closure,
@@ -621,7 +710,8 @@ class Consolidation
      * @param ...$args
      *
      * @return mixed
-     * @throws RuntimeException|ReflectionException
+     * @throws RuntimeException|\ReflectionException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public static function callObjectBinding(Closure $closure, object $object, ...$args): mixed
     {
@@ -642,32 +732,36 @@ class Consolidation
      *
      * Technically the correct unit names for powers of 1024 are KiB, MiB etc.
      *
-     * @param int|float $bytes         Number of bytes. Note max integer size for integers.
-     * @param int $decimals      Optional. Precision of number of decimal places. Default 0.
-     * @param string     $decimalPoint Optional decimal point
+     * @param int|float|numeric-string $bytes Number of bytes. Note max integer size for integers.
+     * @param int $decimals Optional. Precision of number of decimal places. Default 0.
+     * @param string $decimalPoint Optional decimal point
      * @param string $thousandSeparator Optional a thousand separator
      * @param bool $removeZero if decimal contain zero, remove it
      *
      * @return string size unit
      */
     public static function sizeFormat(
-        int|float $bytes,
+        int|float|string $bytes,
         int $decimals = 0,
         string $decimalPoint = '.',
         string $thousandSeparator = ',',
         bool $removeZero = true
     ): string {
+        // if not numeric return 0 B
+        if (!is_numeric($bytes)) {
+            return '0 B';
+        }
         $quanta = [
             // ========================= Origin ====
-            // 'YB' => 1208925819614629174706176,  // pow( 1024, 8)
-            // 'ZB' => 1180591620717411303424,  // pow( 1024, 7) << bigger than PHP_INT_MAX is 9223372036854775807
-            'EB' => 1152921504606846976,  // pow( 1024, 6)
+            'YB' => '1208925819614629174706176',  // pow( 1024, 8)
+            'ZB' => '1180591620717411303424',  // pow( 1024, 7) << bigger than PHP_INT_MAX is 9223372036854775807
+            'EB' => '1152921504606846976',  // pow( 1024, 6)
             'PB' => 1125899906842624,  // pow( 1024, 5)
             'TB' => 1099511627776,  // pow( 1024, 4)
             'GB' => 1073741824,     // pow( 1024, 3)
             'MB' => 1048576,        // pow( 1024, 2)
             'KB' => 1024,           // pow( 1024, 1)
-            'B'  => 1,              // 1
+            'B' => 1,              // 1
         ];
 
         /**
@@ -675,9 +769,10 @@ class Consolidation
          */
         $currentUnit = 'B';
         foreach ($quanta as $unit => $mag) {
-            if (doubleval($bytes) >= $mag) {
+            $real = self::compare((string) $mag, (string) $bytes);
+            if ($real === 1) {
                 $result = number_format(
-                    ($bytes / $mag),
+                    $bytes/$mag,
                     $decimals,
                     $decimalPoint,
                     $thousandSeparator
@@ -687,7 +782,7 @@ class Consolidation
             }
         }
 
-        $result = $result??number_format(
+        $result = $result ?? number_format(
             $bytes,
             $decimals,
             $decimalPoint,
@@ -703,9 +798,9 @@ class Consolidation
      * Convert number of unit just for Ki(not kilo) metric based on 1024 (binary unit)
      *
      * @param string $size number with unit name 10M or 10MB
-     * @return int
+     * @return int|numeric-string integer if less than PHP_INT_MAX, string if bigger than PHP_INT_MAX
      */
-    public static function returnBytes(string $size) : int
+    public static function returnBytes(string $size): int|string
     {
         $size = trim($size) ?: 0;
         if (!$size) {
@@ -718,19 +813,225 @@ class Consolidation
             strtolower($size),
             $match
         );
+        $size = (string) intval($size);
         // patch tolerant
-        return intval($size) * (match ($match[1]??null) {
-                'y', 'yb' => 1208925819614629174706176, // yottabyte
-                'z', 'zb' => 1180591620717411303424, // zettabyte << bigger than PHP_INT_MAX is 9223372036854775807
-                'e', 'eb' => 1152921504606846976, // exabyte
-                'p', 'pb' => 1125899906842624, // petabyte
-                't', 'tb' => 1099511627776, // terabyte
-                'g', 'gb' => 1073741824, // gigabyte
-                'm', 'mb' => 1048576, // megabyte
-                'k', 'kb' => 1024, // kilobyte
-                default => 1 // byte
+        $multiplication = (match ($match[1] ?? null) {
+            'y', 'yb' => '1208925819614629174706176', // yottabyte
+            'z', 'zb' => '1180591620717411303424', // zettabyte << bigger than PHP_INT_MAX is 9223372036854775807
+            'e', 'eb' => '1152921504606846976', // exabyte
+            'p', 'pb' => '1125899906842624', // petabyte
+            't', 'tb' => '1099511627776', // terabyte
+            'g', 'gb' => '1073741824', // gigabyte
+            'm', 'mb' => '1048576', // megabyte
+            'k', 'kb' => '1024', // kilobyte
+            default => '1' // byte
         });
+        // if size is bigger than PHP_INT_MAX, return string
+        $realSize = self::multiplyInt($size, $multiplication);
+        return $realSize <= PHP_INT_MAX ? intval($realSize) : $realSize;
     }
+
+    /**
+     * Multiply big numbers. (bcmath compat)
+     *
+     * @param numeric-string $a numeric string
+     * @return numeric-string
+     */
+    public static function multiplyInt(mixed $a, mixed $b) : string
+    {
+        static $bcExist = null;
+        $bcExist ??= function_exists('bcmul');
+        $a = DataNormalizer::number($a);
+        $b = DataNormalizer::number($b);
+        if ($bcExist) {
+            /** @noinspection PhpComposerExtensionStubsInspection */
+            return bcmul($a, $b);
+        }
+
+        $x = strlen($a);
+        $y = 2;
+        $maxDigits =  PHP_INT_SIZE === 4 ? 9 : 18;
+        $maxDigits = intdiv($maxDigits, 2);
+        $complement = 10 ** $maxDigits;
+
+        $result = '0';
+
+        for ($i = $x - $maxDigits;; $i -= $maxDigits) {
+            $blockALength = $maxDigits;
+
+            if ($i < 0) {
+                $blockALength += $i;
+                /** @psalm-suppress LoopInvalidation */
+                $i = 0;
+            }
+
+            $blockA = (int) substr($a, $i, $blockALength);
+
+            $line = '';
+            $carry = 0;
+
+            for ($j = $y - $maxDigits;; $j -= $maxDigits) {
+                $blockBLength = $maxDigits;
+
+                if ($j < 0) {
+                    $blockBLength += $j;
+                    /** @psalm-suppress LoopInvalidation */
+                    $j = 0;
+                }
+
+                $blockB = (int) substr($b, $j, $blockBLength);
+
+                $mul = $blockA * $blockB + $carry;
+                $value = $mul % $complement;
+                $carry = ($mul - $value) / $complement;
+
+                $value = (string) $value;
+                $value = str_pad($value, $maxDigits, '0', STR_PAD_LEFT);
+
+                $line = $value . $line;
+
+                if ($j === 0) {
+                    break;
+                }
+            }
+
+            if ($carry !== 0) {
+                $line = $carry . $line;
+            }
+
+            $line = ltrim($line, '0');
+
+            if ($line !== '') {
+                $line .= str_repeat('0', $x - $blockALength - $i);
+                $result = self::addInt($result, $line);
+            }
+
+            if ($i === 0) {
+                break;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Add big numbers.
+     *
+     * @param numeric-string $a
+     * @param numeric-string $b
+     * @return numeric-string $a + $b
+     */
+    public static function addInt(mixed $a, mixed $b) : string
+    {
+        static $bcExist = null;
+        $bcExist ??= function_exists('bcadd');
+
+        $b = (string) $b;
+        $a = DataNormalizer::number($a);
+        $b = DataNormalizer::number($b);
+        if ($bcExist) {
+            /** @noinspection PhpComposerExtensionStubsInspection */
+            return bcadd($a, $b);
+        }
+
+        $maxDigits =  PHP_INT_SIZE === 4 ? 9 : 18;
+        [$a, $b, $length] = self::padNumber($a, $b);
+
+        $carry = 0;
+        $result = '';
+
+        for ($i = $length - $maxDigits;; $i -= $maxDigits) {
+            $blockLength = $maxDigits;
+
+            if ($i < 0) {
+                $blockLength += $i;
+                /** @psalm-suppress LoopInvalidation */
+                $i = 0;
+            }
+
+            /** @var numeric $blockA */
+            $blockA = substr($a, $i, $blockLength);
+
+            /** @var numeric $blockB */
+            $blockB = substr($b, $i, $blockLength);
+
+            $sum = (string) ($blockA + $blockB + $carry);
+            $sumLength = strlen($sum);
+
+            if ($sumLength > $blockLength) {
+                $sum = substr($sum, 1);
+                $carry = 1;
+            } else {
+                if ($sumLength < $blockLength) {
+                    $sum = str_repeat('0', $blockLength - $sumLength) . $sum;
+                }
+                $carry = 0;
+            }
+
+            $result = $sum . $result;
+
+            if ($i === 0) {
+                break;
+            }
+        }
+
+        if ($carry === 1) {
+            $result = '1' . $result;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Compare two big numbers. (bcmath compat)
+     *
+     * @param mixed $a
+     * @param mixed $b
+     * @return int
+     */
+    public static function compare(mixed $a, mixed $b): int
+    {
+        static $bcExist = null;
+        $bcExist ??= function_exists('bccomp');
+        $a = DataNormalizer::number($a);
+        $b = DataNormalizer::number($b);
+        if ($bcExist) {
+            return bccomp($a, $b);
+        }
+        $compared = $a <=> $b;
+        if ($compared === 0) {
+            return 0;
+        }
+        return $compared > 0 ? 1 : -1;
+    }
+
+    /**
+     * Pads the left of one of the given numbers with zeros if necessary to make both numbers the same length.
+     *
+     * The numbers must only consist of digits, without leading minus sign.
+     *
+     * @return array{string, string, int}
+     */
+    private static function padNumber(string $a, string $b) : array
+    {
+        $x = strlen($a);
+        $y = strlen($b);
+
+        if ($x > $y) {
+            $b = str_repeat('0', $x - $y) . $b;
+
+            return [$a, $b, $x];
+        }
+
+        if ($x < $y) {
+            $a = str_repeat('0', $y - $x) . $a;
+
+            return [$a, $b, $y];
+        }
+
+        return [$a, $b, $x];
+    }
+
 
     /**
      * @return int
@@ -750,6 +1051,7 @@ class Consolidation
 
         return min($data);
     }
+
     public static function debugInfo(
         object $object,
         array $keyRedacted = [],
@@ -762,23 +1064,27 @@ class Consolidation
         $reflectionObject = new ReflectionObject($object);
         $info = [];
         foreach ($reflectionObject->getProperties() as $property) {
-            if ($property->isPrivate()) {
+            $isPrivate = $property->isPrivate();
+            if ($isPrivate) {
                 /** @noinspection PhpExpressionResultUnusedInspection */
                 $property->setAccessible(true);
             }
             // no display if not initialized
             if ($property->isStatic()
-                || ($value = $property->getValue($object)) === null
-                && !$property->isInitialized($object)
+                || !$property->isInitialized($object)
             ) {
                 continue;
             }
+
+            $value = $isPrivate ? $property->getValue($object) : $object->{$property->getName()};
             $key = $property->getName();
             $keyItem = $key;
             if (!$property->isPublic()) {
-                $className = $property->getDeclaringClass()->getName();
-                $keyItem = "$keyItem:$className";
-                $keyItem = $property->isPrivate() ? "$keyItem:private" : (
+                if ($isPrivate) {
+                    $className = $property->getDeclaringClass()->getName();
+                    $keyItem = "$keyItem:$className";
+                }
+                $keyItem = $isPrivate ? "$keyItem:private" : (
                     $property->isProtected()
                         ? "$keyItem:protected"
                         : $key

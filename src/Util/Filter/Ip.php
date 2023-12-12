@@ -7,24 +7,17 @@ use function bin2hex;
 use function bindec;
 use function dechex;
 use function explode;
-use function hex2bin;
 use function hexdec;
-use function implode;
 use function inet_ntop;
 use function inet_pton;
 use function ip2long;
 use function is_numeric;
 use function is_string;
 use function long2ip;
-use function ltrim;
 use function min;
-use function pack;
 use function pow;
 use function preg_match;
-use function reset;
 use function str_contains;
-use function str_replace;
-use function str_split;
 use function strlen;
 use function strrpos;
 use function substr;
@@ -32,12 +25,24 @@ use function substr_count;
 use function substr_replace;
 use function trim;
 
+/**
+ * Filter IP
+ */
 class Ip
 {
+    /**
+     * IP version 4
+     */
     public const IP4 = 4;
 
+    /**
+     * IP version 6
+     */
     public const IP6 = 6;
 
+    /**
+     * Regex for matching local IPv4 addresses
+     */
     public const IPV4_LOCAL_REGEX = '~^
         (?:
             (?:0?[01]?0|127|255)\.(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])
@@ -47,6 +52,12 @@ class Ip
         (?:\.(?:[01]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])){2}
     $~x';
 
+    /**
+     * Filters an IPv4 address
+     *
+     * @param string $ip
+     * @return ?string Returns the filtered IP address, or null if the IP is invalid
+     */
     public static function filterIpv4(string $ip): ?string
     {
         if (preg_match('/^([01]{8}\.){3}[01]{8}\z/i', $ip)) {
@@ -78,13 +89,19 @@ class Ip
      * Validates an IPv4 address
      *
      * @param string $ip
-     * @return bool
+     * @return bool True when $ip is a valid ipv4 address
      */
     public static function isValidIpv4(string $ip): bool
     {
         return self::filterIpv4($ip) !== false;
     }
 
+    /**
+     * Validates an IPv4 address
+     *
+     * @param string $ip
+     * @return bool True when $ip is a valid local ipv4 address
+     */
     public static function isLocalIP4(string $ip): bool
     {
         $ip = self::filterIpv4($ip);
@@ -232,8 +249,9 @@ class Ip
     }
 
     /**
-     * @param string|mixed $ip
+     * Get IP Version
      *
+     * @param string|mixed $ip
      * @return ?int
      */
     public static function version(mixed $ip) : ?int

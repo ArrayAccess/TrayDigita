@@ -12,7 +12,6 @@ use Doctrine\ORM\Configuration;
 use Doctrine\ORM\Decorator\EntityManagerDecorator;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
 use Doctrine\Persistence\ObjectRepository;
 use function get_object_vars;
@@ -89,13 +88,17 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getManager(): ?ManagerInterface
     {
         return $this->databaseConnection->getManager();
     }
 
     /**
-     * @throws ORMException
+     * @throws \Doctrine\ORM\Exception\ORMException
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function getHydrator($hydrationMode): AbstractHydrator
     {
@@ -127,6 +130,10 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
         }
     }
 
+    /**
+     * @param $className
+     * @return ObjectRepository&Selectable
+     */
     public function getRepository($className) : ObjectRepository&Selectable
     {
         $entity = $this
@@ -142,6 +149,9 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
         );
     }
 
+    /**
+     * @inheritdoc
+     */
     public function find($className, $id, $lockMode = null, $lockVersion = null)
     {
         try {

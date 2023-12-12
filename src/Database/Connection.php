@@ -20,7 +20,6 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver;
-use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
 use Doctrine\ORM\Configuration as OrmConfiguration;
@@ -514,7 +513,7 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
      *                              or NULL if no specific lock mode should be used
      *                              during the search.
      * @param int|null $lockVersion The lock version.
-     * @psalm-param LockMode::*|null $lockMode
+     * @psalm-param \Doctrine\DBAL\LockMode::*|null $lockMode
      *
      * @return object|null The entity instance or NULL if the entity can not be found.
      * @psalm-return ?T
@@ -531,6 +530,8 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
     }
 
     /**
+     * Find all entities in the repository.
+     *
      * @template T of object
      * @param class-string<T> $entityClass
      * @return array<T>
@@ -542,6 +543,13 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             ->findAll();
     }
 
+    /**
+     * Magic method to call Doctrine\DBAL\Connection methods
+     *
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     */
     public function __call(string $name, array $arguments)
     {
         return $this->getConnection()->$name(...$arguments);

@@ -5,7 +5,7 @@ namespace ArrayAccess\TrayDigita\Auth\Generator;
 
 use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
-use ArrayAccess\TrayDigita\Util\Generator\RandomString;
+use ArrayAccess\TrayDigita\Util\Generator\Random;
 use SensitiveParameter;
 use WhichBrowser\Parser;
 use function dechex;
@@ -83,7 +83,7 @@ class HashIdentity
     public function generate(int $id): string
     {
         $bytes = 16;
-        $random = RandomString::bytes($bytes);
+        $random = Random::bytes($bytes);
         $randomKey = sha1($random);
         // get last 10 hex chars
         $randomHexNum = hexdec(substr($randomKey, -10));

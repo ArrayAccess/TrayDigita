@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Kernel;
 
 use ArrayAccess\TrayDigita\Container\Factory\ContainerFactory;
-use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Event\Manager;
@@ -40,6 +39,8 @@ use const SORT_ASC;
 
 /**
  * @mixin RouterInterface
+ * @template SystemContainerInterface of \ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  */
 class AbstractHttpKernel implements
     HttpKernelInterface,
@@ -50,14 +51,29 @@ class AbstractHttpKernel implements
         ManagerAllocatorTrait,
         CallStackTraceTrait;
 
+    /**
+     * @var MiddlewareDispatcherInterface|mixed|Object $middlewareDispatcher The middleware dispatcher
+     */
     private MiddlewareDispatcherInterface $middlewareDispatcher;
 
+    /**
+     * @var ContainerInterface $container The container
+     */
     private ContainerInterface $container;
 
+    /**
+     * @var RouterInterface $router The router
+     */
     private RouterInterface $router;
 
+    /**
+     * @var ?ResponseInterface $lastResponse The last response
+     */
     private ?ResponseInterface $lastResponse = null;
 
+    /**
+     * @var ?ServerRequestInterface $lastRequest The last request
+     */
     private ?ServerRequestInterface $lastRequest = null;
 
     /**
@@ -77,6 +93,13 @@ class AbstractHttpKernel implements
      */
     private array $deferredMiddlewares = [];
 
+    /**
+     * Http Kernel constructor.
+     *
+     * @param KernelInterface $kernel
+     * @param ContainerInterface|null $container
+     * @param ManagerInterface|null $manager
+     */
     public function __construct(
         public readonly KernelInterface $kernel,
         ContainerInterface $container = null,
@@ -116,47 +139,74 @@ class AbstractHttpKernel implements
         $this->middlewareDispatcher = ContainerHelper::service(MiddlewareDispatcherInterface::class, $container);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getKernel(): KernelInterface
     {
         return $this->kernel;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getStartMemory(): int
     {
         return $this->startMemory;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getStartTime(): float
     {
         return $this->startTime;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getContainer(): ContainerInterface
     {
         return $this->container;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getRouter(): RouterInterface
     {
         return $this->router;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getMiddlewareDispatcher(): MiddlewareDispatcherInterface
     {
         return $this->middlewareDispatcher;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getManager(): ManagerInterface
     {
         return $this->managerObject;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function addMiddleware(MiddlewareInterface $middleware): static
     {
         $this->getMiddlewareDispatcher()->addMiddleware($middleware);
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function addDeferredMiddleware(MiddlewareInterface $middleware): static
     {
         $priority = $middleware instanceof AbstractMiddleware
@@ -166,26 +216,45 @@ class AbstractHttpKernel implements
         return $this;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getDeferredMiddlewares() : array
     {
         return $this->deferredMiddlewares;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function clearDeferredMiddlewares(): void
     {
         $this->deferredMiddlewares = [];
     }
 
+    /**
+     * Get the last response
+     *
+     * @return ?ResponseInterface
+     */
     public function getLastResponse(): ?ResponseInterface
     {
         return $this->lastResponse;
     }
 
+    /**
+     * Get the last request
+     *
+     * @return ServerRequestInterface|null
+     */
     public function getLastRequest(): ?ServerRequestInterface
     {
         return $this->lastRequest;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function dispatchDeferredMiddleware(): void
     {
         if (empty($this->deferredMiddlewares)) {
@@ -229,6 +298,9 @@ class AbstractHttpKernel implements
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         $this->assertCallstack();
@@ -278,6 +350,9 @@ class AbstractHttpKernel implements
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function dispatchResponse(ResponseInterface $response): ResponseInterface
     {
         $this->assertCallstack();
@@ -391,11 +466,21 @@ class AbstractHttpKernel implements
         }
     }
 
+    /**
+     * Magic method to call the router
+     *
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     */
     public function __call(string $name, array $arguments)
     {
         return $this->getRouter()->$name(...$arguments);
     }
 
+    /**
+     * @return ?array The debug info
+     */
     public function __debugInfo(): ?array
     {
         return Consolidation::debugInfo(

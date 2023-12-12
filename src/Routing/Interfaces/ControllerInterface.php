@@ -5,7 +5,6 @@ namespace ArrayAccess\TrayDigita\Routing\Interfaces;
 
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
-use ArrayAccess\TrayDigita\Http\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -26,11 +25,12 @@ interface ControllerInterface extends ContainerIndicateInterface, ManagerIndicat
     ) : ResponseInterface;
 
     /**
-     * @param ServerRequest $request
+     * @param \ArrayAccess\TrayDigita\Http\ServerRequest $request
      * @param string $method
      * @param ...$arguments
      * @return mixed|ResponseInterface
      * @noinspection PhpMissingReturnTypeInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function beforeDispatch(
         ServerRequestInterface $request,
@@ -40,10 +40,11 @@ interface ControllerInterface extends ContainerIndicateInterface, ManagerIndicat
 
     /**
      * @param ResponseInterface $response
-     * @param ServerRequest $request
+     * @param \ArrayAccess\TrayDigita\Http\ServerRequest $request
      * @param string $method
      * @param ...$arguments
      * @return ResponseInterface
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function afterDispatch(
         ResponseInterface $response,

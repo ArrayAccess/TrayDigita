@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Routing\Interfaces;
 
-use ArrayAccess\TrayDigita\Routing\Router;
-
 interface RouteInterface
 {
     public const DEFAULT_PRIORITY = 10;
@@ -77,7 +75,7 @@ interface RouteInterface
 
     /**
      * Set matched hostname, maybe should regex support
-     * @see Router::REGEX_DELIMITER for support delimiter
+     * @see \ArrayAccess\TrayDigita\Routing\Router::REGEX_DELIMITER for support delimiter
      *
      * @param string|null $hostName
      * @return $this

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Console\Command;
 
-use ArrayAccess\TrayDigita\Console\Command\ApplicationChecker\AbstractChecker;
 use ArrayAccess\TrayDigita\Console\Command\ApplicationChecker\CacheChecker;
 use ArrayAccess\TrayDigita\Console\Command\ApplicationChecker\ConfigChecker;
 use ArrayAccess\TrayDigita\Console\Command\ApplicationChecker\ContainerChecker;
@@ -26,6 +25,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function is_object;
 use function sprintf;
 
+/**
+ * @template AC of \ArrayAccess\TrayDigita\Console\Command\ApplicationChecker\AbstractChecker
+ * @noinspection PhpFullyQualifiedNameUsageInspection
+ */
 class ApplicationCheck extends Command implements ContainerAllocatorInterface, ManagerAllocatorInterface
 {
     use ContainerAllocatorTrait,
@@ -36,7 +39,7 @@ class ApplicationCheck extends Command implements ContainerAllocatorInterface, M
     private ?EntityManager $entityManager = null;
 
     /**
-     * @var array<class-string<AbstractChecker>, AbstractChecker>
+     * @var array<class-string<AC>, AC>
      */
     protected array $checkers = [
         DependencyChecker::class => null,

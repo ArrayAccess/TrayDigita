@@ -8,7 +8,6 @@ use ArrayAccess\TrayDigita\Database\DatabaseEvent;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\BigIntType;
@@ -57,6 +56,10 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
         );
     }
 
+    /**
+     * @param GenerateSchemaTableEventArgs $eventArgs
+     * @return void
+     */
     public function postGenerateSchemaTable(GenerateSchemaTableEventArgs $eventArgs): void
     {
         $manager = $this->getManager();
@@ -170,6 +173,7 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
                     ->getEntityManager()
                     ->getClassMetadata($association['targetEntity'])
                     ->getTableName();
+                /** @noinspection PhpArrayUsedOnlyForWriteInspection */
                 $removedForeign = [];
                 foreach ($foreignKeys as $foreignName => $foreignKey) {
                     $name = is_string($foreignName) ? $foreignName : $foreignKey->getName();
@@ -230,8 +234,9 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
     /**
      * @param Column $column
      * @return string|null
-     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
      * @see \Doctrine\DBAL\Platforms\AbstractPlatform::getColumnDeclarationSQL()
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     protected function getColumnDeclarationSQLOnUpdate(Column $column): ?string
     {

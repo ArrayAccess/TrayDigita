@@ -246,42 +246,6 @@ final class StringFilter
     }
 
     /**
-     * Check if data is (or contains) Binary
-     *
-     * @param string $str
-     * @return bool
-     */
-    public static function isBinary(string $str): bool
-    {
-        return preg_match('~[^\x20-\x7E]~', $str) > 0;
-    }
-
-    /**
-     * Check if data is Base 64
-     *
-     * @param string $str
-     * @return bool
-     */
-    public static function isBase64(string $str): bool
-    {
-        return preg_match(
-            '~^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$~',
-            $str
-        ) > 0;
-    }
-
-    /**
-     * check if data is https? url
-     *
-     * @param string $str
-     * @return bool
-     */
-    public static function isHttpUrl(string $str): bool
-    {
-        return preg_match('~^https?://[^.]+\.(.+)$~i', $str) > 0;
-    }
-
-    /**
      * alternative on @uses \utf8_encode()
      * @param string $string
      * @return string
@@ -473,6 +437,7 @@ final class StringFilter
 
         return $email;
     }
+
     /**
      * @param string $data
      * @return array

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita;
 
-use ArrayAccess\TrayDigita\Util\Generator\RandomString;
+use ArrayAccess\TrayDigita\Util\Generator\Random;
 use DirectoryIterator;
 use Exception;
 use function chmod;
@@ -361,9 +361,9 @@ PHP
                     'random_nonce_key',
                 ],
                 [
-                    RandomString::randomHex(64),
-                    RandomString::randomHex(64),
-                    RandomString::randomHex(64),
+                    Random::hex(64),
+                    Random::hex(64),
+                    Random::hex(64),
                 ],
                 $configFile
             );

@@ -10,11 +10,8 @@ use ArrayAccess\TrayDigita\Image\Exceptions\ImageIsNotSupported;
 use ArrayAccess\TrayDigita\Image\Factory\ImageResizerFactory;
 use ArrayAccess\TrayDigita\Image\Interfaces\ImageAdapterInterface;
 use ArrayAccess\TrayDigita\Util\Generator\UUID;
-use GdImage;
-use Imagick as ImagickAlias;
 use InvalidArgumentException;
 use JetBrains\PhpStorm\ArrayShape;
-use JetBrains\PhpStorm\Pure;
 use Psr\Http\Message\StreamInterface;
 use function file_exists;
 use function filesize;
@@ -70,7 +67,8 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     protected int $height;
 
     /**
-     * @var resource|GdImage|ImagickAlias
+     * @var resource|\GdImage|\Imagick|null
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     protected mixed $resource = null;
 
@@ -410,7 +408,10 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
             : self::MODE_ORIENTATION_PORTRAIT;
     }
 
-    #[Pure] public function getOriginalOrientation(): int
+    /**
+     * @inheritdoc
+     */
+    public function getOriginalOrientation(): int
     {
         $originalHeight = $this->getOriginalHeight();
         $originalWidth = $this->getOriginalWidth();
@@ -423,26 +424,38 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
             : self::MODE_ORIENTATION_PORTRAIT;
     }
 
+    /**
+     * Check if the image is square
+     *
+     * @return bool
+     */
     public function isSquare(): bool
     {
         return $this->getOrientation() === self::MODE_ORIENTATION_SQUARE;
     }
 
+    /**
+     * Check if the image is landscape
+     *
+     * @return bool
+     */
     public function isLandscape() : bool
     {
         return $this->getOrientation() === self::MODE_ORIENTATION_LANDSCAPE;
     }
 
+    /**
+     * Check if the image is portrait
+     *
+     * @return bool true if portrait
+     */
     public function isPortrait() : bool
     {
         return $this->getOrientation() === self::MODE_ORIENTATION_PORTRAIT;
     }
 
     /**
-     * @param int $width
-     * @param int $height
-     *
-     * @return array{"width":int,"height":int}
+     * @inheritdoc
      */
     public function getAutoDimension(int $width, int $height): array
     {
@@ -467,11 +480,17 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function fromStream(StreamInterface $stream, ImageResizerFactory $resizer): static
     {
         return new static($stream);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function fromFile(string $imageFile, ImageResizerFactory $resizer): static
     {
         if (!is_file($imageFile)) {
@@ -483,6 +502,9 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
         return new static($stream);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function saveToStream(
         string $extension,
         int $quality = 100
@@ -494,8 +516,14 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
         return $saved;
     }
 
+    /**
+     * Clear the resource
+     */
     abstract protected function clearResource();
 
+    /**
+     * Magic method __destruct
+     */
     public function __destruct()
     {
         $this->clearResource();

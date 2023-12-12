@@ -8,8 +8,6 @@ use ArrayAccess\TrayDigita\Exceptions\Logical\OutOfRangeException;
 use ArrayAccess\TrayDigita\Exceptions\Runtime\UnsupportedRuntimeException;
 use ArrayAccess\TrayDigita\Http\Exceptions\FileNotFoundException;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
-use PhpParser\Node\Stmt;
-use PhpParser\NodeAbstract;
 use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use Serializable;
@@ -30,7 +28,8 @@ final class PhpClassParserSerial implements Serializable
     private static ?Parser $parser = null;
 
     /**
-     * @var string|array<Stmt|NodeAbstract>|null
+     * @var string|array<\PhpParser\Node\Stmt|\PhpParser\NodeAbstract>|null
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     private string|array|null $source;
 

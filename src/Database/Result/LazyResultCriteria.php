@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Database\Result;
 
-use ArrayAccess\TrayDigita\Database\Entities\Abstracts\AbstractEntity;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use Countable;
-use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
@@ -22,7 +20,6 @@ use Doctrine\ORM\Persisters\Entity\EntityPersister;
 use Doctrine\ORM\Persisters\Exception\CantUseInOperatorOnCompositeKeys;
 use Doctrine\ORM\Persisters\Exception\UnrecognizedField;
 use Doctrine\ORM\Repository\Exception\InvalidFindByCall;
-use Exception;
 use IteratorAggregate;
 use Traversable;
 use function implode;
@@ -33,12 +30,14 @@ use function str_contains;
 use function trim;
 
 /**
+ * @template AbstractEntity of \ArrayAccess\TrayDigita\Database\Entities\Abstracts\AbstractEntity
  * @template T of object|AbstractEntity
  * @psalm-template TKey of array-key
  * @template-covariant T
  * @template-extends Collection<TKey, T>
- * @mixin AbstractLazyCollection&Selectable
+ * @mixin \Doctrine\Common\Collections\AbstractLazyCollection&Selectable
  * @property-read int $total
+ * @noinspection PhpFullyQualifiedNameUsageInspection
  */
 class LazyResultCriteria implements IteratorAggregate, Countable
 {
@@ -290,7 +289,8 @@ class LazyResultCriteria implements IteratorAggregate, Countable
 
     /**
      * @return Traversable<TKey, T>
-     * @throws Exception
+     * @throws \Exception
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function getIterator(): Traversable
     {

@@ -9,9 +9,7 @@ use ArrayAccess\TrayDigita\Http\Factory\StreamFactory;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\UriInterface;
 
 class ServerRequest extends Request implements ServerRequestInterface
 {
@@ -46,12 +44,13 @@ class ServerRequest extends Request implements ServerRequestInterface
     private array $uploadedFiles = [];
 
     /**
-     * @param string                               $method       HTTP method
-     * @param string|UriInterface                  $uri          URI
-     * @param array<string, string|string[]>       $headers      Request headers
-     * @param string|resource|StreamInterface|null $body         Request body
-     * @param string                               $version      Protocol version
-     * @param array                                $serverParams Typically the $_SERVER super global
+     * @param string                                $method       HTTP method
+     * @param string|\Psr\Http\Message\UriInterface $uri          URI
+     * @param array<string, string|string[]>        $headers      Request headers
+     * @param string|resource|\Psr\Http\Message\StreamInterface|null $body Request body
+     * @param string                                $version      Protocol version
+     * @param array                                 $serverParams Typically the $_SERVER super global
+     * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     public function __construct(
         string $method,

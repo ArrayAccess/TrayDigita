@@ -1,15 +1,14 @@
 <?php
+/** @noinspection PhpFullyQualifiedNameUsageInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Logger\Handler;
 
 use ArrayAccess\TrayDigita\Database\Connection;
 use Doctrine\DBAL\Connection as DoctrineConnection;
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\DBAL\Schema\SchemaException;
 use Doctrine\DBAL\Types\Types;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Level;
@@ -60,7 +59,7 @@ class DatabaseHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     public function createTable(): void
     {
@@ -73,8 +72,8 @@ class DatabaseHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @throws SchemaException
-     * @throws Exception
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\Exception
      */
     private function addTableToSchema(Schema $schema): void
     {
@@ -132,8 +131,8 @@ class DatabaseHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @throws SchemaException
-     * @throws Exception
+     * @throws \Doctrine\DBAL\Schema\SchemaException
+     * @throws \Doctrine\DBAL\Exception
      */
     protected function configureSchema(): void
     {
@@ -226,8 +225,8 @@ class DatabaseHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @throws Exception
-     * @throws SchemaException
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \Doctrine\DBAL\Schema\SchemaException
      */
     protected function write(LogRecord $record): void
     {
