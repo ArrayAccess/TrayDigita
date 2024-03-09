@@ -382,6 +382,9 @@ abstract class BaseKernel implements
     /*! STATUS */
     private bool $providerRegistered = false;
 
+    /**
+     * @var ?string The root directory
+     */
     private ?string $rootDirectory = null;
 
     /**
@@ -390,25 +393,24 @@ abstract class BaseKernel implements
     private string $baseConfigFile = self::BASE_CONFIG_FILE_NAME;
 
     /**
-     * @var ?Throwable
+     * @inheritdoc
      */
-    private ?Throwable $configErrorException = null;
-
     public function isHasInit(): bool
     {
         return $this->hasInit;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function isReady(): bool
     {
         return $this->ready;
     }
 
-    public function getConfigErrorException(): ?Throwable
-    {
-        return $this->configErrorException;
-    }
-
+    /**
+     * @inheritdoc
+     */
     final public function init() : static
     {
         if ($this->hasInit) {
@@ -527,31 +529,26 @@ abstract class BaseKernel implements
             $this->configError = self::CONFIG_NOT_FILE;
         } else {
             $configurations = null;
-            try {
-                // json, yaml, yml, php, env
-                switch (strtolower(pathinfo($this->configFile, PATHINFO_EXTENSION))) {
-                    case 'env':
-                        $configurations = DataNormalizer::notationToArray(
-                            DotEnv::fromFile($this->configFile)
-                        );
-                        break;
-                    case 'json':
-                        $configurations = json_decode((string)file_get_contents($this->configFile), true);
-                        break;
-                    case 'yaml':
-                    case 'yml':
-                        $configurations = Yaml::parseFile($this->configFile);
-                        break;
-                    case 'php':
-                        $configurations = (function ($configFile) {
-                            $result = require $configFile;
-                            return is_iterable($result) ? $result : null;
-                        })->bindTo(null)($configFile);
-                        break;
-                }
-            } catch (Throwable $e) {
-                $this->configErrorException = $e;
-                unset($e);
+            // json, yaml, yml, php, env
+            switch (strtolower(pathinfo($this->configFile, PATHINFO_EXTENSION))) {
+                case 'env':
+                    $configurations = DataNormalizer::notationToArray(
+                        DotEnv::fromFile($this->configFile)
+                    );
+                    break;
+                case 'json':
+                    $configurations = json_decode((string)file_get_contents($this->configFile), true);
+                    break;
+                case 'yaml':
+                case 'yml':
+                    $configurations = Yaml::parseFile($this->configFile);
+                    break;
+                case 'php':
+                    $configurations = (function ($configFile) {
+                        $result = require $configFile;
+                        return is_iterable($result) ? $result : null;
+                    })->bindTo(null)($configFile);
+                    break;
             }
 
             if (!is_iterable($configurations)) {

@@ -167,6 +167,9 @@ class UUID implements Stringable
      * 4. clock seq hi and reserved
      * 5. clock seq low
      * 6. node
+     * 7. version
+     * 8. variant
+     * 9. variant name
      *
      * @param string $uuid
      * @return ?array{
@@ -266,7 +269,9 @@ class UUID implements Stringable
         // using bcmul() && bcadd() binary calculator function & prevent loss of precision
         for ($i = 0; $i < $length; $i++) {
             // get the char from hex at position $i
+            // -> bcmul the decimal by 16
             $dec = Consolidation::multiplyInt($dec, 16);
+            // -> bcadd the decimal by the integer value of the hex char
             $dec = Consolidation::addInt($dec, hexdec($hex[$i]));
         }
 
@@ -433,7 +438,7 @@ class UUID implements Stringable
         if ($type === self::UUID_TYPE_MD5 || $type === self::UUID_TYPE_SHA1) {
             if (!$hash) {
                 $hash = match ($type) {
-                    self::UUID_TYPE_MD5 => md5(Random::bytes(16)),
+                    self::UUID_TYPE_MD5 => md5(Random::bytes(16)), // random_bytes(16) is 128 bits
                     default => sha1(Random::bytes(16)),
                 };
             } elseif ($type === self::UUID_TYPE_SHA1) {
@@ -506,7 +511,7 @@ class UUID implements Stringable
                 // time high and version bits (12)
                 $timeHi = ($timestamp >> 48) & 0x0fff;
             } else {
-                $timeLow = Random::int(0, 0xffffffff);
+                $timeLow = Random::int(0, 0xffffffff); // random_int
                 $timeMid = Random::int(0, 0xffff);
                 $timeHi  = Random::int(0, 0x0fff);
             }
@@ -603,6 +608,7 @@ class UUID implements Stringable
 
     /**
      * @inheritdoc
+     * Default stringable return uuid v4
      */
     public function __toString(): string
     {
