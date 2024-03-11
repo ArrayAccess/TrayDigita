@@ -346,10 +346,13 @@ HTML;
         $countLine = 1;
         $traceCount = 0;
         $errorFile = Consolidation::protectMessage(
+            $exception->getFile(),
+            $this->rootDirectory
+        );
+        $message = Consolidation::protectMessage(
             $exception->getMessage(),
             $this->rootDirectory
         );
-
         for (; $countLine <= 5; $countLine++) {
             if ($countLine === 5) {
                 $errorLineEditor .= "<span>$countLine</span>";
@@ -371,7 +374,7 @@ HTML;
         );
         $mainErrorInfo .= sprintf(
             "<div class='current'><strong>Message</strong>: <code>%s</code></div>\n",
-            htmlentities($exception->getMessage())
+            htmlentities($message)
         );
         $mainErrorInfo .= '<div><br></div>';
 
@@ -379,7 +382,7 @@ HTML;
         $tabNavigationTop = '<div class="trace-tab-nav active" data-id="0">';
         $tabNavigationTop .= '<span class="trace-class">Error Details</span>';
         $tabNavigationTop .= sprintf('<span class="trace-class">%s</span>', get_class($exception));
-        $tabNavigationTop .= sprintf('<span class="trace-file">%s</span>', htmlentities($exception->getMessage()));
+        $tabNavigationTop .= sprintf('<span class="trace-file">%s</span>', htmlentities($message));
         $tabNavigationTop .= '</div>';
 
         $exists = false;
@@ -412,7 +415,7 @@ HTML;
             ? (realpath($configFile)?:null)
             : null;
         $definedConfig = defined('CONFIG_FILE') && is_string(CONFIG_FILE)
-            && file_exists(CONFIG_FILE)
+        && file_exists(CONFIG_FILE)
             ? realpath(CONFIG_FILE)?:null
             : null;
         $isCallstack = $exception instanceof MaximumCallstackExceeded
