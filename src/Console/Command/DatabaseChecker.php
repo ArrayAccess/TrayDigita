@@ -2065,11 +2065,23 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
     protected function getAlterSQL(SchemaDiff $diff, AbstractPlatform $platform): array
     {
         $sql = $platform->getAlterSchemaSQL($diff);
+        $createTable = [];
+        $dropTable = [];
         // we don't use event subscriber
         $constraint = [];
         $createOrAddIndex = [];
         $dropIndex = [];
         foreach ($sql as $key => $query) {
+            if (preg_match('~^\s*CREATE\s+(TABLE|VIEW)~i', $query)) {
+                $createTable[] = $query;
+                unset($sql[$key]);
+                continue;
+            }
+            if (preg_match('~^\s*DROP\s+(TABLE|VIEW)~i', $query)) {
+                $dropTable[] = $query;
+                unset($sql[$key]);
+                continue;
+            }
             if (preg_match('~^\s*(CREATE|ADD|RENAME).+INDEX~i', $query)) {
                 $createOrAddIndex[] = $query;
                 unset($sql[$key]);
@@ -2086,6 +2098,13 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             }
         }
 
-        return array_merge($sql, $dropIndex, $createOrAddIndex, $constraint);
+        return array_merge(
+            $dropTable,
+            $createTable,
+            $sql,
+            $dropIndex,
+            $createOrAddIndex,
+            $constraint
+        );
     }
 }
