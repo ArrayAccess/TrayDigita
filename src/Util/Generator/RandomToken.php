@@ -34,7 +34,7 @@ class RandomToken
 
     public const AN_HOUR_IN_SECOND = 3600;
 
-    public const A_MINUTE_IN_SECOND = 3600;
+    public const A_MINUTE_IN_SECOND = 60;
 
     // 128 BytesLength
     public const BYTES_LENGTH = 16;
