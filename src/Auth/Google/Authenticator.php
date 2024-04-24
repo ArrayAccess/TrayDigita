@@ -162,7 +162,7 @@ class Authenticator
         int $codeLength = 6,
         int $period = self::PERIOD
     ): string {
-        $codeLength = $codeLength !== 6 && $codeLength !== 8 ? 6 : 8;
+        $codeLength = $codeLength !== 6 && $codeLength !== 8 ? 6 : $codeLength;
         $period = max($period, 15);
         $period = min($period, 1800);
         $args = [
