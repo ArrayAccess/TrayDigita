@@ -8,6 +8,7 @@ use ArrayAccess\TrayDigita\Exceptions\Runtime\RuntimeException;
 use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Routing\Interfaces\RouterInterface;
 use Closure;
+use DivisionByZeroError;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -733,7 +734,7 @@ class Consolidation
      * Technically the correct unit names for powers of 1024 are KiB, MiB etc.
      *
      * @param int|float|numeric-string $bytes Number of bytes. Note max integer size for integers.
-     * @param int $decimals Optional. Precision of number of decimal places. Default 0.
+     * @param int $decimals Optional. Precision of number of decimal places. Default 3.
      * @param string $decimalPoint Optional decimal point
      * @param string $thousandSeparator Optional a thousand separator
      * @param bool $removeZero if decimal contain zero, remove it
@@ -742,7 +743,7 @@ class Consolidation
      */
     public static function sizeFormat(
         int|float|string $bytes,
-        int $decimals = 0,
+        int $decimals = 3,
         string $decimalPoint = '.',
         string $thousandSeparator = ',',
         bool $removeZero = true
@@ -763,22 +764,70 @@ class Consolidation
             'KB' => 1024,           // pow( 1024, 1)
             'B' => 1,              // 1
         ];
+        $quanta = array_reverse($quanta, true);
+        $decimals = max(0, $decimals);
 
         /**
          * Check and did
          */
         $currentUnit = 'B';
-        foreach ($quanta as $unit => $mag) {
-            $real = self::compare((string) $mag, (string) $bytes);
-            if ($real === 1) {
-                $result = number_format(
-                    $bytes/$mag,
-                    $decimals,
-                    $decimalPoint,
-                    $thousandSeparator
-                );
-                $currentUnit = $unit;
-                break;
+        $bcDiv = function_exists('bcdiv');
+        // check if less than php int max
+        if (($isInteger = $bytes < PHP_INT_MAX) || $bcDiv) {
+            $currentDiv = $isInteger
+                ? (((int) $bytes) / 1024)
+                : bcdiv((string) $bytes, '1024');
+            $compare = static fn ($a, $b) => $isInteger ? ($a <=> $b) : bccomp($a, $b);
+            foreach ($quanta as $unit => $mag) {
+                if ($compare($mag, $currentDiv) === 1) {
+                    $result = number_format(
+                        $isInteger ? ($bytes / $mag) : bcdiv((string) $bytes, (string) $mag),
+                        $decimals,
+                        $decimalPoint,
+                        $thousandSeparator
+                    );
+                    $currentUnit = $unit;
+                    break;
+                }
+            }
+        } else {
+            foreach ($quanta as $unit => $mag) {
+                $real = self::compare((string)$mag, (string)$bytes);
+                if ($real === 1) {
+                    // create long number format
+                    $number = self::divide((string)$bytes, (string)$mag);
+                    if (is_numeric($number) && $number <= PHP_INT_MAX) {
+                        $result = number_format(
+                            (float) $number,
+                            $decimals,
+                            $decimalPoint,
+                            $thousandSeparator
+                        );
+                    } else {
+                        $decimalArray = explode('.', $number);
+                        $integer = array_shift($decimalArray);
+                        $decimal = array_shift($decimalArray)?:'0';
+                        if ($thousandSeparator !== '' && strlen($integer) > 3) {
+                            // split thousands from right
+                            $integer = strrev(implode(
+                                $thousandSeparator,
+                                str_split(strrev($integer), 3)
+                            ));
+                        }
+                        if ($decimal > 0) {
+                            $decimal = substr($decimal, 0, $decimals);
+                            $decimal = str_pad($decimal, $decimals, '0', STR_PAD_RIGHT);
+                        } else {
+                            $decimal = '';
+                        }
+                        $result = $integer;
+                        if ($decimal !== '') {
+                            $result .= $decimalPoint . $decimal;
+                        }
+                    }
+                    $currentUnit = $unit;
+                    break;
+                }
             }
         }
 
@@ -1006,6 +1055,53 @@ class Consolidation
     }
 
     /**
+     * @param mixed $a
+     * @param mixed $b
+     * @return string
+     */
+    public static function divide(mixed $a, mixed $b): string
+    {
+        static $bcExist = null;
+        $bcExist ??= function_exists('bcdiv');
+        $a = DataNormalizer::number($a);
+        $b = DataNormalizer::number($b);
+        if ($bcExist) {
+            return bcdiv($a, $b);
+        }
+        if ($b === '0') {
+            throw new DivisionByZeroError('Division by zero');
+        }
+        if ($a === '0') {
+            return '0';
+        }
+
+        // Normalize numbers
+        $a = ltrim($a, '0');
+        $b = ltrim($b, '0');
+        if ($a === '' || $b === '') {
+            return '0';
+        }
+
+        $quotient = '';
+        $remainder = '';
+        $dividendLength = strlen($a);
+
+        // Perform division
+        for ($i = 0; $i < $dividendLength; $i++) {
+            $remainder .= $a[$i];
+            $partQuotient = 0;
+            while ((int)$remainder >= (int)$b) {
+                $remainder = (string)((int)$remainder - (int)$b);
+                $partQuotient++;
+            }
+            $quotient .= (string)$partQuotient;
+        }
+
+        // Format result
+        return $quotient;
+    }
+
+    /**
      * Pads the left of one of the given numbers with zeros if necessary to make both numbers the same length.
      *
      * The numbers must only consist of digits, without leading minus sign.
@@ -1064,19 +1160,18 @@ class Consolidation
         $reflectionObject = new ReflectionObject($object);
         $info = [];
         foreach ($reflectionObject->getProperties() as $property) {
-            $isPrivate = $property->isPrivate();
-            if ($isPrivate) {
-                /** @noinspection PhpExpressionResultUnusedInspection */
-                $property->setAccessible(true);
-            }
             // no display if not initialized
             if ($property->isStatic()
                 || !$property->isInitialized($object)
             ) {
                 continue;
             }
-
-            $value = $isPrivate ? $property->getValue($object) : $object->{$property->getName()};
+            $isPrivate = $property->isPrivate();
+            if ($isPrivate || $property->isProtected()) {
+                /** @noinspection PhpExpressionResultUnusedInspection */
+                $property->setAccessible(true);
+            }
+            $value = $property->getValue($object);
             $key = $property->getName();
             $keyItem = $key;
             if (!$property->isPublic()) {

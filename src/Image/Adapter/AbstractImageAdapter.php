@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Image\Exceptions\ImageFileNotFoundException;
 use ArrayAccess\TrayDigita\Image\Exceptions\ImageIsNotSupported;
 use ArrayAccess\TrayDigita\Image\Factory\ImageResizerFactory;
 use ArrayAccess\TrayDigita\Image\Interfaces\ImageAdapterInterface;
+use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Generator\UUID;
 use InvalidArgumentException;
 use JetBrains\PhpStorm\ArrayShape;
@@ -32,52 +33,58 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     protected int $maximumSourceSize = 10485760;
 
     /**
-     * @var ?int
+     * @var int $imageType image type
      */
-    private ?int $imageType;
+    private int $imageType;
 
     /**
-     * @var int
+     * @var int $originalHeight original height
      */
     private int $originalHeight;
 
     /**
-     * @var int
+     * @var int $originalWidth original width
      */
     private int $originalWidth;
 
     /**
-     * @var string
+     * @var string $originalMimeType original mime type
      */
     private string $originalMimeType;
 
     /**
-     * @var string
+     * @var string $originalStandardExtension original standard extension
      */
     private string $originalStandardExtension;
 
     /**
-     * @var int
+     * @var int $width width
      */
     protected int $width;
 
     /**
-     * @var int
+     * @var int $height height
      */
     protected int $height;
 
     /**
+     * The Resource
+     *
      * @var resource|\GdImage|\Imagick|null
      * @noinspection PhpFullyQualifiedNameUsageInspection
      */
     protected mixed $resource = null;
 
     /**
+     * The source
+     *
      * @var StreamInterface|string
      */
     private StreamInterface|string $source;
 
     /**
+     * Image adapter constructor.
+     *
      * @param StreamInterface|string $streamOrFile
      */
     final public function __construct(
@@ -104,13 +111,26 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
             $file = $file && file_exists($file) ? $file : null;
             $size = $file ? filesize($file) : $streamOrFile->getSize();
         } else {
-            if (!file_exists($streamOrFile) || !is_file($streamOrFile)) {
-                throw new ImageFileNotFoundException(
-                    $streamOrFile
-                );
+            if (file_exists($streamOrFile) && is_file($streamOrFile)) {
+                $size = filesize($streamOrFile);
+                $file = $streamOrFile;
+            } else {
+                if (Consolidation::isBinary($streamOrFile)) {
+                    $stream = new Stream(fopen('php://temp', 'r+'));
+                    while (strlen($streamOrFile) > 0) {
+                        $stream->write(substr($streamOrFile, 0, 8192));
+                        $streamOrFile = substr($streamOrFile, 8192);
+                    }
+                    $file = null;
+                    $streamOrFile = $stream;
+                    $size = $streamOrFile->getSize();
+                    $streamOrFile->rewind();
+                } else {
+                    throw new ImageIsNotSupported(
+                        'Could not determine source size or size zero value.'
+                    );
+                }
             }
-            $size = filesize($streamOrFile);
-            $file = $streamOrFile;
         }
 
         if ($size <= 0) {
@@ -170,12 +190,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @param int $sourceWidth
-     * @param int $sourceHeight
-     * @param int $desiredWidth
-     * @param int $desiredHeight
-     *
-     * @return array{"0":int,"1":int,"2":int,"3":int,"4":float,"5":array<array>}
+     * @inheritdoc
      */
     public function calculateOffset(
         int $sourceWidth,
@@ -222,7 +237,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getOriginalStandardExtension(): string
     {
@@ -230,23 +245,23 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
-    public function getImageType(): mixed
+    public function getImageType(): ?int
     {
         return $this->imageType;
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
-    public function getOriginalMimeType(): mixed
+    public function getOriginalMimeType(): string
     {
         return $this->originalMimeType;
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getOriginalHeight(): int
     {
@@ -254,7 +269,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getOriginalWidth(): int
     {
@@ -262,7 +277,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getWidth(): int
     {
@@ -270,7 +285,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getHeight(): int
     {
@@ -278,9 +293,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @param string $mimeType image/png, image/jpeg ... etc or jpg|png|jpeg
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isMimeTypeSupported(string $mimeType): bool
     {
@@ -312,7 +325,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return StreamInterface|string
+     * @return StreamInterface|string string is filename
      */
     public function getSource(): StreamInterface|string
     {
@@ -320,7 +333,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return array{"width":float,"height":float}
+     * @inheritdoc
      */
     public function getRatio(): array
     {
@@ -333,7 +346,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return array{"width":float,"height":float}
+     * @inheritdoc
      */
     public function getOriginalRatio(): array
     {
@@ -346,11 +359,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @param int $width
-     * @param int $height
-     * @param int $mode
-     *
-     * @return array{"width":int,"height":int}
+     * @inheritdoc
      */
     public function getDimensions(int $width, int $height, int $mode = self::MODE_AUTO): array
     {
@@ -370,9 +379,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @param int $height
-     *
-     * @return array{"width":int,"height":int}
+     * @inheritdoc
      */
     #[ArrayShape(['height' => "int", 'width' => "int"])]
     public function getPortraitDimension(int $height): array
@@ -383,6 +390,9 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     #[ArrayShape(['height' => "int", 'width' => "int"])]
     public function getLandscapeDimension(int $width): array
     {
@@ -393,7 +403,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getOrientation(): int
     {
@@ -425,9 +435,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * Check if the image is square
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isSquare(): bool
     {
@@ -435,9 +443,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * Check if the image is landscape
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function isLandscape() : bool
     {
@@ -445,9 +451,7 @@ abstract class AbstractImageAdapter implements ImageAdapterInterface
     }
 
     /**
-     * Check if the image is portrait
-     *
-     * @return bool true if portrait
+     * @inheritdoc
      */
     public function isPortrait() : bool
     {

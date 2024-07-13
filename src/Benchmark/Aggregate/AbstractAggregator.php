@@ -68,6 +68,9 @@ abstract class AbstractAggregator implements
      */
     protected int $durationAsCritical = DurationInterface::NUMERIC_CRITICAL;
 
+    /**
+     * @var ProfilerInterface $profiler The profiler instance
+     */
     protected ProfilerInterface $profiler;
 
     /**

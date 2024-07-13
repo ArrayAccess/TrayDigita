@@ -233,10 +233,9 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     'Time %s secs; Memory Usage: %s; Memory Peak Usage: %s',
                     round(microtime(true) - $startTime, 3),
                     Consolidation::sizeFormat(
-                        max(memory_get_usage() - $memory, 0),
-                        3
+                        max(memory_get_usage() - $memory, 0)
                     ),
-                    Consolidation::sizeFormat(memory_get_peak_usage(), 3)
+                    Consolidation::sizeFormat(memory_get_peak_usage())
                 )
             );
             $output->writeln('');

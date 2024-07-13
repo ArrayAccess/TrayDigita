@@ -47,14 +47,20 @@ class Year extends DateTimeType
         return $val;
     }
 
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    /**
+     * @param $value
+     * @param AbstractPlatform $platform
+     * @return string|null
+     * @throws ConversionException
+     */
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
     {
         if ($value === null) {
             return null;
         }
         $value = is_resource($value) ? stream_get_contents($value) : $value;
         if ($value instanceof DateTimeInterface) {
-            return $value->format('Y');
+            $value = $value->format('Y');
         }
         if (is_numeric($value)) {
             $value = (string) $value;
@@ -65,10 +71,14 @@ class Year extends DateTimeType
                     'Y'
                 );
             }
-
-            return $value;
         }
-
+        if (is_string($value)) {
+            if ($value[0] === '-') {
+                $value = intval(substr($value, 0, 4));
+                $value += 1;
+            }
+            return str_pad((string) $value, 4, '0', STR_PAD_LEFT);
+        }
         throw ConversionException::conversionFailedInvalidType(
             $value,
             $this->getName(),

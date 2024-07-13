@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Console\Command\ApplicationChecker;
 
+use ArrayAccess\TrayDigita\Cache\Cache;
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;

@@ -16,7 +16,7 @@ use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
 use Composer\Autoload\ClassLoader;
 use Couchbase\Cluster;
 use Couchbase\ClusterOptions;
-use CouchbaseBucket;
+use Couchbase\Collection;
 use Memcached;
 use PDO;
 use Predis\ClientInterface;
@@ -30,7 +30,7 @@ use ReflectionClass;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\ApcuAdapter;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\Adapter\CouchbaseBucketAdapter;
+use Symfony\Component\Cache\Adapter\CouchbaseCollectionAdapter;
 use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
@@ -214,8 +214,8 @@ class Cache implements AdapterInterface, ContainerIndicateInterface
                     $lifetime,
                     $marshaller
                 ],
-                CouchbaseBucketAdapter::class => [
-                    CouchbaseBucket::class,
+                CouchbaseCollectionAdapter::class => [
+                    Collection::class,
                     $namespace,
                     $lifetime,
                     $marshaller
@@ -306,11 +306,11 @@ class Cache implements AdapterInterface, ContainerIndicateInterface
                         $adapterArgs[$adapter][0] = $memcached;
                     }
                     break;
-                case CouchbaseBucketAdapter::class:
+                case CouchbaseCollectionAdapter::class:
                     $couchbase = null;
                     try {
-                        if (class_exists(CouchbaseBucket::class)) {
-                            $couchbase = $this->tryGetMemCouchBase($config);
+                        if (class_exists(Collection::class)) {
+                            $couchbase = $this->tryGetCouchBase($config);
                         }
                     } catch (Throwable) {
                     }
@@ -339,13 +339,13 @@ class Cache implements AdapterInterface, ContainerIndicateInterface
 
     /**
      * @param Config $config
-     * @return ?CouchbaseBucket
+     * @return ?Collection
      */
-    public function tryGetMemCouchBase(
+    public function tryGetCouchBase(
         Config $config
-    ) : ?CouchbaseBucket {
+    ) : ?Collection {
         $couchbase = $config->get('couchbase')??$config->get('couchbaseBucket')??null;
-        if ($couchbase instanceof CouchbaseBucket) {
+        if ($couchbase instanceof Collection) {
             return $couchbase;
         }
         $cluster = $config->get('cluster');
@@ -372,7 +372,8 @@ class Cache implements AdapterInterface, ContainerIndicateInterface
         }
         $bucketName = $config->get('bucket')??$config->get('id');
         $bucketName = !is_string($bucketName) ? 'default' : $bucketName;
-        return $cluster->bucket($bucketName);
+        $bucket = $cluster->bucket($bucketName);
+        return $bucket->defaultCollection();
     }
 
     public function tryGetMemcached(

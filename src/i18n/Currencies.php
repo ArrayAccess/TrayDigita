@@ -797,9 +797,14 @@ class Currencies
         ]
     ];
 
+    /**
+     * @var array<string, Currency> Currencies cache
+     */
     protected static array $currencies = [];
 
     /**
+     * Get currency by code
+     *
      * @param string $code
      * @return Currency
      */

@@ -63,11 +63,19 @@ class Gd extends AbstractImageAdapter
      */
     private ?GdImage $image_resized = null;
 
+    /**
+     * @inheritdoc
+     */
     public function getSupportedMimeTypeExtensions(): array
     {
         return array_keys(self::getSupportedMimeTypeExtensionsFunctions());
     }
 
+    /**
+     * Get supported mime types
+     *
+     * @return array<string, callable>
+     */
     private function getSupportedMimeTypeExtensionsFunctions(): array
     {
         if (self::$supportedMimeTypes === null) {
@@ -139,12 +147,7 @@ class Gd extends AbstractImageAdapter
     }
 
     /**
-     *
-     * @param int $width
-     * @param int $height
-     * @param int $mode
-     * @param bool $optimize
-     * @return Gd
+     * @inheritdoc
      */
     public function resize(int $width, int $height, int $mode = self::MODE_AUTO, bool $optimize = false): static
     {
@@ -233,8 +236,8 @@ class Gd extends AbstractImageAdapter
     }
 
     /**
-     * Save The image result reSized
-     *
+     * Save The image result resized
+     * @inheritdoc
      * @param string $target Full path of file name eg [/path/of/dir/image/image.jpg]
      * @param integer $quality image quality [1 - 100]
      * @param bool $overwrite force rewrite existing image if there was path exists
@@ -375,6 +378,9 @@ class Gd extends AbstractImageAdapter
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function clearResource(): void
     {
         if ($this->resource instanceof GdImage) {

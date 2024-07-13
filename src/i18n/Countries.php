@@ -14,7 +14,15 @@ use function substr;
 class Countries
 {
     /**
-     * @var array[]
+     * @var array{
+     *     string: array {
+     *          name: string,
+     *          continent: array {
+     *              code: string,
+     *              name: string
+     *          },
+     *     }[]
+     * } The countries list.
      */
     final public const LISTS = [
         "AN" => [

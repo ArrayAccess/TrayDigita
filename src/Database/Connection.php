@@ -6,6 +6,7 @@ namespace ArrayAccess\TrayDigita\Database;
 use ArrayAccess\TrayDigita\Collection\Config;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Database\Factory\MetadataFactory;
+use ArrayAccess\TrayDigita\Database\Wrapper\DoctrineConnectionExtended;
 use ArrayAccess\TrayDigita\Database\Wrapper\DriverWrapper;
 use ArrayAccess\TrayDigita\Database\Wrapper\EntityManagerWrapper;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
@@ -52,18 +53,44 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
     use ManagerDispatcherTrait,
         ManagerAllocatorTrait;
 
+    /**
+     * @var DoctrineConnection|null $connection The connection
+     */
     private ?DoctrineConnection $connection = null;
 
+    /**
+     * @var OrmConfiguration|Configuration $defaultConfiguration The default configuration
+     */
     private OrmConfiguration|Configuration $defaultConfiguration;
 
+    /**
+     * @var EventManager|null $eventManager The event manager
+     */
     private ?EventManager $eventManager;
 
+    /**
+     * @var EntityManagerInterface|null $entityManager The entity manager
+     */
     private ?EntityManagerInterface $entityManager = null;
 
+    /**
+     * @var bool $configConfigured The config configured
+     */
     private bool $configConfigured = false;
 
+    /**
+     * @var bool $configurationConfigured The configuration configured
+     */
     private bool $configurationConfigured = false;
 
+    /**
+     * Connection constructor.
+     *
+     * @param ContainerInterface $container The container
+     * @param Configuration|null $configuration The configuration
+     * @param EventManager|null $eventManager The event manager
+     * @param Config|null $config The config
+     */
     public function __construct(
         protected ContainerInterface $container,
         #[SensitiveParameter]
@@ -83,16 +110,32 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         }
     }
 
+    /**
+     * The prefix name identity for event
+     *
+     * @return string|null
+     */
     protected function getPrefixNameEventIdentity(): ?string
     {
         return 'database';
     }
 
+    /**
+     * Get the container
+     *
+     * @return ContainerInterface
+     */
     public function getContainer(): ContainerInterface
     {
         return $this->container;
     }
 
+    /**
+     * Configure the ORM configuration
+     *
+     * @param Configuration|null $configuration
+     * @return OrmConfiguration
+     */
     protected function configureORMConfiguration(?Configuration $configuration) : OrmConfiguration
     {
         try {
@@ -187,6 +230,12 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         }
     }
 
+    /**
+     * Register entity directory
+     *
+     * @param string ...$directories
+     * @return array|null
+     */
     public function registerEntityDirectory(string ...$directories): ?array
     {
         $driver = $this->getDefaultConfiguration()->getMetadataDriverImpl();
@@ -212,11 +261,21 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         return null;
     }
 
+    /**
+     * Get the current database configuration
+     *
+     * @return Config
+     */
     public function getDatabaseConfig() : Config
     {
         return $this->configureDatabaseConfig();
     }
 
+    /**
+     * Configure the database configuration
+     *
+     * @return Config
+     */
     public function configureDatabaseConfig() : Config
     {
         if ($this->configConfigured) {
@@ -298,6 +357,11 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         }
     }
 
+    /**
+     * Get the default configuration
+     *
+     * @return ?OrmConfiguration
+     */
     public function getDefaultConfiguration(): ?OrmConfiguration
     {
         if ($this->configurationConfigured
@@ -312,6 +376,12 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             );
     }
 
+    /**
+     * Configure the driver
+     *
+     * @param array|Config $params
+     * @return Driver
+     */
     protected function configureDriver(array|Config $params) : Driver
     {
         $driver = $params['driver']??Driver\PDO\MySQL\Driver::class;
@@ -354,11 +424,21 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         }
     }
 
+    /**
+     * Get the doctrine connection
+     *
+     * @return DoctrineConnection
+     */
     public function getConnection() : DoctrineConnection
     {
         return $this->setUpConnection();
     }
 
+    /**
+     * Set up the connection
+     *
+     * @return DoctrineConnection
+     */
     protected function setUpConnection() : DoctrineConnection
     {
         if ($this->connection) {
@@ -375,7 +455,7 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
                 $driver = $middleware->wrap($driver);
             }
 
-            $this->connection = new DoctrineConnection(
+            $this->connection = new DoctrineConnectionExtended(
                 $config,
                 new DriverWrapper($this, $driver),
                 $configuration,
@@ -401,6 +481,11 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         }
     }
 
+    /**
+     * Get the entity manager
+     *
+     * @return EntityManagerInterface
+     */
     public function getEntityManager() : EntityManagerInterface
     {
         if (!$this->entityManager) {
@@ -410,6 +495,12 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         return $this->entityManager;
     }
 
+    /**
+     * Wrap the entity
+     *
+     * @param EntityManagerInterface|ObjectManager $entityManager
+     * @return EntityManagerWrapper
+     */
     public function wrapEntity(EntityManagerInterface|ObjectManager $entityManager): EntityManagerWrapper
     {
         $connection = $this;

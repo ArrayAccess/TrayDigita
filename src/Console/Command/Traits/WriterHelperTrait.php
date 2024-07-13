@@ -145,10 +145,9 @@ trait WriterHelperTrait
                 ),
                 round(microtime(true) - $this->getStartTime(), 3),
                 Consolidation::sizeFormat(
-                    max(memory_get_usage() - $this->getStartMemory(), 0),
-                    3
+                    max(memory_get_usage() - $this->getStartMemory(), 0)
                 ),
-                Consolidation::sizeFormat(memory_get_peak_usage(), 3)
+                Consolidation::sizeFormat(memory_get_peak_usage())
             )
         );
         $output->writeln('');

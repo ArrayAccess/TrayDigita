@@ -14,8 +14,14 @@ use function is_file;
 
 class ImageResizerFactory implements ImageResizerFactoryInterface
 {
+    /**
+     * @var int use the gd extension
+     */
     public const USE_GD = 1;
 
+    /**
+     * @var int use the imagick extension
+     */
     public const USE_IMAGICK = 2;
 
     /**
@@ -23,10 +29,20 @@ class ImageResizerFactory implements ImageResizerFactoryInterface
      */
     private static int|null|false $imageGenerationMode = null;
 
+    /**
+     * @var bool $GdExists gd extension exists
+     */
     private static bool $GdExists = false;
 
+    /**
+     * @var bool $ImagickExists imagick extension exists
+     */
     private static bool $ImagickExists = false;
 
+    /**
+     * ImageResizerFactory constructor.
+     * @throws UnsupportedAdapter
+     */
     public function __construct()
     {
         if (self::$imageGenerationMode === null) {
@@ -45,9 +61,7 @@ class ImageResizerFactory implements ImageResizerFactoryInterface
     }
 
     /**
-     * @param string $file
-     *
-     * @return ImageAdapterInterface
+     * @inheritdoc
      */
     public function createFromFile(string $file) : ImageAdapterInterface
     {
@@ -59,6 +73,9 @@ class ImageResizerFactory implements ImageResizerFactoryInterface
             : new Gd($file);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function createFromStream(StreamInterface $stream): ImageAdapterInterface
     {
         return self::$imageGenerationMode === self::USE_IMAGICK

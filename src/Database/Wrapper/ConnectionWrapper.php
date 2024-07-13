@@ -34,7 +34,6 @@ class ConnectionWrapper extends AbstractConnectionMiddleware implements ManagerI
         return $this->databaseConnection->getManager();
     }
 
-
     public function prepare(string $sql): Statement
     {
         // @dispatch(connection.queryString)

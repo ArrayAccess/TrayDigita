@@ -221,6 +221,39 @@ interface ImageAdapterInterface
     ];
 
     /**
+     * Calculate the offset
+     *
+     * @param int $sourceWidth source width
+     * @param int $sourceHeight source height
+     * @param int $desiredWidth desired width
+     * @param int $desiredHeight desired height
+     *
+     * @return array{"0":int,"1":int,"2":int,"3":int,"4":float,"5":array<array>}
+     */
+    public function calculateOffset(int $sourceWidth, int $sourceHeight, int $desiredWidth, int $desiredHeight) : array;
+
+    /**
+     * Get the original standard extension
+     *
+     * @return string the original file extension
+     */
+    public function getOriginalStandardExtension(): string;
+
+    /**
+     * Get image type
+     *
+     * @return int|null the image type
+     */
+    public function getImageType(): ?int;
+
+    /**
+     * Get original mime type
+     *
+     * @return string the original mime type
+     */
+    public function getOriginalMimeType(): string;
+
+    /**
      * Get current image width
      *
      * @return int new width
@@ -242,9 +275,9 @@ interface ImageAdapterInterface
     public function getSupportedMimeTypeExtensions() : array;
 
     /**
-     * Check if mime type supported
+     * Check if mime type supported, eg: jpeg, png, gif etc.
      *
-     * @param string $mimeType
+     * @param string $mimeType the mime type
      * @return bool
      */
     public function isMimeTypeSupported(string $mimeType) : bool;
@@ -292,31 +325,61 @@ interface ImageAdapterInterface
     public function getOriginalOrientation() : int;
 
     /**
-     * @param int $width
-     * @param int $height
-     * @param int $mode
+     * Check if the image is square
+     *
+     * @return bool
+     */
+    public function isSquare(): bool;
+
+    /**
+     * Check if the image is landscape
+     *
+     * @return bool
+     */
+    public function isLandscape() : bool;
+
+    /**
+     * Check if the image is portrait
+     *
+     * @return bool true if portrait
+     */
+    public function isPortrait() : bool;
+
+    /**
+     * Get the dimensions of the image
+     *
+     * @param int $width the width of the image
+     * @param int $height the height of the image
+     * @param int $mode the mode of the resize one of:
+     *      MODE_AUTO, MODE_CROP, MODE_ORIENTATION_LANDSCAPE, MODE_ORIENTATION_PORTRAIT, MODE_ORIENTATION_SQUARE
      *
      * @return array{"width":int,"height":int}
      */
     public function getDimensions(int $width, int $height, int $mode = self::MODE_AUTO) : array;
 
     /**
-     * @param int $height
+     * Get square dimension
+     *
+     * @param int $height the height of the image
      *
      * @return array{"width":int,"height":int}
      */
     public function getPortraitDimension(int $height) : array;
 
     /**
-     * @param int $width
+     * Get landscape dimension
+     *
+     * @param int $width the width of the image
      *
      * @return array{"width":int,"height":int}
      */
     public function getLandscapeDimension(int $width) : array;
 
     /**
-     * @param int $width
-     * @param int $height
+     * Get auto dimension of the image
+     *
+     * @param int $width the width of the image
+     * @param int $height the height of the image
      *
      * @return array{"width":int,"height":int}
      */
@@ -325,21 +388,27 @@ interface ImageAdapterInterface
     /**
      * Resize image
      *
-     * @param int $width
-     * @param int $height
-     * @param int $mode
-     * @param bool $optimize
+     * @param int $width the width of the image
+     * @param int $height the height of the image
+     * @param int $mode the mode of the resize one of:
+     *      MODE_AUTO, MODE_CROP, MODE_ORIENTATION_LANDSCAPE, MODE_ORIENTATION_PORTRAIT, MODE_ORIENTATION_SQUARE
+     * @param bool $optimize optimize the image
      * @return static
      */
-    public function resize(int $width, int $height, int $mode = self::MODE_AUTO, bool $optimize = false) : static;
+    public function resize(
+        int $width,
+        int $height,
+        int $mode = self::MODE_AUTO,
+        bool $optimize = false
+    ) : ImageAdapterInterface;
 
     /**
      * Save image to target file
      *
-     * @param string $target
-     * @param int $quality
-     * @param false $overwrite
-     * @param ?string $forceOverrideExtension
+     * @param string $target the target file
+     * @param int $quality the quality of the image between 0 and 100
+     * @param false $overwrite overwrite the file if exists
+     * @param ?string $forceOverrideExtension force override the extension
      *
      * @return ?array{"width":int,"height":int,"path":string,"type":string}
      */
@@ -371,15 +440,15 @@ interface ImageAdapterInterface
      *
      * @return static
      */
-    public static function fromStream(StreamInterface $stream, ImageResizerFactory $resizer) : static;
+    public static function fromStream(StreamInterface $stream, ImageResizerFactory $resizer) : ImageAdapterInterface;
 
     /**
      * Create image from file
      *
-     * @param string $imageFile
-     * @param ImageResizerFactory $resizer
+     * @param string $imageFile the image file
+     * @param ImageResizerFactory $resizer the image resizer factory
      *
      * @return static
      */
-    public static function fromFile(string $imageFile, ImageResizerFactory $resizer) : static;
+    public static function fromFile(string $imageFile, ImageResizerFactory $resizer) : ImageAdapterInterface;
 }

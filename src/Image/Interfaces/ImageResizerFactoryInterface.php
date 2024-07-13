@@ -8,13 +8,17 @@ use Psr\Http\Message\StreamInterface;
 interface ImageResizerFactoryInterface
 {
     /**
-     * @param string $file
+     * Create an image adapter instance from a file.
+     *
+     * @param string $file The file path.
      * @return ImageAdapterInterface
      */
     public function createFromFile(string $file) : ImageAdapterInterface;
 
     /**
-     * @param StreamInterface $stream
+     * Create an image adapter instance from a stream.
+     *
+     * @param StreamInterface $stream The stream that contain image data.
      * @return ImageAdapterInterface
      */
     public function createFromStream(StreamInterface $stream) : ImageAdapterInterface;
