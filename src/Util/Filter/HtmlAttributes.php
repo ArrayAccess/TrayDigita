@@ -201,7 +201,22 @@ class HtmlAttributes
         "checked" => "",
         "readonly" => "",
         "selected" => "",
-        "disabled" => ""
+        "disabled" => "",
+        "hidden" => "",
+        "autofocus" => "",
+        "autoplay" => "",
+        "controls" => "",
+        "default" => "",
+        "defer" => "",
+        "multiple" => "",
+        "muted" => "",
+        "novalidate" => "",
+        "open" => "",
+        "required" => "",
+        "reversed" => "",
+        "async" => "",
+        "ismap" => "",
+        "loop" => "",
     ];
 
     public const ATTRIBUTES_NUMERIC_TYPES = [

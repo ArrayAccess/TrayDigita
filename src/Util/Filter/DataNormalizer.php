@@ -643,6 +643,12 @@ final class DataNormalizer
                     'Exponent is too large'
                 );
             }
+            // check additional exponent
+            $additionalExponent = 0;
+            if (!$isDecimalPoint && str_contains($mantissa, '.')) {
+                $additionalExponent = strlen(explode('.', $mantissa)[0]);
+            }
+            $exponent = $exponent + $additionalExponent;
             $mantissa = str_replace('.', '', $mantissa);
             if ($isDecimalPoint) {
                 // - is decimal point, convert mantissa
