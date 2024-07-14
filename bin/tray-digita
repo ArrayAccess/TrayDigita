@@ -12,5 +12,5 @@ use function class_exists;
         require_once dirname(__DIR__) . '/src/Bin.php';
     }
     Bin::run();
-    exit(255);
+    exit(0);
 })();
