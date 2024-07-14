@@ -54,6 +54,16 @@ Read the: **[Coding Standard](CODING_STANDARD.md)**
 
 Read the: **[Contribute](CONTRIBUTING.md)**
 
+## VERSION
+
+- Previous Version: `1.0.0`
+  - Change:
+    - Initial Release with Doctrine ORM version `2`
+- Current Version: `2.0.0`
+  - Change::wq
+    - Update Doctrine ORM to 3.0
+    - Update Compatibility
+
 ## Available Modules
 
 - Core Module [https://github.com/ArrayAccess/TrayDigita-Core-Module](https://github.com/ArrayAccess/TrayDigita-Core-Module)

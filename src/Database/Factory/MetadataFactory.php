@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Database\Factory;
 
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use function is_numeric;
 use function ksort;
 use function uasort;
@@ -26,7 +26,7 @@ class MetadataFactory extends ClassMetadataFactory
         ksort($metadata);
         uasort(
             $metadata,
-            function (ClassMetadataInfo $a, ClassMetadataInfo $b) {
+            function (ClassMetadata $a, ClassMetadata $b) {
                 $a = $a->table['options']['priority'];
                 $b = $b->table['options']['priority'];
                 if ($a === $b || !is_numeric($a) || !is_numeric($b)) {

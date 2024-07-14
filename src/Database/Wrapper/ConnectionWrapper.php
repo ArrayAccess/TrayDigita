@@ -135,40 +135,36 @@ class ConnectionWrapper extends AbstractConnectionMiddleware implements ManagerI
         }
     }
 
-    public function beginTransaction(): bool
+    public function beginTransaction(): void
     {
         // @dispatch(connection.beforeBeginTransaction)
         $this->dispatchBefore($this->databaseConnection);
 
-        $transact = parent::beginTransaction();
+        parent::beginTransaction();
 
         // @dispatch(connection.beginTransaction)
-        $this->dispatchCurrent($transact, $this->databaseConnection);
-
-        return $transact;
+        $this->dispatchCurrent(null, $this->databaseConnection);
     }
 
-    public function commit(): bool
+    public function commit(): void
     {
         // @dispatch(connection.beforeCommit)
         $this->dispatchBefore($this->databaseConnection);
 
-        $commit = parent::commit();
+        parent::commit();
 
         // @dispatch(connection.commit)
-        $this->dispatchCurrent($commit, $this->databaseConnection);
-        return $commit;
+        $this->dispatchCurrent(null, $this->databaseConnection);
     }
 
-    public function rollBack(): bool
+    public function rollBack(): void
     {
         // @dispatch(connection.beforeRollback)
         $this->dispatchBefore($this->databaseConnection);
 
-        $rollback = parent::rollBack();
+        parent::rollBack();
 
         // @dispatch(connection.rollback)
-        $this->dispatchCurrent($rollback, $this->databaseConnection);
-        return $rollback;
+        $this->dispatchCurrent(null, $this->databaseConnection);
     }
 }

@@ -1,6 +1,7 @@
 {
     "name": "arrayaccess/traydigita",
     "description": "Tray Digita System",
+    "version": "2.0.0",
     "type": "project",
     "license": "MIT",
     "authors": [
@@ -18,13 +19,13 @@
         "ext-openssl": "*",
         "ext-pdo_mysql": "*",
         "ext-fileinfo": "*",
-        "doctrine/orm": "~2",
+        "doctrine/orm": "~3",
         "doctrine/sql-formatter": "^1.4",
         "dragonmantank/cron-expression": "^3.3",
         "endroid/qr-code": "^5.0",
         "league/iso3166": "^4.3",
-        "monolog/monolog": "^3.7",
-        "nelexa/zip": "^4.0",
+        "monolog/monolog": "^3.7.0",
+        "nelexa/zip": "^4.0.2",
         "nikic/php-parser": "~4",
         "predis/predis": "~2",
         "psr/http-message": "~2",
@@ -60,11 +61,10 @@
         "arrayaccess/dns-client" : "Allows you to resolve dns client faster & timedout support based on object oriented"
     },
     "conflict": {
-        "doctrine/migrations" : "< 3"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "3.7.2",
-        "slevomat/coding-standard": "^8.14"
+        "squizlabs/php_codesniffer": "^3.10.1",
+        "slevomat/coding-standard": "^8.15.0"
     },
     "scripts": {
         "post-create-project-cmd": [

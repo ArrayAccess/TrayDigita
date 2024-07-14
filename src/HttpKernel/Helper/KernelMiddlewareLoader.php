@@ -69,8 +69,9 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
         return $processable;
     }
 
-    /**
+    /* *
      * @var array<int, array<string, AbstractMiddleware>>
+     * @return bool
      */
     // private array $middlewares = [];
 
@@ -79,6 +80,11 @@ class KernelMiddlewareLoader extends AbstractLoaderNameBased
         $this->kernel->getHttpKernel()->dispatchDeferredMiddleware();
     }*/
 
+    /**
+     * Do register middleware
+     *
+     * @return bool
+     */
     protected function doRegister(): bool
     {
         // preprocess

@@ -334,7 +334,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $tablesMeta = [];
             $inQuestionMark = [];
             foreach ($currentSchema->getTables() as $tableCurrent) {
-                if (!$schemaManager->tablesExist($tableCurrent->getName())) {
+                if (!$schemaManager->tablesExist([$tableCurrent->getName()])) {
                     continue;
                 }
                 $tablesMeta[] = $schemaManager
@@ -424,7 +424,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $containOptimize = false;
             foreach ($allMetadata as $meta) {
                 $tableName = $meta->getTableName();
-                $table = $schemaManager->tablesExist($tableName)
+                $table = $schemaManager->tablesExist([$tableName])
                     ? $schemaManager->introspectTable($tableName)
                     : null;
                 if (!$table) {
@@ -461,7 +461,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 }
                 $currentTable = $currentSchema->getTable($meta->getTableName());
                 $tableDiff = $comparator->compareTables($table, $currentTable);
-                $this->compareSchemaTableFix($table, $currentTable, $tableDiff);
+                $tableDiff = $this->compareSchemaTableFix($table, $currentTable, $tableDiff);
                 $isNeedOptimize = ($optimizeArray[strtolower($currentTable->getName())] ?? 0) > 0;
                 if ($isNeedOptimize) {
                     $containOptimize = true;
@@ -1580,7 +1580,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $config = $database->getDatabaseConfig();
             $ormConfig = $database->getEntityManager()->getConfiguration();
             // $platform = $database->getDatabasePlatform()::class;
-            $database->connect();
+            $database->getServerVersion();
         } catch (DriverException $e) {
             $error = $e;
             $driverException = $e;
@@ -1835,7 +1835,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $tablesMeta = [];
             $inQuestionMark = [];
             foreach ($currentSchema->getTables() as $tableCurrent) {
-                if (!$schema->tablesExist($tableCurrent->getName())) {
+                if (!$schema->tablesExist([$tableCurrent->getName()])) {
                     continue;
                 }
                 $tablesMeta[] = $tableCurrent->getName();
@@ -1892,23 +1892,23 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 $tableDb = $schema->introspectTable($meta->getTableName());
                 $tableDiff = $comparator->compareTables($tableDb, $currentTable);
                 $this->compareSchemaTableFix($tableDb, $currentTable, $tableDiff);
-                if (!empty($tableDiff->changedColumns)
-                    || !empty($tableDiff->renamedColumns)
-                    || !empty($tableDiff->removedColumns)
-                    || !empty($tableDiff->addedColumns)
+                if (!empty($tableDiff->getModifiedColumns())
+                    || !empty($tableDiff->getRenamedColumns())
+                    || !empty($tableDiff->getDroppedColumns())
+                    || !empty($tableDiff->getAddedColumns())
                 ) {
                     $changed[] = 'columns';
                 }
-                if (!empty($tableDiff->changedIndexes)
-                    || !empty($tableDiff->renamedIndexes)
-                    || !empty($tableDiff->removedIndexes)
-                    || !empty($tableDiff->addedIndexes)
+                if (!empty($tableDiff->getModifiedIndexes())
+                    || !empty($tableDiff->getRenamedIndexes())
+                    || !empty($tableDiff->getDroppedIndexes())
+                    || !empty($tableDiff->getAddedIndexes())
                 ) {
                     $changed[] = 'indexes';
                 }
-                if (!empty($tableDiff->changedForeignKeys)
-                    || !empty($tableDiff->removedForeignKeys)
-                    || !empty($tableDiff->addedForeignKeys)
+                if (!empty($tableDiff->getModifiedForeignKeys())
+                    || !empty($tableDiff->getDroppedForeignKeys())
+                    || !empty($tableDiff->getAddedForeignKeys())
                 ) {
                     $changed[] = 'foreignKeys';
                 }
@@ -2001,8 +2001,12 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         }
     }
 
-    private function compareSchemaTableFix(Table $realTable, Table $currentTable, TableDiff $diff): void
+    private function compareSchemaTableFix(Table $realTable, Table $currentTable, TableDiff $diff): TableDiff
     {
+        if (count($currentTable->getForeignKeys()) === 0) {
+            return $diff;
+        }
+        $meta = [];
         foreach ($currentTable->getForeignKeys() as $foreignKey) {
             if (!$foreignKey->hasOption('oldName')) {
                 continue;
@@ -2019,16 +2023,39 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 continue;
             }
             $name = $foreignKey->getName();
-            if (!isset($diff->renamedIndexes[$oldName])) {
+            if (!isset($diff->getRenamedIndexes()[$oldName])) {
                 continue;
             }
 
-            $data = $diff->renamedIndexes[$oldName];
-            unset($diff->renamedIndexes[$oldName]);
-            if (!isset($diff->addedIndexes[$name]) && !$realTable->hasIndex($name)) {
-                $diff->addedIndexes[$name] = $data;
+            $data = $diff->getRenamedIndexes()[$oldName];
+            if (!isset($meta['renamedIndexes'])) {
+                $meta['renamedIndexes'] = $diff->getRenamedIndexes();
+            }
+            $meta['renamedIndexes'][$oldName] = $data;
+            if (!isset($diff->getAddedIndexes()[$name]) && !$realTable->hasIndex($name)) {
+                if (!isset($meta['addedIndexes'])) {
+                    $meta['addedIndexes'] = $diff->getAddedIndexes();
+                }
+                $meta['addedIndexes'][$name] = $data;
             }
         }
+        if (empty($meta)) {
+            return $diff;
+        }
+        return new TableDiff(
+            $diff->getOldTable(),
+            $diff->getAddedColumns(),
+            $diff->getModifiedColumns(),
+            $diff->getDroppedColumns(),
+            $diff->getRenamedColumns(),
+            $meta['addedIndexes']??$diff->getAddedIndexes(),
+            $diff->getModifiedIndexes(),
+            $diff->getDroppedIndexes(),
+            $meta['renamedIndexes']??$diff->getRenamedIndexes(),
+            $diff->getAddedForeignKeys(),
+            $diff->getModifiedForeignKeys(),
+            $diff->getDroppedForeignKeys()
+        );
     }
 
     private function compareSchemaFix(Schema $currentSchema, Schema $realSchema, SchemaDiff $diff): void

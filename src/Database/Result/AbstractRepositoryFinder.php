@@ -56,6 +56,7 @@ abstract class AbstractRepositoryFinder
      * @throws \Doctrine\DBAL\Exception
      * @throws \Doctrine\DBAL\Schema\SchemaException
      * @noinspection PhpFullyQualifiedNameUsageInspection
+     * @noinspection PhpUnusedParameterInspection
      */
     public function search(
         string $searchQuery,

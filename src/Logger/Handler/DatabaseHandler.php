@@ -143,7 +143,7 @@ class DatabaseHandler extends AbstractProcessingHandler
         $schemaManager = $this->connection->createSchemaManager();
         $schema = new Schema();
         $this->addTableToSchema($schema);
-        if ($schemaManager->tablesExist($this->tableName)) {
+        if ($schemaManager->tablesExist([$this->getTableName()])) {
             $comparator = $schemaManager->createComparator();
             $table = $schema->getTable($this->tableName);
             $tableDiff = $comparator->compareTables(

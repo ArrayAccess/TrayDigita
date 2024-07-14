@@ -47,7 +47,7 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
 
     public function getManager(): ?ManagerInterface
     {
-        return $this->databaseConnection->getManager();
+        return $this->getDatabaseConnection()->getManager();
     }
 
     public function connect(#[SensitiveParameter] array $params) : DoctrineConnection
@@ -55,11 +55,10 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
         $this->assertCallstack();
 
         // @dispatch(connection.beforeConnect)
-        $this->dispatchBefore($params, $this->databaseConnection);
-
+        $this->dispatchBefore($params, $this->getDatabaseConnection());
         try {
             $connection = new ConnectionWrapper(
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 parent::connect($params)
             );
 
@@ -67,7 +66,7 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
             // @dispatch(connection.connect)
             $this->dispatchCurrent(
                 $params,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $this,
                 $connection
             );
@@ -77,7 +76,7 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
             // @dispatch(connection.afterConnect)
             $this->dispatchAfter(
                 $params,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $this,
                 $connection??null
             );
@@ -87,10 +86,10 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
     private function initConnection(Driver\Connection $connection): void
     {
         // @dispatch(connection.beforeInitConnection)
-        $this->dispatchBefore($connection, $this->databaseConnection);
-        $platform = $this->wrappedDriver->getDatabasePlatform();
+        $this->dispatchBefore($connection, $this->getDatabaseConnection());
+        $platform = $this->wrappedDriver->getDatabasePlatform($connection);
         $query = '';
-        $config = $this->databaseConnection->getDatabaseConfig();
+        $config = $this->getDatabaseConnection()->getDatabaseConfig();
         $charset = $config['charset'] ?? 'utf8';
         $timezone = $config['timezone'] ?? '+00:00';
         if ($timezone instanceof DateTimeZone) {
@@ -152,7 +151,7 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
             // @dispatch(connection.initConnection)
             $this->dispatchCurrent(
                 $connection,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $query,
                 $result??null
             );
@@ -161,7 +160,7 @@ final class DriverWrapper extends AbstractDriverMiddleware implements ManagerInd
             // @dispatch(connection.afterInitConnection)
             $this->dispatchAfter(
                 $connection,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $query,
                 $result??null
             );

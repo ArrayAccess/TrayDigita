@@ -34,8 +34,8 @@ use Doctrine\ORM\Mapping\Table;
     ]
 )]
 #[Index(
-    columns: ['channel', 'level'],
-    name: 'index_channel_level'
+    name: 'index_channel_level',
+    columns: ['channel', 'level']
 )]
 #[HasLifecycleCallbacks]
 class LogItem extends AbstractEntity

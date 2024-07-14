@@ -59,6 +59,7 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
     /**
      * @param GenerateSchemaTableEventArgs $eventArgs
      * @return void
+     * @noinspection PhpUnused
      */
     public function postGenerateSchemaTable(GenerateSchemaTableEventArgs $eventArgs): void
     {
@@ -284,13 +285,13 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
             ) {
                 $comment = sprintf(
                     '%s(%s:%s)',
-                    $comment??'',
+                    $comment,
                     $this->getDoctrineConversionType(),
                     $columnAttributes['type']->getName()
                 );
                 // $column->setComment($comment);
             }
-            if ($comment !== null) {
+            if ($comment) {
                 $declaration .= ' ' . $platform->getInlineColumnCommentSQL($comment);
             }
         }

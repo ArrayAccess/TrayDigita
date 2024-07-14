@@ -608,7 +608,7 @@ class UUID implements Stringable
 
     /**
      * @inheritdoc
-     * Default stringable return uuid v4
+     * Default string return uuid v4
      */
     public function __toString(): string
     {

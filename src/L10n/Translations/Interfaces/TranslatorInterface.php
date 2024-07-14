@@ -41,7 +41,7 @@ interface TranslatorInterface
     public function addAdapter(AdapterInterface $adapter, ?string $name = null) : bool;
 
     /**
-     * @param AdapterInterface|class-string<AdapterInterface> ...$adapters
+     * @param AdapterInterface|string ...$adapters
      * @return array removed adapter
      */
     public function removeAdapter(AdapterInterface|string ...$adapters) : array;

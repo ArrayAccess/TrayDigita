@@ -206,7 +206,6 @@ final class ContainerWrapper implements SystemContainerInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      * @throws Throwable
      * @noinspection PhpFullyQualifiedNameUsageInspection
-     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection
      */
     public function offsetGet(mixed $offset): mixed
     {

@@ -15,6 +15,7 @@ use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\TableDiff;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Throwable;
@@ -165,6 +166,7 @@ class DatabaseAdapter extends AbstractAdapter
         }
 
         $exp = $this->connection->createExpressionBuilder();
+        /** @noinspection PhpDqlBuilderUnknownModelInspection */
         return $this
             ->connection
             ->createQueryBuilder()
@@ -283,7 +285,7 @@ class DatabaseAdapter extends AbstractAdapter
         $schemaManager = $this->connection->createSchemaManager();
         $schema = new Schema();
         $this->addTableToSchema($schema);
-        if ($schemaManager->tablesExist($this->tableName)) {
+        if ($schemaManager->tablesExist([$this->getTableName()])) {
             $dbTable = $schemaManager->introspectTable($this->tableName);
             $table = $schema->getTable($this->tableName);
             $change = false;
@@ -315,11 +317,28 @@ class DatabaseAdapter extends AbstractAdapter
                 $schemaManager->introspectTable($this->tableName),
                 $table
             );
-            foreach ($tableDiff->removedColumns as $key => $column) {
-                // do not remove column
-                if (!$table->hasColumn($column->getName())) {
-                    unset($tableDiff->removedColumns[$key]);
+            $droppedColumns = $tableDiff->getDroppedColumns();
+            if (!empty($droppedColumns)) {
+                foreach ($droppedColumns as $key => $column) {
+                    // do not remove column
+                    if (!$table->hasColumn($column->getName())) {
+                        unset($droppedColumns[$key]);
+                    }
                 }
+                $tableDiff = new TableDiff(
+                    $tableDiff->getOldTable(),
+                    $tableDiff->getAddedColumns(),
+                    $tableDiff->getModifiedColumns(),
+                    $droppedColumns,
+                    $tableDiff->getRenamedColumns(),
+                    $tableDiff->getAddedIndexes(),
+                    $tableDiff->getModifiedIndexes(),
+                    $tableDiff->getDroppedIndexes(),
+                    $tableDiff->getRenamedIndexes(),
+                    $tableDiff->getAddedForeignKeys(),
+                    $tableDiff->getModifiedForeignKeys(),
+                    $tableDiff->getDroppedForeignKeys()
+                );
             }
             $sqlList = $this
                 ->connection
@@ -360,6 +379,7 @@ class DatabaseAdapter extends AbstractAdapter
         $exp = $this
             ->connection
             ->createExpressionBuilder();
+        /** @noinspection PhpDqlBuilderUnknownModelInspection */
         $exists = $this
             ->connection
             ->createQueryBuilder()

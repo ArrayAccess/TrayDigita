@@ -5,10 +5,11 @@ namespace ArrayAccess\TrayDigita\Database\Types;
 
 use DateTime;
 use DateTimeInterface;
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Types\ConversionException;
 use Doctrine\DBAL\Types\DateTimeType;
+use Doctrine\DBAL\Types\Exception\InvalidFormat;
+use Doctrine\DBAL\Types\Exception\InvalidType;
+use Throwable;
 use function is_numeric;
 use function is_resource;
 use function preg_match;
@@ -27,8 +28,9 @@ class Year extends DateTimeType
      * @return (T is null ? null : DateTimeInterface)
      *
      * @template T
+     * @throws InvalidFormat
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform) : ?DateTimeInterface
+    public function convertToPHPValue($value, AbstractPlatform $platform) : ?DateTime
     {
         if ($value === null || $value instanceof DateTimeInterface) {
             return $value;
@@ -38,10 +40,10 @@ class Year extends DateTimeType
         }
         $val = DateTime::createFromFormat('!Y-m-d', $value);
         if ($val === false) {
-            throw ConversionException::conversionFailedFormat(
+            throw InvalidFormat::new(
                 $value,
-                $this->getName(),
-                'Y-m-d',
+                static::class,
+                $platform->getDateTimeFormatString()
             );
         }
         return $val;
@@ -51,7 +53,7 @@ class Year extends DateTimeType
      * @param $value
      * @param AbstractPlatform $platform
      * @return string|null
-     * @throws ConversionException
+     * @throws InvalidType
      */
     public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
     {
@@ -65,10 +67,10 @@ class Year extends DateTimeType
         if (is_numeric($value)) {
             $value = (string) $value;
             if (preg_match('~[^0-9]~', $value)) {
-                throw ConversionException::conversionFailedFormat(
+                throw InvalidType::new(
                     $value,
-                    $this->getName(),
-                    'Y'
+                    static::class,
+                    ['null', 'DateTime', 'int', 'string']
                 );
             }
         }
@@ -79,9 +81,9 @@ class Year extends DateTimeType
             }
             return str_pad((string) $value, 4, '0', STR_PAD_LEFT);
         }
-        throw ConversionException::conversionFailedInvalidType(
+        throw InvalidType::new(
             $value,
-            $this->getName(),
+            static::class,
             ['null', 'DateTime', 'int', 'string']
         );
     }
@@ -93,7 +95,7 @@ class Year extends DateTimeType
         }
         try {
             return $platform->getDateTypeDeclarationSQL($column);
-        } catch (Exception) {
+        } catch (Throwable) {
             return 'YEAR';
         }
     }

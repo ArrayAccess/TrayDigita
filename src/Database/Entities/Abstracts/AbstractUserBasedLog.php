@@ -15,12 +15,12 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
 
 #[Index(
-    columns: ['user_id'],
-    name: 'relation_admin_logs_user_id_admins_id'
+    name: 'relation_admin_logs_user_id_admins_id',
+    columns: ['user_id']
 )]
 #[Index(
-    columns: ['user_id', 'name', 'type'],
-    name: 'index_user_id_name_type'
+    name: 'index_user_id_name_type',
+    columns: ['user_id', 'name', 'type']
 )]
 #[HasLifecycleCallbacks]
 /**

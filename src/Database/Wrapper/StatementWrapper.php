@@ -31,11 +31,10 @@ class StatementWrapper extends AbstractStatementMiddleware implements ManagerInd
         return $this->connectionWrapper->getManager();
     }
 
-    public function execute($params = null): Result
+    public function execute(): Result
     {
         return $this->dispatchWrap(
-            fn () => parent::execute($params),
-            $params,
+            fn () => parent::execute(),
             $this->connectionWrapper
         );
     }

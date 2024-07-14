@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\ReadableCollection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\LazyCriteriaCollection;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\BasicEntityPersister;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
 use Doctrine\ORM\Persisters\Exception\CantUseInOperatorOnCompositeKeys;
@@ -157,7 +157,7 @@ class LazyResultCriteria implements IteratorAggregate, Countable
                     $columns = [];
                     $class   = $this->class;
 
-                    if ($association['type'] === ClassMetadataInfo::MANY_TO_MANY) {
+                    if ($association['type'] === ClassMetadata::MANY_TO_MANY) {
                         if (! $association['isOwningSide']) {
                             $association = $assoc;
                         }

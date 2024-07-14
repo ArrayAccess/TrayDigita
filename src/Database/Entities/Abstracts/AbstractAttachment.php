@@ -43,16 +43,16 @@ use function strtolower;
     columns: ['path', 'storage_type']
 )]
 #[Index(
-    columns: ['storage_type', 'mime_type'],
-    name: 'index_storage_type_mime_type'
+    name: 'index_storage_type_mime_type',
+    columns: ['storage_type', 'mime_type']
 )]
 #[Index(
-    columns: ['user_id'],
-    name: 'relation_attachments_user_id_admins_id'
+    name: 'relation_attachments_user_id_admins_id',
+    columns: ['user_id']
 )]
 #[Index(
-    columns: ['name', 'file_name', 'status', 'mime_type', 'storage_type'],
-    name: 'index_name_file_name_status_mime_type_storage_type'
+    name: 'index_name_file_name_status_mime_type_storage_type',
+    columns: ['name', 'file_name', 'status', 'mime_type', 'storage_type']
 )]
 #[HasLifecycleCallbacks]
 abstract class AbstractAttachment extends AbstractEntity implements

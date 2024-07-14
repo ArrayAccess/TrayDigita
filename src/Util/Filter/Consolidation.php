@@ -816,7 +816,7 @@ class Consolidation
                         }
                         if ($decimal > 0) {
                             $decimal = substr($decimal, 0, $decimals);
-                            $decimal = str_pad($decimal, $decimals, '0', STR_PAD_RIGHT);
+                            $decimal = str_pad($decimal, $decimals, '0');
                         } else {
                             $decimal = '';
                         }
@@ -1094,7 +1094,7 @@ class Consolidation
                 $remainder = (string)((int)$remainder - (int)$b);
                 $partQuotient++;
             }
-            $quotient .= (string)$partQuotient;
+            $quotient .= $partQuotient;
         }
 
         // Format result

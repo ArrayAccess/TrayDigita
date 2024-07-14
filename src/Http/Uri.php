@@ -658,7 +658,7 @@ class Uri implements UriInterface, JsonSerializable
 
         return preg_replace_callback(
             '#[^%' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMITERS . ']+|%(?![A-Fa-f0-9]{2})#',
-            [$this, 'rawurlencodeMatchZero'],
+            [$this, 'rawUrlEncodeMatchZero'],
             $component
         );
     }
@@ -756,7 +756,7 @@ class Uri implements UriInterface, JsonSerializable
         $sub = self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMITERS;
         return preg_replace_callback(
             "#[^%$sub:@/]++|%(?![A-Fa-f0-9]{2})#",
-            [$this, 'rawurlencodeMatchZero'],
+            [$this, 'rawUrlEncodeMatchZero'],
             $path
         );
     }
@@ -776,12 +776,12 @@ class Uri implements UriInterface, JsonSerializable
 
         return preg_replace_callback(
             '#[^%' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMITERS . ':@/?]++|%(?![A-Fa-f0-9]{2})#',
-            [$this, 'rawurlencodeMatchZero'],
+            [$this, 'rawUrlEncodeMatchZero'],
             $str
         );
     }
 
-    private function rawurlencodeMatchZero(array $match) : string
+    private function rawUrlEncodeMatchZero(array $match) : string
     {
         return rawurlencode($match[0]);
     }

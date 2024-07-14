@@ -7,13 +7,14 @@ use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerIndicateInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
-use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Configuration;
 use Doctrine\ORM\Decorator\EntityManagerDecorator;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Internal\Hydration\AbstractHydrator;
-use Doctrine\Persistence\ObjectRepository;
+use Doctrine\ORM\Proxy\ProxyFactory;
+use Doctrine\ORM\UnitOfWork;
 use function get_object_vars;
 
 class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndicateInterface
@@ -24,7 +25,9 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
         protected readonly Connection $databaseConnection,
         ?EntityManagerInterface $entityManager = null
     ) {
-        parent::__construct($this->injectEntityManager($entityManager));
+        $entityManager ??= $this->createEntityManager();
+        parent::__construct($entityManager);
+        $this->wrapped = $this->injectEntityManager($entityManager);
     }
 
     public function getWrappedEntity() : EntityManagerInterface
@@ -50,7 +53,8 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
                 : $this->databaseConnection->getDefaultConfiguration();
             $entity = new EntityManager(
                 $this->databaseConnection->getConnection(),
-                $config
+                $config,
+                $this->databaseConnection->getDoctrineEventManager()
             );
             $this->dispatchCurrent($this->databaseConnection, $entity);
             return $entity;
@@ -78,8 +82,24 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
                     }
                 }
             };
-            $closure->call($entityManager->getUnitOfWork(), $this);
-            $closure->call($entityManager->getProxyFactory(), $this);
+            (function (EntityManagerInterface $em) {
+                if (property_exists($this, 'unitOfWork')) {
+                    $this->unitOfWork = new UnitOfWork($em);
+                }
+            })->call($entityManager, $this);
+            (function (EntityManagerInterface $em) {
+                $config = $em->getConfiguration();
+                if (property_exists($this, 'proxyFactory')) {
+                    $this->proxyFactory = new ProxyFactory(
+                        $this,
+                        $config->getProxyDir(),
+                        $config->getProxyNamespace(),
+                        $config->getAutoGenerateProxyClasses(),
+                    );
+                }
+            })->call($entityManager, $this);
+            // $closure->call($entityManager->getUnitOfWork(), $this);
+            // $closure->call($entityManager->getProxyFactory(), $this);
             $closure->call($entityManager->getMetadataFactory(), $this);
             $this->dispatchCurrent($this->databaseConnection, $entityManager);
             return $entityManager;
@@ -132,9 +152,9 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
 
     /**
      * @param $className
-     * @return ObjectRepository&Selectable
+     * @return EntityRepository
      */
-    public function getRepository($className) : ObjectRepository&Selectable
+    public function getRepository($className) : EntityRepository
     {
         $entity = $this
             ->getConfiguration()
@@ -152,7 +172,7 @@ class EntityManagerWrapper extends EntityManagerDecorator implements ManagerIndi
     /**
      * @inheritdoc
      */
-    public function find($className, $id, $lockMode = null, $lockVersion = null)
+    public function find($className, $id, $lockMode = null, $lockVersion = null): ?object
     {
         try {
             // @dispatch(entityManager.beforeFind)

@@ -13,8 +13,8 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
 
 #[Index(
-    columns: ['name'],
-    name: 'index_name'
+    name: 'index_name',
+    columns: ['name']
 )]
 #[HasLifecycleCallbacks]
 /**

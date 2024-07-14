@@ -58,7 +58,7 @@ class DatabaseChecker extends AbstractChecker
             $config = $database->getDatabaseConfig();
             $ormConfig = $database->getEntityManager()->getConfiguration();
             $platform = $database->getDatabasePlatform()::class;
-            $database->connect();
+            $database->getServerVersion();
         } catch (DriverException $e) {
             $error = $e;
             $driverException = $e;

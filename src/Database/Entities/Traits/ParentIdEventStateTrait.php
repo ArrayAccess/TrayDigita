@@ -65,10 +65,8 @@ trait ParentIdEventStateTrait
                 ->update($this::class, 'x')
                 ->set('x.parent_id', ':val')
                 ->where('x.id = :id')
-                ->setParameters([
-                    'val' => null,
-                    'id' => $this->getId(),
-                ]);
+                ->setParameter('val', null)
+                ->setParameter('id', $this->getId());
             if (method_exists($this, 'getUpdatedAt')) {
                 $date = $this->getUpdatedAt();
                 /** @noinspection PhpConditionAlreadyCheckedInspection */

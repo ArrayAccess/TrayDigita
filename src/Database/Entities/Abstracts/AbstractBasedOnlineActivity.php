@@ -12,8 +12,8 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
 
 #[Index(
-    columns: ['user_id', 'name', 'created_at', 'updated_at'],
-    name: 'index_user_id_name_created_at_updated_at'
+    name: 'index_user_id_name_created_at_updated_at',
+    columns: ['user_id', 'name', 'created_at', 'updated_at']
 )]
 /**
  * @property-read int $user_id

@@ -25,7 +25,7 @@ class ResultWrapper extends AbstractResultMiddleware implements ManagerIndicateI
         return $this->statementWrapper->getManager();
     }
 
-    public function fetchNumeric()
+    public function fetchNumeric(): false|array
     {
         return $this->dispatchWrap(
             fn () => parent::fetchNumeric(),
@@ -33,7 +33,7 @@ class ResultWrapper extends AbstractResultMiddleware implements ManagerIndicateI
         );
     }
 
-    public function fetchAssociative()
+    public function fetchAssociative(): false|array
     {
         return $this->dispatchWrap(
             fn () => parent::fetchAssociative(),
@@ -41,7 +41,7 @@ class ResultWrapper extends AbstractResultMiddleware implements ManagerIndicateI
         );
     }
 
-    public function fetchOne()
+    public function fetchOne(): mixed
     {
         return $this->dispatchWrap(
             fn () => parent::fetchOne(),

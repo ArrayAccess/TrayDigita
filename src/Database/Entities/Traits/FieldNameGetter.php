@@ -5,7 +5,7 @@ namespace ArrayAccess\TrayDigita\Database\Entities\Traits;
 
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Throwable;
 use function in_array;
 use function is_string;
@@ -25,7 +25,7 @@ trait FieldNameGetter
     private static array $objectMethodSetFields = [];
 
     private function createStaticCache(
-        ClassMetadataInfo $metadata
+        ClassMetadata $metadata
     ): void {
         $reflection = $metadata->getReflectionClass();
         $className = $reflection->getName();
@@ -38,7 +38,6 @@ trait FieldNameGetter
                 } catch (Throwable) {
                     continue;
                 }
-                /** @noinspection DuplicatedCode */
                 $fieldName = $mapping['fieldName'] ?? null;
                 $columnName = $mapping['columnName'] ?? null;
                 if (!$fieldName || !$columnName) {

@@ -287,7 +287,6 @@ class AbstractEntity implements JsonSerializable
                             } catch (MappingException) {
                                 continue;
                             }
-                            /** @noinspection DuplicatedCode */
                             $fieldName = $mapping['fieldName']??null;
                             $columnName = $mapping['columnName']??null;
                             if (!$fieldName || !$columnName) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Database\Types;
 
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InvalidArgumentException;
+use BadMethodCallException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\DateType;
 use Doctrine\DBAL\Types\PhpDateTimeMappingType;
@@ -15,7 +16,7 @@ use Throwable;
 /**
  * Wrapper for fix 0000-00-00 date issue.
  */
-class DateTypeWrapper extends DateType
+class DateTypeWrapper extends Type
 {
     /**
      * Wrapped type of DateType.
@@ -49,7 +50,7 @@ class DateTypeWrapper extends DateType
     }
 
     /**
-     * {@inheritDoc}
+     * @return string The name of this type.
      */
     public function getName(): string
     {
@@ -123,11 +124,29 @@ class DateTypeWrapper extends DateType
     /**
      * @inheritdoc
      */
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
         if (isset($this->wrappedType)) {
             return $this->wrappedType->convertToPHPValue($value, $platform);
         }
         return parent::convertToPHPValue($value, $platform);
+    }
+
+    public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
+    {
+        if (isset($this->wrappedType)) {
+            return $this->wrappedType->getSQLDeclaration($column, $platform);
+        }
+        return 'DATE';
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        if (isset($this->wrappedType)) {
+            return $this->wrappedType->{$name}(...$arguments);
+        }
+        throw new BadMethodCallException(
+            sprintf('Call to undefined method %s::%s()', static::class, $name)
+        );
     }
 }

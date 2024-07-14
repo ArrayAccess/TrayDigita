@@ -81,11 +81,9 @@ trait PasswordTrait
                 ->set('x.password', ':password')
                 ->set('x.updated_at', ':updated_at')
                 ->where('x.id = :id')
-                ->setParameters([
-                    'password' => $this->getPassword(),
-                    'updated_at' => $date,
-                    'id' => $this->getId()
-                ])
+                ->setParameter('password', $this->getPassword())
+                ->setParameter('updated_at', $date)
+                ->setParameter('id', $this->getId())
                 ->getQuery()
                 ->execute();
         }

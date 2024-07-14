@@ -882,7 +882,7 @@ body {
             navigator.clipboard.writeText(content);
         });
         e.addEventListener('keydown', function(e) {
-            if (!e.metaKey && !/^(Arrow|Escape|Tab)/i.test(e.code)) {
+            if (/^(Backspace|Delete)/i.test(e.code)) {
                 e.preventDefault();
                 return false;
             }

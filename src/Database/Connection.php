@@ -22,7 +22,8 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection as DoctrineConnection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
-use Doctrine\DBAL\Schema\LegacySchemaManagerFactory;
+use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
+use Doctrine\DBAL\ServerVersionProvider;
 use Doctrine\ORM\Configuration as OrmConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\Driver\AttributeDriver;
@@ -48,7 +49,7 @@ use function trim;
 /**
  * @mixin DoctrineConnection
  */
-class Connection implements ContainerIndicateInterface, ManagerAllocatorInterface
+class Connection implements ContainerIndicateInterface, ManagerAllocatorInterface, ServerVersionProvider
 {
     use ManagerDispatcherTrait,
         ManagerAllocatorTrait;
@@ -64,9 +65,9 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
     private OrmConfiguration|Configuration $defaultConfiguration;
 
     /**
-     * @var EventManager|null $eventManager The event manager
+     * @var EventManager|null $doctrineEventManager The doctrine event manager
      */
-    private ?EventManager $eventManager;
+    private ?EventManager $doctrineEventManager;
 
     /**
      * @var EntityManagerInterface|null $entityManager The entity manager
@@ -102,12 +103,20 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
         // register type
         TypeList::registerDefaultTypes();
         $this->config ??= ContainerHelper::use(Config::class, $this->container)??new Config();
-        $this->eventManager  = $eventManager??new EventManager();
+        $this->doctrineEventManager  = $eventManager??new EventManager();
         $this->defaultConfiguration = $configuration??new OrmConfiguration();
         $manager = ContainerHelper::getNull(ManagerInterface::class, $this->container);
         if ($manager) {
             $this->setManager($manager);
         }
+    }
+
+    /**
+     * @return EventManager
+     */
+    public function getDoctrineEventManager() : EventManager
+    {
+        return $this->doctrineEventManager;
     }
 
     /**
@@ -173,7 +182,7 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             $orm->setAutoCommit($configuration->getAutoCommit());
             $orm->setMiddlewares($configuration->getMiddlewares());
             $schemaManagerFactory = $configuration
-                ->getSchemaManagerFactory()??new LegacySchemaManagerFactory();
+                ->getSchemaManagerFactory()??new DefaultSchemaManagerFactory();
             $orm->setSchemaManagerFactory($schemaManagerFactory);
 
             if (($schema = $configuration->getSchemaAssetsFilter())) {
@@ -458,8 +467,8 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
             $this->connection = new DoctrineConnectionExtended(
                 $config,
                 new DriverWrapper($this, $driver),
-                $configuration,
-                $this->eventManager
+                $configuration
+                /*, $this->eventManager*/
             );
 
             // @dispatch(database.setUpConnection)
@@ -644,5 +653,13 @@ class Connection implements ContainerIndicateInterface, ManagerAllocatorInterfac
     public function __call(string $name, array $arguments)
     {
         return $this->getConnection()->$name(...$arguments);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getServerVersion(): string
+    {
+        return $this->getConnection()->getServerVersion();
     }
 }

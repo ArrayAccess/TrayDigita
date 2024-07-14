@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpInternalEntityUsedInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Database;

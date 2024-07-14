@@ -40,16 +40,16 @@ use Doctrine\ORM\Mapping\Table;
     ]
 )]
 #[Index(
-    columns: ['name'],
-    name: 'index_name'
+    name: 'index_name',
+    columns: ['name']
 )]
 #[Index(
-    columns: ['executed_object_class'],
-    name: 'index_executed_object_class'
+    name: 'index_executed_object_class',
+    columns: ['executed_object_class']
 )]
 #[Index(
-    columns: ['status_code', 'execution_time', 'finish_time'],
-    name: 'index_status_code_execution_time_finish_time'
+    name: 'index_status_code_execution_time_finish_time',
+    columns: ['status_code', 'execution_time', 'finish_time']
 )]
 #[HasLifecycleCallbacks]
 class TaskScheduler extends AbstractEntity
@@ -243,9 +243,7 @@ class TaskScheduler extends AbstractEntity
     public static function addEntityToMetadata(
         Connection $connection
     ): void {
-        if ($connection instanceof Connection) {
-            $connection = $connection->getEntityManager();
-        }
+        $connection = $connection->getEntityManager();
         $metadataFactory = $connection->getMetadataFactory();
         if ($metadataFactory->hasMetadataFor(__CLASS__)) {
             return;

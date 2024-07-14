@@ -207,10 +207,10 @@ class Waterfall implements ContainerAllocatorInterface
      */
     public function createHtmlStructure(bool $showEmpty = false) : string
     {
-        $microtimeStart = $_SERVER['REQUEST_TIME_FLOAT']
+        $microTimeStart = $_SERVER['REQUEST_TIME_FLOAT']
             ??$this->getProfiler()->getStartTime();
         $firstRender = $this->getProfiler()->convertMicrotime(
-            microtime(true) - $microtimeStart
+            microtime(true) - $microTimeStart
         );
 
         $memory_get_usage = memory_get_usage();

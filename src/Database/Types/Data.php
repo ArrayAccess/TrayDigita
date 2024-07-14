@@ -13,12 +13,12 @@ class Data extends TextType
 {
     public const NAME = 'data';
 
-    public function convertToPHPValue($value, AbstractPlatform $platform)
+    public function convertToPHPValue($value, AbstractPlatform $platform): mixed
     {
         return DataType::shouldUnSerialize($value);
     }
 
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    public function convertToDatabaseValue($value, AbstractPlatform $platform): mixed
     {
         $value = is_resource($value) ? stream_get_contents($value) : $value;
         return DataType::shouldSerialize($value);

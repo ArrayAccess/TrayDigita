@@ -42,12 +42,12 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
     ]
 )]
 #[Index(
-    columns: ['language'],
-    name: 'index_language'
+    name: 'index_language',
+    columns: ['language']
 )]
 #[Index(
-    columns: ['domain'],
-    name: 'index_domain'
+    name: 'index_domain',
+    columns: ['domain']
 )]
 #[HasLifecycleCallbacks]
 class Translation extends AbstractEntity

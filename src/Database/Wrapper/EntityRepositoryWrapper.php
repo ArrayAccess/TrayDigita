@@ -9,23 +9,31 @@ use ArrayAccess\TrayDigita\Traits\Manager\ManagerDispatcherTrait;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
+use Doctrine\DBAL\LockMode;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\Persistence\ObjectRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
+use Doctrine\ORM\QueryBuilder;
 use function func_get_args;
 
 /**
  * @template T of object
- * @mixin EntityRepository|ObjectRepository
- * @template-implements ObjectRepository<T>
+ * @mixin EntityRepository
+ * @template-implements EntityRepository<T>
  */
-class EntityRepositoryWrapper implements ObjectRepository, Selectable
+class EntityRepositoryWrapper extends EntityRepository
 {
     use ManagerDispatcherTrait;
 
     public function __construct(
         protected Connection $databaseConnection,
-        protected EntityRepository|ObjectRepository $repository
+        protected EntityRepository $repository
     ) {
+        parent::__construct(
+            $databaseConnection->getEntityManager(),
+            $repository->getClassMetadata()
+        );
     }
 
     protected function getPrefixNameEventIdentity(): ?string
@@ -38,17 +46,69 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
         return $this->databaseConnection;
     }
 
-    public function getRepository(): EntityRepository|ObjectRepository
+    /**
+     * Get the wrapped repository
+     *
+     * @return EntityRepository<T>
+     */
+    public function getRepository(): EntityRepository
     {
         return $this->repository;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getManager(): ?ManagerInterface
     {
-        return $this->databaseConnection->getManager();
+        return $this->getDatabaseConnection()->getManager();
     }
 
-    public function find($id, $lockMode = null, $lockVersion = null)
+    /**
+     * @inheritdoc
+     */
+    protected function getEntityName(): string
+    {
+        return $this->getRepository()->getEntityName();
+    }
+
+    /**
+     * Get entity manager
+     *
+     * @return EntityManagerInterface
+     */
+    protected function getEntityManager(): EntityManagerInterface
+    {
+        return $this->getRepository()->getEntityManager();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createResultSetMappingBuilder(string $alias): ResultSetMappingBuilder
+    {
+        try {
+            // @dispatch(entityRepository.beforeCreateResultSetMappingBuilder)
+            $this->dispatchBefore($alias, $this->getDatabaseConnection());
+            $result = $this->getRepository()->createResultSetMappingBuilder($alias);
+            // @dispatch(entityRepository.createResultSetMappingBuilder)
+            $this->dispatchCurrent(
+                $alias,
+                $this->getDatabaseConnection(),
+                $result
+            );
+            return $result;
+        } finally {
+            // @dispatch(entityRepository.afterCreateResultSetMappingBuilder)
+            $this->dispatchAfter(
+                $alias,
+                $this->getDatabaseConnection(),
+                $result??null
+            );
+        }
+    }
+
+    public function find(mixed $id, LockMode|int|null $lockMode = null, int|null $lockVersion = null): ?object
     {
         $arguments = func_get_args();
         try {
@@ -57,17 +117,17 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
                 $id,
                 $lockMode,
                 $lockVersion,
-                $this->databaseConnection
+                $this->getDatabaseConnection()
             );
 
-            $object = $this->repository->find(...$arguments);
+            $object = $this->getRepository()->find(...$arguments);
 
             // @dispatch(entityRepository.find)
             $this->dispatchCurrent(
                 $id,
                 $lockMode,
                 $lockVersion,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $object
             );
 
@@ -78,35 +138,68 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
                 $id,
                 $lockMode,
                 $lockVersion,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $object??null
             );
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function createQueryBuilder(string $alias, ?string $indexBy = null): QueryBuilder
+    {
+        try {
+            $this->dispatchBefore(
+                $alias,
+                $indexBy,
+                $this->getDatabaseConnection()
+            );
+            $result = $this->getRepository()->createQueryBuilder(...func_get_args());
+            // @dispatch(entityRepository.createQueryBuilder)
+            $this->dispatchCurrent(
+                $this->getDatabaseConnection(),
+                $result
+            );
+            return $result;
+        } finally {
+            // @dispatch(entityRepository.afterCreateQueryBuilder)
+            $this->dispatchAfter(
+                $this->getDatabaseConnection(),
+                $result??[]
+            );
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function findAll(): array
     {
         try {
             // @dispatch(entityRepository.beforeFindAll)
-            $this->dispatchBefore($this->databaseConnection);
+            $this->dispatchBefore($this->getDatabaseConnection());
 
-            $result = $this->repository->findAll();
+            $result = $this->getRepository()->findAll();
 
             // @dispatch(entityRepository.findAll)
             $this->dispatchCurrent(
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $result
             );
             return $result;
         } finally {
             // @dispatch(entityRepository.afterFindAll)
             $this->dispatchAfter(
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $result??[]
             );
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function findBy(array $criteria, ?array $orderBy = null, ?int $limit = null, ?int $offset = null): array
     {
         $arguments = func_get_args();
@@ -117,9 +210,9 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
                 $orderBy,
                 $limit,
                 $offset,
-                $this->databaseConnection
+                $this->getDatabaseConnection()
             );
-            $find = $this->repository->findBy(
+            $find = $this->getRepository()->findBy(
                 ...$arguments
             );
             // @dispatch(entityRepository.findBy)
@@ -128,7 +221,7 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
                 $orderBy,
                 $limit,
                 $offset,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $find
             );
             return $find;
@@ -139,26 +232,29 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
                 $orderBy,
                 $limit,
                 $offset,
-                $this->databaseConnection
+                $this->getDatabaseConnection()
             );
         }
     }
 
-    public function findOneBy(array $criteria, ?array $orderBy = null)
+    /**
+     * @inheritdoc
+     */
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?object
     {
         try {
             // @dispatch(entityRepository.beforeFindOneBy)
             $this->dispatchBefore(
                 $criteria,
                 $orderBy,
-                $this->databaseConnection
+                $this->getDatabaseConnection()
             );
-            $obj = $this->repository->findOneBy(...func_get_args());
+            $obj = $this->getRepository()->findOneBy(...func_get_args());
             // @dispatch(entityRepository.findOneBy)
             $this->dispatchCurrent(
                 $criteria,
                 $orderBy,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $obj
             );
             return $obj;
@@ -167,32 +263,33 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
             $this->dispatchAfter(
                 $criteria,
                 $orderBy,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $obj??null
             );
         }
     }
 
-    public function getClassName()
+    /**
+     * @inheritdoc
+     */
+    protected function getClassMetadata(): ClassMetadata
     {
-        return $this->repository->getClassName();
+        return $this->getRepository()->getClassMetadata();
     }
 
     /**
-     * @param Criteria $criteria
-     * @return AbstractLazyCollection&Selectable
-     * @psalm-return AbstractLazyCollection<int, T>&Selectable<int, T>
+     * @inheritdoc
      */
     public function matching(Criteria $criteria): AbstractLazyCollection&Selectable
     {
         try {
             // @dispatch(entityRepository.beforeMatching)
-            $this->dispatchBefore($criteria, $this->databaseConnection);
-            $collection = $this->repository->matching($criteria);
+            $this->dispatchBefore($criteria, $this->getDatabaseConnection());
+            $collection = $this->getRepository()->matching($criteria);
             // @dispatch(entityRepository.matching)
             $this->dispatchCurrent(
                 $criteria,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $collection
             );
             return $collection;
@@ -200,14 +297,43 @@ class EntityRepositoryWrapper implements ObjectRepository, Selectable
             // @dispatch(entityRepository.afterMatching)
             $this->dispatchAfter(
                 $criteria,
-                $this->databaseConnection,
+                $this->getDatabaseConnection(),
                 $collection??null
             );
         }
     }
 
-    public function __call(string $name, array $arguments)
+    /**
+     * @inheritdoc
+     */
+    public function __call(string $method, array $arguments): mixed
     {
-        return $this->repository->$name(...$arguments);
+        return call_user_func_array([$this->getRepository(), $method], $arguments);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function count(array $criteria = []): int
+    {
+        try {
+            // @dispatch(entityRepository.beforeCount)
+            $this->dispatchBefore($criteria, $this->getDatabaseConnection());
+            $count = $this->getRepository()->count($criteria);
+            // @dispatch(entityRepository.count)
+            $this->dispatchCurrent(
+                $criteria,
+                $this->getDatabaseConnection(),
+                $count
+            );
+            return $count;
+        } finally {
+            // @dispatch(entityRepository.afterCount)
+            $this->dispatchAfter(
+                $criteria,
+                $this->getDatabaseConnection(),
+                $count??0
+            );
+        }
     }
 }

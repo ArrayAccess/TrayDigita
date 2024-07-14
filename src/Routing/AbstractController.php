@@ -230,6 +230,7 @@ abstract class AbstractController implements ControllerInterface
             );
         $this->getView()?->setRequest($request);
         $manager = $this->router->getManager();
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
         $response = $this->beforeDispatch($request, $method, ...$arguments);
 
         // @dispatch(controller.beforeDispatch)

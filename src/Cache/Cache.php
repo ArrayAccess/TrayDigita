@@ -1,8 +1,5 @@
 <?php
-/**
- * @noinspection PhpUndefinedClassInspection
- * @noinspection PhpComposerExtensionStubsInspection
- */
+/** @noinspection PhpComposerExtensionStubsInspection */
 declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Cache;
