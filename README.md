@@ -60,7 +60,7 @@ Read the: **[Contribute](CONTRIBUTING.md)**
   - Change:
     - Initial Release with Doctrine ORM version `2`
 - Current Version: `2.0.0`
-  - Change::wq
+  - Change:
     - Update Doctrine ORM to 3.0
     - Update Compatibility
 
