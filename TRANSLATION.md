@@ -68,7 +68,7 @@ Generate translation can use [poedit](https://poedit.net/)
 "translatePluralContext:1,2,4c;transNX:1,2,4c;_nx:1,2,4c\n"
 ```
 
-## Poedit custom extrator for `twig` file
+## Poedit custom extractor for `twig` file
 
 - Go to `preference` > `extractor`
 - Select add (**+**)
