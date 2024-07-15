@@ -373,7 +373,7 @@ HTML;
             $exception->getLine()
         );
         $mainErrorInfo .= sprintf(
-            "<div class='current'><strong>Message</strong>: <code>%s</code></div>\n",
+            "<div class='current current-message'><strong>Message</strong>: <code>%s</code></div>\n",
             htmlentities($message)
         );
         $mainErrorInfo .= '<div><br></div>';
@@ -569,6 +569,14 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, .3) transparent;
+}
+
+.current-message > code {
+    word-wrap:break-word;
+    white-space: normal
 }
 
 .tab-info {
@@ -744,6 +752,7 @@ body {
     min-height: 100%;
     outline: none;
     box-shadow: none;
+    flex: 0 0 auto;
 /*     margin-right: 1em; */
 }
 
@@ -882,13 +891,39 @@ body {
             navigator.clipboard.writeText(content);
         });
         e.addEventListener('keydown', function(e) {
-            if (/^(Backspace|Delete)/i.test(e.code)) {
-                e.preventDefault();
-                return false;
-            }
             if (e.code === 'Escape') {
                 window.getSelection()?.removeAllRanges();
+                return;
             }
+            // if cut just select current select range
+            if (e.code === 'KeyX' && (e.ctrlKey || e.metaKey)) {
+                const selection = window.getSelection();
+                if (selection) {
+                    const range = selection.getRangeAt(0);
+                    const content = range.cloneContents();
+                    const div = document.createElement('div');
+                    div.appendChild(content);
+                    const text = div.textContent;
+                    try {
+                        navigator.clipboard.writeText(text).catch(() => null);
+                    } catch (err) {
+                        // pass
+                    }
+                    return;
+                }
+                return;
+            }
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.code)
+                || (
+                    (e.ctrlKey || e.metaKey) && (
+                        ['KeyA', 'KeyC', 'KeyV', 'KeyX', 'KeyR'].includes(e.code)
+                    )
+                )
+            ) {
+                return;
+            }
+            e.preventDefault();
+            return false;
         });
     });
     let navTabs = document.querySelectorAll('.trace-tab-nav');
