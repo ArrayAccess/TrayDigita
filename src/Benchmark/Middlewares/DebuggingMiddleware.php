@@ -31,20 +31,32 @@ use const PHP_INT_MIN;
 
 class DebuggingMiddleware extends AbstractMiddleware
 {
-    protected int $priority = PHP_INT_MIN;
+    protected int $priority = PHP_INT_MAX;
 
     use StreamFactoryTrait,
         TranslatorTrait;
 
+    /**
+     * @var bool registered
+     */
     private bool $registered = false;
 
+    /**
+     * @var bool darkMode
+     */
     private bool $darkMode = false;
 
     /**
      * @var ?float
      */
+    /**
+     * @var ?float
+     */
     private ?float $requestFloat = null;
 
+    /**
+     * @inheritdoc
+     */
     protected function doProcess(
         ServerRequestInterface $request
     ): ServerRequestInterface {
@@ -126,7 +138,7 @@ class DebuggingMiddleware extends AbstractMiddleware
         // if profiler disabled, stop here!
         $profiler = ContainerHelper::use(ProfilerInterface::class, $container);
         $waterfall = ContainerHelper::use(Waterfall::class, $container);
-        if (!$profiler?->isEnable() || ! $waterfall || !DataType::isHtmlContentType($response)) {
+        if (!$profiler?->isEnable() || ! $waterfall || $response->getHeaderLine('Content-Type') !== '' && !DataType::isHtmlContentType($response)) {
             return $response;
         }
 
@@ -155,7 +167,7 @@ class DebuggingMiddleware extends AbstractMiddleware
 
         // get origin performance
         $performanceOrigin = microtime(true) - $startTime;
-        $memoryOrigin = Consolidation::sizeFormat(memory_get_usage(), 3);
+        $memoryOrigin = Consolidation::sizeFormat(memory_get_usage());
 
         // start
         $body = (string) $response->getBody();
@@ -216,7 +228,7 @@ class DebuggingMiddleware extends AbstractMiddleware
                     $this->translateContext('rendered time', 'benchmark'),
                     $profiler->convertMicrotime($performanceEnd),
                     $this->translateContext('memory usage', 'benchmark'),
-                    Consolidation::sizeFormat(memory_get_usage(), 3),
+                    Consolidation::sizeFormat(memory_get_usage()),
                 )
             )
         );
@@ -270,9 +282,9 @@ class DebuggingMiddleware extends AbstractMiddleware
                     4
                 ),
                 $this->translateContext('peak memory usage', 'benchmark'),
-                Consolidation::sizeFormat(memory_get_peak_usage(), 3),
+                Consolidation::sizeFormat(memory_get_peak_usage()),
                 $this->translateContext('memory usage', 'benchmark'),
-                Consolidation::sizeFormat(memory_get_usage(), 3)
+                Consolidation::sizeFormat(memory_get_usage())
             )
         );
         $response->getBody()->write($str);
@@ -315,8 +327,8 @@ class DebuggingMiddleware extends AbstractMiddleware
                 (microtime(true) * 1000 - $startTime * 1000),
                 4
             ),
-            'peak_memory' => Consolidation::sizeFormat(memory_get_peak_usage(), 3),
-            'used_memory' => Consolidation::sizeFormat(memory_get_usage(), 3)
+            'peak_memory' => Consolidation::sizeFormat(memory_get_peak_usage()),
+            'used_memory' => Consolidation::sizeFormat(memory_get_usage())
         ];
         return $data;
     }
