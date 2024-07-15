@@ -885,7 +885,7 @@ abstract class BaseKernel implements
         KernelCommandLoader::register($this);
 
         // registering debug middleware at the first middleware
-        $httpKernel->addMiddleware($debugMiddleware);
+        $httpKernel->addDeferredMiddleware($debugMiddleware);
         $httpKernel->addDeferredMiddleware($errorMiddleware);
         return $this;
     }
@@ -938,7 +938,6 @@ abstract class BaseKernel implements
         return $this->registeredDirectories;
     }
 
-    /** @noinspection PhpUnused */
     public function getAppNameSpace(): ?string
     {
         return $this->appNameSpace;

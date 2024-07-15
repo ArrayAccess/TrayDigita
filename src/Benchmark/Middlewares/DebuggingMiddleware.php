@@ -31,20 +31,32 @@ use const PHP_INT_MIN;
 
 class DebuggingMiddleware extends AbstractMiddleware
 {
-    protected int $priority = PHP_INT_MIN;
+    protected int $priority = PHP_INT_MAX;
 
     use StreamFactoryTrait,
         TranslatorTrait;
 
+    /**
+     * @var bool registered
+     */
     private bool $registered = false;
 
+    /**
+     * @var bool darkMode
+     */
     private bool $darkMode = false;
 
     /**
      * @var ?float
      */
+    /**
+     * @var ?float
+     */
     private ?float $requestFloat = null;
 
+    /**
+     * @inheritdoc
+     */
     protected function doProcess(
         ServerRequestInterface $request
     ): ServerRequestInterface {
@@ -126,7 +138,7 @@ class DebuggingMiddleware extends AbstractMiddleware
         // if profiler disabled, stop here!
         $profiler = ContainerHelper::use(ProfilerInterface::class, $container);
         $waterfall = ContainerHelper::use(Waterfall::class, $container);
-        if (!$profiler?->isEnable() || ! $waterfall || !DataType::isHtmlContentType($response)) {
+        if (!$profiler?->isEnable() || ! $waterfall || $response->getHeaderLine('Content-Type') !== '' && !DataType::isHtmlContentType($response)) {
             return $response;
         }
 
