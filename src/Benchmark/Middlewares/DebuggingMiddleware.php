@@ -27,7 +27,6 @@ use function round;
 use function sprintf;
 use function str_contains;
 use const PHP_INT_MAX;
-use const PHP_INT_MIN;
 
 class DebuggingMiddleware extends AbstractMiddleware
 {
@@ -138,7 +137,9 @@ class DebuggingMiddleware extends AbstractMiddleware
         // if profiler disabled, stop here!
         $profiler = ContainerHelper::use(ProfilerInterface::class, $container);
         $waterfall = ContainerHelper::use(Waterfall::class, $container);
-        if (!$profiler?->isEnable() || ! $waterfall || $response->getHeaderLine('Content-Type') !== '' && !DataType::isHtmlContentType($response)) {
+        if (!$profiler?->isEnable() || ! $waterfall
+            || $response->getHeaderLine('Content-Type') !== '' && !DataType::isHtmlContentType($response)
+        ) {
             return $response;
         }
 
