@@ -24,6 +24,7 @@ use ArrayAccess\TrayDigita\Kernel\Interfaces\RebootableInterface;
 use ArrayAccess\TrayDigita\L10n\Translations\Adapter\Gettext\PoMoAdapter;
 use ArrayAccess\TrayDigita\L10n\Translations\Adapter\Json\JsonAdapter;
 use ArrayAccess\TrayDigita\L10n\Translations\Interfaces\TranslatorInterface;
+use ArrayAccess\TrayDigita\Middleware\ErrorMiddleware;
 use ArrayAccess\TrayDigita\Middleware\RoutingMiddleware;
 use ArrayAccess\TrayDigita\PossibleRoot;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
@@ -837,6 +838,14 @@ abstract class BaseKernel implements
             } catch (Throwable) {
                 $debugMiddleware = new DebuggingMiddleware($container);
             }
+            try {
+                $errorMiddleware = ContainerHelper::resolveCallable(
+                    ErrorMiddleware::class,
+                    $container
+                );
+            } catch (Throwable) {
+                $errorMiddleware = new ErrorMiddleware($container);
+            }
             // @dispatch(kernel.initConfig)
             $manager->dispatch('kernel.initConfig', $this);
         } finally {
@@ -876,8 +885,8 @@ abstract class BaseKernel implements
         KernelCommandLoader::register($this);
 
         // registering debug middleware at the first middleware
-        $httpKernel->addMiddleware($debugMiddleware);
-
+        $httpKernel->addDeferredMiddleware($debugMiddleware);
+        $httpKernel->addDeferredMiddleware($errorMiddleware);
         return $this;
     }
 
