@@ -16,7 +16,7 @@ use Throwable;
 /**
  * Wrapper for fix 0000-00-00 date issue.
  */
-class DateTypeWrapper extends Type
+class DateTypeWrapper extends Type implements PhpDateTimeMappingType
 {
     /**
      * Wrapped type of DateType.

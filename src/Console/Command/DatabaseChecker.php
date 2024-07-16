@@ -397,7 +397,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 $clonedSchema,
                 $currentSchema
             );
-            $this->compareSchemaFix($currentSchema, $clonedSchema, $schemaDiff);
+            $schemaDiff = $this->compareSchemaFix($currentSchema, $clonedSchema, $schemaDiff);
             $schemaSQL = $this->getAlterSQL($schemaDiff, $platform);
             if (empty($schemaSQL)) {
                 $output->writeln(
@@ -1363,7 +1363,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $clonedSchema,
             $currentSchema
         );
-        $this->compareSchemaFix($currentSchema, $clonedSchema, $schemaDiff);
+        $schemaDiff = $this->compareSchemaFix($currentSchema, $clonedSchema, $schemaDiff);
         if ($schemaDiff->isEmpty()) {
             $output->writeln(
                 sprintf(
@@ -2058,13 +2058,17 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         );
     }
 
-    private function compareSchemaFix(Schema $currentSchema, Schema $realSchema, SchemaDiff $diff): void
+    private function compareSchemaFix(Schema $currentSchema, Schema $realSchema, SchemaDiff $diff): SchemaDiff
     {
-        if (!empty($diff->changedTables)) {
-            foreach ($diff->changedTables as $k => $tableDiff) {
+        $modifiedTables = $diff->getAlteredTables();
+        if (!empty($modifiedTables)) {
+            $changed = [];
+            $change = false;
+            foreach ($modifiedTables as $k => $tableDiff) {
                 if (!$tableDiff instanceof TableDiff) {
                     continue;
                 }
+                $changed[$k] = $tableDiff;
                 $theTable = $tableDiff->fromTable??null;
                 if (!$theTable instanceof Table) {
                     continue;
@@ -2073,16 +2077,30 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     continue;
                 }
                 try {
-                    $this->compareSchemaTableFix(
+                    $tableDiff = $this->compareSchemaTableFix(
                         $theTable,
                         $currentSchema->getTable($theTable->getName()),
                         $tableDiff
                     );
+                    $changed[$k] = $tableDiff;
+                    $change = true;
                 } catch (SchemaException) {
                 }
-                $diff->changedTables[$k] = $tableDiff;
+            }
+            if ($change) {
+                $diff = new SchemaDiff(
+                    $diff->getCreatedSchemas(),
+                    $diff->getDroppedSchemas(),
+                    $diff->getCreatedTables(),
+                    $changed,
+                    $diff->getDroppedTables(),
+                    $diff->getCreatedSequences(),
+                    $diff->getAlteredSequences(),
+                    $diff->getDroppedSequences()
+                );
             }
         }
+        return $diff;
     }
 
     /**
