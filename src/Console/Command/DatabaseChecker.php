@@ -1865,7 +1865,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         }
         $containOptimize = false;
         foreach ($allMetadata as $meta) {
-            $existTable = $schema?->tablesExist($meta->getTableName());
+            $existTable = $schema?->tablesExist([$meta->getTableName()]);
 //            $statusTable = $existTable
 //                ? '<fg=green;options=bold>[√]</>'
 //                : '<fg=red;options=bold>[X]</>';
