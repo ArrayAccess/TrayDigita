@@ -1208,12 +1208,13 @@ HTML
     --waterfall-toolbar-bg: #fafafa;
 }
 .{$this->prefix}section-wrapper {
+    scroll-behavior: smooth;
     position: fixed;
     z-index: 2147483647;
     left:0;
     right:0;
     bottom:0;
-    font-weight: lighter;
+    font-weight: 250;
     margin: 0;
     padding: 0;
     border: 0;
@@ -1449,6 +1450,10 @@ HTML
     position: relative;
     z-index: 900;
     overflow: auto;
+    scrollbar-width: thin;
+    scroll-behavior: smooth;
+    /* make smooth */
+    scrollbar-color: rgba(0,0,0,.1) transparent;
 }
 .{$this->prefix}section-wrapper .{$this->prefix}hidden {
     display: none !important;
