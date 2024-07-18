@@ -186,7 +186,6 @@ class PermissionWrapper implements PermissionInterface
                 $this->cachedInvalidEntities[$identity] = false;
                 return null;
             }
-
         }
 
         return $this->permission->get($identity);
