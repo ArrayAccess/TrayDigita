@@ -94,7 +94,7 @@ class PermissionWrapper implements PermissionInterface
 
     public function has(CapabilityInterface|string $identity): bool
     {
-        if ($this->has($identity)) {
+        if ($this->permission->has($identity)) {
             return true;
         }
         return $this->get($identity) !== null;
