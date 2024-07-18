@@ -21,14 +21,34 @@ use function strtolower;
 
 class PermissionWrapper implements PermissionInterface
 {
+    /**
+     * @var ?CapabilityEntityFactoryInterface
+     */
     protected ?CapabilityEntityFactoryInterface $capabilityEntityFactory = null;
 
+    /**
+     * @var array<string, bool>
+     */
     private array $cachedInvalidEntities = [];
 
+    /**
+     * @var ?array<string, CapabilityInterface>
+     */
     private ?array $availableIdentities = null;
 
+    /**
+     * @var ?PermissionInterface $permission
+     */
     private PermissionInterface $permission;
 
+    /**
+     * PermissionWrapper constructor.
+     *
+     * @param Connection $connection
+     * @param ContainerInterface|null $container
+     * @param ManagerInterface|null $manager
+     * @param PermissionInterface|null $permission
+     */
     public function __construct(
         protected Connection $connection,
         ?ContainerInterface $container = null,
@@ -54,11 +74,22 @@ class PermissionWrapper implements PermissionInterface
         }
     }
 
+    /**
+     * Get the capability entity factory.
+     *
+     * @return CapabilityEntityFactoryInterface|null
+     */
     public function getCapabilityEntityFactory(): ?CapabilityEntityFactoryInterface
     {
         return $this->capabilityEntityFactory;
     }
 
+    /**
+     * Set the capability entity factory.
+     *
+     * @param CapabilityEntityFactoryInterface $capabilityEntityFactory
+     * @return void
+     */
     public function setCapabilityEntityFactory(CapabilityEntityFactoryInterface $capabilityEntityFactory): void
     {
         if ($capabilityEntityFactory !== $this->capabilityEntityFactory) {
@@ -67,16 +98,25 @@ class PermissionWrapper implements PermissionInterface
         $this->capabilityEntityFactory = $capabilityEntityFactory;
     }
 
+    /**
+     * @return Connection
+     */
     public function getConnection(): Connection
     {
         return $this->connection;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getManager(): ?ManagerInterface
     {
         return $this->permission->getManager();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function permitted(RoleInterface|UserRoleInterface $role, CapabilityInterface|string $capability): bool
     {
         $capability = $this->get($capability);
@@ -86,16 +126,25 @@ class PermissionWrapper implements PermissionInterface
         return $this->permission->permitted($role, $capability);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function add(CapabilityInterface $capability): CapabilityInterface
     {
         return $this->permission->add($capability);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function replace(CapabilityInterface $capability): void
     {
         $this->permission->replace($capability);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function has(CapabilityInterface|string $identity): bool
     {
         if ($this->permission->has($identity)) {
@@ -104,6 +153,9 @@ class PermissionWrapper implements PermissionInterface
         return $this->get($identity) !== null;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function remove(string|CapabilityInterface $identity): ?CapabilityInterface
     {
         $identity = $this->identify($identity);
@@ -114,6 +166,9 @@ class PermissionWrapper implements PermissionInterface
         return $this->permission->remove($identity);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function get(CapabilityInterface|string $identity): ?CapabilityInterface
     {
         if (!$this->permission->has($identity)) {
@@ -128,13 +183,7 @@ class PermissionWrapper implements PermissionInterface
             }
 
             $em = $this->getConnection()->getEntityManager();
-            $this->availableIdentities ??= IterableHelper::each(
-                $factory->getCapabilityIdentities($em),
-                static function (&$key, $value) {
-                    $key = strtolower($value);
-                    return false;
-                }
-            );
+            $this->availableIdentities ??= $this->getCapabilities();
 
             if (!isset($this->availableIdentities[$identity])) {
                 return null;
@@ -155,22 +204,39 @@ class PermissionWrapper implements PermissionInterface
         return $this->permission->get($identity);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function identify(CapabilityInterface|string $capability): string
     {
         return strtolower($this->permission->identify($capability));
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getCapabilities(): array
     {
-        if ($this->availableIdentities === null
-            || !$this->capabilityEntityFactory
-        ) {
+        $factory = $this->getCapabilityEntityFactory();
+        if ($this->availableIdentities === null && $factory) {
+            IterableHelper::each(
+                $factory->getCapabilityIdentities($this->getConnection()->getEntityManager()),
+                function (&$key, $value) {
+                    $key = strtolower($value);
+                    $this->availableIdentities[$key] = $value;
+                    return false;
+                }
+            );
+        }
+
+        if ($this->availableIdentities === null || !$factory) {
             return $this->permission->getCapabilities();
         }
 
         if (empty($this->availableIdentities)) {
             return [];
         }
+
         $total = count($this->availableIdentities);
         $count = count(array_filter($this->availableIdentities));
         if ($total !== $count) {
