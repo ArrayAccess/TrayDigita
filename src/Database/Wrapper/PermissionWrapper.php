@@ -79,6 +79,10 @@ class PermissionWrapper implements PermissionInterface
 
     public function permitted(RoleInterface|UserRoleInterface $role, CapabilityInterface|string $capability): bool
     {
+        $capability = $this->get($capability);
+        if (!$capability) {
+            return false;
+        }
         return $this->permission->permitted($role, $capability);
     }
 
