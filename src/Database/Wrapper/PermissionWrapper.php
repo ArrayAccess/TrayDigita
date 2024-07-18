@@ -32,7 +32,7 @@ class PermissionWrapper implements PermissionInterface
     private array $cachedInvalidEntities = [];
 
     /**
-     * @var ?array<string, CapabilityInterface>
+     * @var ?array<string, bool>
      */
     private ?array $availableIdentities = null;
 
@@ -93,6 +93,7 @@ class PermissionWrapper implements PermissionInterface
     public function setCapabilityEntityFactory(CapabilityEntityFactoryInterface $capabilityEntityFactory): void
     {
         if ($capabilityEntityFactory !== $this->capabilityEntityFactory) {
+            $this->cachedInvalidEntities = [];
             $this->availableIdentities = null;
         }
         $this->capabilityEntityFactory = $capabilityEntityFactory;
@@ -181,24 +182,11 @@ class PermissionWrapper implements PermissionInterface
             if (isset($this->cachedInvalidEntities[$identity])) {
                 return null;
             }
-
-            $em = $this->getConnection()->getEntityManager();
-            $this->availableIdentities ??= $this->getCapabilities();
-
-            if (!isset($this->availableIdentities[$identity])) {
-                return null;
-            }
-
-            $entity = $factory->createEntity(
-                $this->getConnection()->getEntityManager(),
-                $identity
-            );
-            if (!$entity) {
+            if (!isset($this->getCapabilities()[$identity])) {
                 $this->cachedInvalidEntities[$identity] = false;
                 return null;
             }
-            $this->availableIdentities[$identity] = true;
-            $this->add($entity);
+
         }
 
         return $this->permission->get($identity);
@@ -219,12 +207,15 @@ class PermissionWrapper implements PermissionInterface
     {
         $factory = $this->getCapabilityEntityFactory();
         if ($this->availableIdentities === null && $factory) {
-            IterableHelper::each(
-                $factory->getCapabilityIdentities($this->getConnection()->getEntityManager()),
-                function (&$key, $value) {
-                    $key = strtolower($value);
-                    $this->availableIdentities[$key] = $value;
-                    return false;
+            $this->availableIdentities = [];
+            IterableHelper::every(
+                $this
+                    ->getCapabilityEntityFactory()
+                    ->all($this->getConnection()->getEntityManager()),
+                function ($e, CapabilityInterface $capability) {
+                    $identity = $this->identify($capability);
+                    $this->availableIdentities[$identity] = true;
+                    $this->permission->add($capability);
                 }
             );
         }
