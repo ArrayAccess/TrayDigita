@@ -435,7 +435,7 @@ abstract class AbstractUser extends AbstractEntity implements
 
     public function getRole(): string
     {
-        return $this->role;
+        return $this->role??'';
     }
 
     public function setRole(string $role) : void
