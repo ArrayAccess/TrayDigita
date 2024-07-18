@@ -1157,9 +1157,23 @@ class Consolidation
         bool $detectParent = true,
     ): array {
         $regexP = $regexP && DataType::isValidRegExP($regexP) ? $regexP : null;
-        $reflectionObject = new ReflectionObject($object);
+        $current = new ReflectionObject($object);
+
+        $properties = [];
+        foreach ($current->getProperties() as $property) {
+            $properties[$property->getName()] = $property;
+        }
+
+        while ($current = $current->getParentClass()) {
+            foreach ($current->getProperties() as $property) {
+                if (!isset($properties[$property->getName()])) {
+                    $properties = [$property->getName() => $property] + $properties;
+                }
+            }
+        }
+
         $info = [];
-        foreach ($reflectionObject->getProperties() as $property) {
+        foreach ($properties as $property) {
             // no display if not initialized
             if ($property->isStatic()
                 || !$property->isInitialized($object)
@@ -1185,6 +1199,7 @@ class Consolidation
                         : $key
                 );
             }
+
             $info[$keyItem] = $value;
             if ($detectParent && in_array($key, $excludeKeys)) {
                 continue;
