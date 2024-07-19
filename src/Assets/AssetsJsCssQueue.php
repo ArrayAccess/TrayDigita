@@ -239,6 +239,17 @@ final class AssetsJsCssQueue
         }
     }
 
+    private function doRegisterExtendedJS(string $name) : void
+    {
+        // if contain on extended
+        if (!isset($this->extended[$name])) {
+            return;
+        }
+        foreach ($this->extended[$name]['js']??[] as $cssName => $inherit) {
+            $this->queue['js'][$cssName] ??= $inherit;
+        }
+    }
+
     public function queueHeaderJs(
         string $name,
         string ...$inherits
@@ -256,7 +267,7 @@ final class AssetsJsCssQueue
         $this->queuedRecord['js'][$name] = true;
         $this->queue['js_footer'][$name] = $inherits;
         unset($this->queue['js_header'][$name]);
-        $this->doRegisterExtendedCss($name);
+        $this->doRegisterExtendedJS($name);
     }
 
     public function renderHeader(): string
