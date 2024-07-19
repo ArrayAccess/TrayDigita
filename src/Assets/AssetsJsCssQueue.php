@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArrayAccess\TrayDigita\Assets;
 
 use ArrayAccess\TrayDigita\Assets\Interfaces\AssetsCollectionInterface;
+use ArrayAccess\TrayDigita\Assets\Interfaces\DependencyInterface;
 use function array_filter;
 use function array_merge;
 use function array_unique;
@@ -51,6 +52,11 @@ final class AssetsJsCssQueue
      * @var array<string>
      */
     protected array $lastScript = [];
+
+    /**
+     * @var array<string, array<string, DependencyInterface>>
+     */
+    protected array $registeredScriptPackage = [];
 
     public function __construct(public readonly AssetsCollectionInterface $collection)
     {
@@ -182,9 +188,21 @@ final class AssetsJsCssQueue
     }
 
     /**
+     * Register package
+     *
      * @param string $jsName
-     * @param array $includeCss
-     * @param array $includeJS
+     * @param array|string[]|array{string: array{
+     *     url: string|UriInterface,
+     *     inherits?: string|string[],
+     *     attributes?: array<string, mixed>,
+     *     string: mixed
+     * }} $includeJS
+     * @param array|string[]|array{string: array{
+     *     url: string|UriInterface,
+     *     inherits?: string|string[],
+     *     attributes?: array<string, mixed>,
+     *     string: mixed
+     * }} $includeCss
      * @return void
      */
     public function registerPackage(
@@ -206,12 +224,72 @@ final class AssetsJsCssQueue
                 }
                 $inherit = array_filter($inherit, 'is_string');
                 $this->extended[$jsName][$type][$name] = $inherit;
+                if (!isset($inherit['url'])) {
+                    continue;
+                }
+                if (!is_string($inherit['url']) && !$inherit['url'] instanceof UriInterface) {
+                    continue;
+                }
+                $url = $inherit['url'];
+                $registrar = $type === 'js' ? $this->getJS() : $this->getCSS();
+                $inherits = $inherit['inherits']??[];
+                $inherits = is_string($inherits) ? [$inherits] : $inherits;
+                $inherits = !is_array($inherits) ? [] : $inherits;
+                $attributes = $inherit['attributes']??[];
+                $attributes = !is_array($attributes) ? [] : $attributes;
+                unset($inherit['url'], $inherit['inherits'], $inherit['attributes']);
+                foreach ($inherit as $attrName => $value) {
+                    $attributes[$attrName] = $value;
+                }
+                $depends = $registrar->registerURL($name, $url, $attributes, ...$inherits);
+                if (!$depends) {
+                    continue;
+                }
+                $this->registeredScriptPackage[$type][$name] = $depends;
             }
         }
     }
 
+    /**
+     * DeRegister package
+     *
+     * @param string $jsName
+     * @return void
+     */
     public function deregisterPackage(string $jsName): void
     {
+        if (!isset($this->extended[$jsName])) {
+            return;
+        }
+        foreach ($this->extended[$jsName] as $type => $list) {
+            if (!is_array($list)) {
+                continue;
+            }
+            if (!isset($this->registeredScriptPackage[$type])) {
+                continue;
+            }
+            foreach ($list as $name => $inherit) {
+                if (!is_string($name)) {
+                    continue;
+                }
+                if (!is_array($inherit)) {
+                    continue;
+                }
+                if (!isset($this->registeredScriptPackage[$type][$name])
+                    || !$this->registeredScriptPackage[$type][$name] instanceof DependencyInterface
+                ) {
+                    unset($this->registeredScriptPackage[$type][$name]);
+                    continue;
+                }
+                $this->deQueueJs($name);
+                $this->deQueueCss($name);
+                $registrar = $type === 'js' ? $this->getJS() : $this->getCSS();
+                if ($registrar->get($name) === $this->registeredScriptPackage[$type][$name]) {
+                    $registrar->deregister($this->registeredScriptPackage[$type][$name]);
+                }
+                unset($this->registeredScriptPackage[$type][$name]);
+            }
+        }
         unset($this->extended[$jsName]);
     }
 
