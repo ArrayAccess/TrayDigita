@@ -183,7 +183,7 @@ final class AssetsJsCssQueue
 
     /**
      * @param string $jsName
-     * @param array<string, string[]> $includeCss
+     * @param array $includeCss
      * @param array $includeJS
      * @return void
      */
