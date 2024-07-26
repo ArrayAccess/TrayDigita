@@ -8,7 +8,7 @@ use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 
 class Kernel extends AbstractKernel
 {
-    public const VERSION = '1.0.0';
+    public const VERSION = '2.0.2';
 
     public const NAME = 'TrayDigita';
 
