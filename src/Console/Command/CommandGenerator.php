@@ -141,6 +141,9 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
         if ($this->commandList === null) {
             $this->commandList = [];
             $commandDirectory = $this->commandDirectory;
+            if (!is_dir($commandDirectory)) {
+                return false;
+            }
             $lengthStart = strlen($commandDirectory) + 1;
             foreach (Finder::create()
                          ->in($commandDirectory)

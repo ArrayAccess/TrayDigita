@@ -132,6 +132,9 @@ class ControllerGenerator extends Command implements ContainerAllocatorInterface
         if ($this->controllerList === null) {
             $this->controllerList = [];
             $controllerDirectory = $this->controllerDirectory;
+            if (!is_dir($controllerDirectory)) {
+                return false;
+            }
             $lengthStart = strlen($controllerDirectory) + 1;
             foreach (Finder::create()
                          ->in($controllerDirectory)

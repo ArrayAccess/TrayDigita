@@ -144,6 +144,9 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
         if ($this->databaseEventList === null) {
             $this->databaseEventList = [];
             $databaseEventDirectory = $this->databaseEventDirectory;
+            if (!is_dir($databaseEventDirectory)) {
+                return false;
+            }
             $lengthStart = strlen($databaseEventDirectory) + 1;
             foreach (Finder::create()
                          ->in($databaseEventDirectory)

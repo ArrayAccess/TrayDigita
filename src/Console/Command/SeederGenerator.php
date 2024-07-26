@@ -142,6 +142,9 @@ class SeederGenerator extends Command implements ContainerAllocatorInterface, Ma
         if ($this->seederList === null) {
             $this->seederList = [];
             $seederDirectory = $this->seederDirectory;
+            if (!is_dir($seederDirectory)) {
+                return false;
+            }
             $lengthStart = strlen($seederDirectory) + 1;
             foreach (Finder::create()
                          ->in($seederDirectory)
@@ -367,7 +370,7 @@ class SeederGenerator extends Command implements ContainerAllocatorInterface, Ma
                         )
                     );
                 }
-                    return $ask;
+                return $ask;
             }
         );
         if ($answer) {
@@ -377,8 +380,6 @@ class SeederGenerator extends Command implements ContainerAllocatorInterface, Ma
             $status = @file_put_contents(
                 $fileName,
                 $this->generateSeederContent(
-                    $name,
-                    $named['identity'],
                     $named['className']
                 )
             );

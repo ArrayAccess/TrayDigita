@@ -142,6 +142,9 @@ class SchedulerGenerator extends Command implements ContainerAllocatorInterface,
         if ($this->schedulerList === null) {
             $this->schedulerList = [];
             $schedulerDirectory = $this->schedulerDirectory;
+            if (!is_dir($schedulerDirectory)) {
+                return false;
+            }
             $lengthStart = strlen($schedulerDirectory) + 1;
             foreach (Finder::create()
                          ->in($schedulerDirectory)
