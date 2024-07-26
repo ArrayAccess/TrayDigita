@@ -179,7 +179,7 @@ class CommandGenerator extends Command implements ContainerAllocatorInterface, M
             $this->translateContext('Please enter command class name', 'console'),
             null,
             function ($name) {
-                $definitions = $this->filterNames($name);
+                $definitions = is_string($name) ? $this->filterNames($name) : null;
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
                         $this->translateContext(

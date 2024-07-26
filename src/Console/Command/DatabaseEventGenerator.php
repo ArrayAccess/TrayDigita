@@ -182,7 +182,7 @@ class DatabaseEventGenerator extends Command implements ContainerAllocatorInterf
             $this->translateContext('Please enter database event class name', 'console'),
             null,
             function ($name) {
-                $definitions = $this->filterNames($name);
+                $definitions = is_string($name) ? $this->filterNames($name) : null;
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
                         $this->translateContext('Please enter valid database event class name!', 'console')

@@ -180,7 +180,7 @@ class SeederGenerator extends Command implements ContainerAllocatorInterface, Ma
             $this->translateContext('Please enter seeder class name', 'console'),
             null,
             function ($name) {
-                $definitions = $this->filterNames($name);
+                $definitions = is_string($name) ? $this->filterNames($name) : null;
                 if ($definitions === null) {
                     throw new InteractiveArgumentException(
                         $this->translateContext(
