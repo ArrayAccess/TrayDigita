@@ -18,6 +18,7 @@
         "ext-openssl": "*",
         "ext-pdo_mysql": "*",
         "ext-fileinfo": "*",
+        "doctrine/data-fixtures": "^1.7",
         "doctrine/orm": "~3",
         "doctrine/sql-formatter": "^1.4",
         "dragonmantank/cron-expression": "^3.3",
@@ -62,7 +63,7 @@
     "conflict": {
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.10.1",
+        "squizlabs/php_codesniffer": "^3.10.2",
         "slevomat/coding-standard": "^8.15.0"
     },
     "scripts": {

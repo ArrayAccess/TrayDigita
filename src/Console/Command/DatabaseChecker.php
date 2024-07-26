@@ -11,6 +11,7 @@ use ArrayAccess\TrayDigita\Console\Application;
 use ArrayAccess\TrayDigita\Console\Command\Traits\WriterHelperTrait;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
+use ArrayAccess\TrayDigita\Database\Seeders;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerAllocatorInterface;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Exceptions\InvalidArgument\InteractiveArgumentException;
@@ -19,6 +20,8 @@ use ArrayAccess\TrayDigita\Traits\Manager\ManagerAllocatorTrait;
 use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
 use ArrayAccess\TrayDigita\Util\Filter\Consolidation;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use Doctrine\Common\DataFixtures\Executor\ORMExecutor;
+use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\DriverException;
@@ -85,6 +88,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
     private string $dumpCommand = 'dump';
     private string $executeCommand = 'execute';
     private string $optimizeCommand = 'optimize';
+    private string $seederCommand = 'seed';
 
     protected function configure(): void
     {
@@ -173,6 +177,22 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                     ),
                     null
                 ),
+                new InputOption(
+                    $this->seederCommand,
+                    'S',
+                    InputOption::VALUE_NONE,
+                    sprintf(
+                        $this->translateContext(
+                            'Dump seed data (should execute with %s command)',
+                            'console'
+                        ),
+                        sprintf(
+                            '<info>--%s</info>',
+                            $this->seederCommand
+                        )
+                    ),
+                    null
+                ),
             ])
             ->setHelp(
                 sprintf(
@@ -214,11 +234,14 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         $theSchema = $input->getOption($this->schemaCommand);
         $thePrint = $input->getOption($this->printCommand);
         $dump = $input->getOption($this->dumpCommand);
+        $seeding = $input->getOption($this->seederCommand);
         $optionSchemaDump = $dump && $thePrint;
         $optionPrintSchema = !$dump && $thePrint;
         try {
             if ($theSchema) {
                 $this->databaseSchemaDetect($input, $output);
+            } elseif ($seeding) {
+                $this->databaseSeedDump($input, $output);
             } else {
                 $this->doDatabaseCheck($output, false);
             }
@@ -245,9 +268,10 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
     }
 
     /**
-     * @throws Throwable
+     * @param OutputInterface $output
+     * @return Connection|int
      */
-    public function databaseSchemaDetect(InputInterface $input, OutputInterface $output) : int
+    protected function databaseInit(OutputInterface $output) : Connection|int
     {
         $container = $this->getContainer();
         if (!$container?->has(Connection::class)) {
@@ -284,14 +308,26 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 $database->getEntityManager()->getEventManager()
             );
         }
+        return $database;
+    }
 
+    /**
+     * @throws Throwable
+     */
+    public function databaseSchemaDetect(InputInterface $input, OutputInterface $output) : int
+    {
+        $database = $this->databaseInit($output);
+        if (is_int($database)) {
+            return $database;
+        }
         $isExecute = $input->getOption($this->executeCommand);
         $thePrint = $input->getOption($this->printCommand);
         $dump = $input->getOption($this->dumpCommand);
         $optimize = $input->getOption($this->optimizeCommand);
+        $isSeeding = $input->getOption($this->seederCommand);
         $optionSchemaDump = $dump && $thePrint;
         $optionPrintSchema = !$dump && $thePrint;
-        if (!$thePrint && !$isExecute && !$optimize) {
+        if (!$thePrint && !$isExecute && !$optimize && !$isSeeding) {
             $this->doDatabaseCheck($output, true);
         }
 
@@ -419,791 +455,7 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             }
             return Command::SUCCESS;
         }
-
-        if (!$optimize) {
-            $containOptimize = false;
-            foreach ($allMetadata as $meta) {
-                $tableName = $meta->getTableName();
-                $table = $schemaManager->tablesExist([$tableName])
-                    ? $schemaManager->introspectTable($tableName)
-                    : null;
-                if (!$table) {
-                    $containChange = true;
-                    if (!$isExecute) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                $this->translateContext('Table "%s" does not exist!', 'console'),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $tableName
-                                )
-                            ),
-                            mode: self::MODE_DANGER
-                        );
-                    } else {
-                        $this->write(
-                            $output,
-                            sprintf(
-                                $this->translateContext(
-                                    'Table "%s" does not exist!',
-                                    'console'
-                                ),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $tableName
-                                )
-                            ),
-                            mode: self::MODE_DANGER
-                        );
-                    }
-                    continue;
-                }
-                $currentTable = $currentSchema->getTable($meta->getTableName());
-                $tableDiff = $comparator->compareTables($table, $currentTable);
-                $tableDiff = $this->compareSchemaTableFix($table, $currentTable, $tableDiff);
-                $isNeedOptimize = ($optimizeArray[strtolower($currentTable->getName())] ?? 0) > 0;
-                if ($isNeedOptimize) {
-                    $containOptimize = true;
-                }
-                if ($tableDiff->isEmpty()) {
-                    if (!$isExecute) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                $this->translateContext(
-                                    'Table "%s" %s',
-                                    'console'
-                                ),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $tableName
-                                ),
-                                sprintf(
-                                    '%s%s%s',
-                                    sprintf(
-                                        '<info>%s</info>',
-                                        $this->translateContext('no difference', 'console')
-                                    ),
-                                    $isNeedOptimize
-                                    ? sprintf(
-                                        ' <comment>[%s]</comment>',
-                                        $this->translateContext('NEED TO OPTIMIZE', 'console')
-                                    ) : '',
-                                    ($currentTable->getComment()
-                                        ? sprintf(' <fg=gray>(%s)</>', $currentTable->getComment())
-                                        : ''
-                                    )
-                                )
-                            ),
-                            mode: self::MODE_SUCCESS
-                        );
-                    }
-                    continue;
-                }
-                $containChange = true;
-                $message = sprintf(
-                    '%s%s',
-                    sprintf(
-                        $this->translateContext('Table "%s" need to be change', 'console'),
-                        sprintf(
-                            '<comment>%s</comment>',
-                            $tableName,
-                        )
-                    ),
-                    $isNeedOptimize ? sprintf(
-                        ' <comment>[%s]</comment>',
-                        $this->translateContext('NEED TO OPTIMIZE', 'console')
-                    ) : '',
-                );
-                if (!$isExecute) {
-                    $this->writeIndent(
-                        $output,
-                        $message,
-                        mode: self::MODE_WARNING
-                    );
-                } else {
-                    $this->write(
-                        $output,
-                        $message,
-                        mode: self::MODE_WARNING
-                    );
-                }
-
-                $typeRegistry = Type::getTypeRegistry();
-
-                // COLUMNS
-                // modified
-                foreach ($tableDiff->getModifiedColumns() as $column) {
-                    $oldColumn = $column->getOldColumn();
-                    $newColumn = $column->getNewColumn();
-                    if ($column->hasTypeChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                $this->translateContext('type', 'console'),
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $typeRegistry->lookupName($oldColumn->getType())
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $typeRegistry->lookupName($newColumn->getType())
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasDefaultChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                $this->translateContext('default value', 'console'),
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getDefault() ?? '<empty>'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getDefault() ?? '<empty>'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasFixedChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                'fixed',
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getFixed() ? 'YES' : 'NO'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getFixed() ? 'YES' : 'NO'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasAutoIncrementChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                'auto increment',
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getAutoincrement() ? 'YES' : 'NO'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getAutoincrement() ? 'YES' : 'NO'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasLengthChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                'length',
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getLength() ?? '<empty>'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getLength() ?? '<empty>'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasPrecisionChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                'precision',
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getPrecision() ?? '<empty>'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getPrecision() ?? '<empty>'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasNotNullChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                'not null',
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        !$oldColumn->getNotnull() ? 'YES' : 'NO'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        !$newColumn->getNotnull() ? 'YES' : 'NO'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasScaleChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                $this->translateContext('scale', 'console'),
-                                sprintf(
-                                    $this->translateContext(
-                                        'change from: [%s] to [%s]',
-                                        'console'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getScale() ??'<empty>'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getScale() ??'<empty>'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasUnsignedChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                'unsigned',
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getUnsigned() ? 'YES' : 'NO'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getUnsigned() ? 'YES' : 'NO'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                    if ($column->hasCommentChanged()) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
-                                $this->translateContext('Column', 'console'),
-                                $newColumn->getName(),
-                                $this->translateContext('comment', 'console'),
-                                sprintf(
-                                    $this->translateContext('change from: [%s] to [%s]', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $oldColumn->getComment() ?? '<empty>'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $newColumn->getComment() ?? '<empty>'
-                                    )
-                                )
-                            )
-                        );
-                    }
-                }
-
-                // added
-                foreach ($tableDiff->getAddedColumns() as $column) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>]',
-                            $this->translateContext('Added Column', 'console'),
-                            $column->getName()
-                        )
-                    );
-                }
-                // remove
-                foreach ($tableDiff->getDroppedColumns() as $column) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>]',
-                            $this->translateContext('Removed Column', 'console'),
-                            $column->getName()
-                        )
-                    );
-                }
-                // rename
-                foreach ($tableDiff->getRenamedColumns() as $columnName => $column) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> %s',
-                            $this->translateContext('Renamed Column', 'console'),
-                            sprintf(
-                                $this->translateContext('from [%s] to [%s]', 'console'),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $columnName
-                                ),
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $column->getName()
-                                )
-                            )
-                        )
-                    );
-                }
-
-                // INDEXES
-                // added
-                foreach ($tableDiff->getModifiedIndexes() as $indexName => $index) {
-                    $indexName = !is_string($indexName) ? $index->getName() : $indexName;
-                    $oldIndex = $table->getIndex($indexName);
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> %s',
-                            $this->translateContext('Modify Index', 'console'),
-                            sprintf(
-                                $this->translateContext('from %s to %s', 'console'),
-                                sprintf(
-                                    '[%s](%s)',
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $indexName
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        implode(', ', $oldIndex->getColumns())
-                                    )
-                                ),
-                                sprintf(
-                                    '[%s](%s)',
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $index->getName()
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        implode(', ', $index->getColumns())
-                                    )
-                                )
-                            )
-                        )
-                    );
-                }
-
-                foreach ($tableDiff->getAddedIndexes() as $index) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>] %s',
-                            $this->translateContext('Added Index', 'console'),
-                            $index->getName(),
-                            sprintf(
-                                'with columns [%s]',
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    implode(', ', $index->getColumns())
-                                )
-                            )
-                        )
-                    );
-                }
-                // dropped
-                foreach ($tableDiff->getDroppedIndexes() as $index) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>] %s',
-                            $this->translateContext('Removed Index', 'console'),
-                            $index->getName(),
-                            sprintf(
-                                'contain columns [%s]',
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    implode(', ', $index->getColumns())
-                                )
-                            )
-                        )
-                    );
-                }
-
-                // renamed
-                foreach ($tableDiff->getRenamedIndexes() as $indexName => $index) {
-                    $indexName = !is_string($indexName) ? $index->getName() : $indexName;
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> %s',
-                            $this->translateContext('Renamed Index', 'console'),
-                            sprintf(
-                                'from [%s] to [%s]',
-                                sprintf('<comment>%s</comment>', $indexName),
-                                sprintf('<comment>%s</comment>', $index->getName())
-                            )
-                        )
-                    );
-                }
-
-                // RELATIONS
-                // added
-                foreach ($tableDiff->getModifiedForeignKeys() as $foreignName => $foreignKey) {
-                    $foreignName = !is_string($foreignName) ? $foreignKey->getName() : $foreignName;
-                    $oldForeign = $table->getForeignKey($foreignName);
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>)'
-                            . ' -> (<comment>%s</comment>)'
-                            . ' [<comment>%s</comment>](<comment>%s</comment>) -> (<comment>%s</comment>)%s',
-                            $this->translateContext('Modify ForeignKey', 'console'),
-                            $foreignName,
-                            sprintf(
-                                '%s(%s)',
-                                $table->getName(),
-                                implode(', ', $oldForeign->getLocalColumns())
-                            ),
-                            sprintf(
-                                '%s(%s)',
-                                $oldForeign->getForeignTableName(),
-                                implode(', ', $oldForeign->getForeignColumns())
-                            ),
-                            $foreignKey->getName(),
-                            sprintf(
-                                '%s(%s)',
-                                $table->getName(),
-                                implode(', ', $foreignKey->getLocalColumns())
-                            ),
-                            sprintf(
-                                '%s(%s)',
-                                $foreignKey->getForeignTableName(),
-                                implode(', ', $foreignKey->getForeignColumns())
-                            ),
-                            (
-                            $foreignKey->onDelete() || $foreignKey->onUpdate() ? sprintf(
-                                '(<comment>%s%s</comment>)',
-                                $foreignKey->onUpdate() ? sprintf(
-                                    'ON UPDATE %s',
-                                    $foreignKey->onUpdate()
-                                ) : '',
-                                $foreignKey->onDelete() ? sprintf(
-                                    ' ON DELETE %s',
-                                    $foreignKey->onDelete()
-                                ) : ''
-                            ) : ''
-                            )
-                        )
-                    );
-                }
-
-                foreach ($tableDiff->getAddedForeignKeys() as $foreignKey) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>) '
-                            . '-> (<comment>%s</comment>)',
-                            $this->translateContext('Added ForeignKey', 'console'),
-                            $foreignKey->getName(),
-                            sprintf(
-                                '%s(%s)',
-                                $table->getName(),
-                                implode(', ', $foreignKey->getLocalColumns())
-                            ),
-                            sprintf(
-                                '%s(%s)',
-                                $foreignKey->getForeignTableName(),
-                                implode(', ', $foreignKey->getForeignColumns())
-                            ),
-                        )
-                    );
-                }
-                // drop
-                foreach ($tableDiff->getDroppedForeignKeys() as $foreignKey) {
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>) '
-                            . '-> (<comment>%s</comment>)',
-                            $this->translateContext('Removed ForeignKey', 'console'),
-                            $foreignKey->getName(),
-                            sprintf(
-                                '%s(%s)',
-                                $table->getName(),
-                                implode(', ', $foreignKey->getLocalColumns())
-                            ),
-                            sprintf(
-                                '%s(%s)',
-                                $foreignKey->getForeignTableName(),
-                                implode(', ', $foreignKey->getForeignColumns())
-                            ),
-                        )
-                    );
-                }
-            }
-
-            if (!$isExecute) {
-                foreach ($schemaManager->introspectSchema()->getTables() as $table) {
-                    $tableName = $table->getName();
-                    if ($currentSchema->hasTable($tableName)) {
-                        continue;
-                    }
-                    $lowerTableName = strtolower($tableName);
-                    if (str_contains($lowerTableName, 'translation')
-                        && $table->hasColumn('domain')
-                        && $table->hasColumn('language')
-                        && $table->hasColumn('original')
-                        && $table->hasColumn('translation')
-                        && $table->hasColumn('plural_translation')
-                    ) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '%s%s',
-                                sprintf(
-                                    $this->translateContext(
-                                        'Table "%s" for %s & does not exist in schema',
-                                        'console'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $table->getName(),
-                                    ),
-                                    sprintf(
-                                        '<info>%s</info>',
-                                        'translations'
-                                    )
-                                ),
-                                ($table->getComment()
-                                    ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
-                                    : ''
-                                )
-                            ),
-                            mode: self::MODE_WARNING
-                        );
-                        continue;
-                    }
-                    if (str_contains($lowerTableName, 'cache')
-                        && $table->hasColumn('item_id')
-                        && $table->hasColumn('item_data')
-                        && $table->hasColumn('item_lifetime')
-                        && $table->hasColumn('item_time')
-                    ) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '%s%s',
-                                sprintf(
-                                    $this->translateContext(
-                                        'Table "%s" for %s & does not exist in schema',
-                                        'console'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $table->getName(),
-                                    ),
-                                    sprintf(
-                                        '<info>%s</info>',
-                                        'cache'
-                                    )
-                                ),
-                                ($table->getComment()
-                                    ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
-                                    : ''
-                                )
-                            ),
-                            mode: self::MODE_WARNING
-                        );
-                        continue;
-                    }
-
-                    if (str_contains($lowerTableName, 'log')
-                        && $table->hasColumn('id')
-                        && $table->hasColumn('channel')
-                        && $table->hasColumn('level')
-                        && $table->hasColumn('message')
-                    ) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '%s%s',
-                                sprintf(
-                                    $this->translateContext(
-                                        'Table "%s" for %s & does not exist in schema',
-                                        'console'
-                                    ),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $table->getName(),
-                                    ),
-                                    sprintf(
-                                        '<info>%s</info>',
-                                        'logs'
-                                    )
-                                ),
-                                ($table->getComment()
-                                    ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
-                                    : ''
-                                )
-                            ),
-                            mode: self::MODE_WARNING
-                        );
-                        continue;
-                    }
-
-                    if ($tableMigration === $lowerTableName) {
-                        $this->writeIndent(
-                            $output,
-                            sprintf(
-                                '%s%s',
-                                sprintf(
-                                    $this->translateContext('Table "%s" for %s', 'console'),
-                                    sprintf(
-                                        '<comment>%s</comment>',
-                                        $table->getName(),
-                                    ),
-                                    sprintf(
-                                        '<info>%s</info>',
-                                        'migrations'
-                                    )
-                                ),
-                                ($table->getComment()
-                                    ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
-                                    : ''
-                                )
-                            ),
-                            mode: self::MODE_SUCCESS
-                        );
-                        continue;
-                    }
-
-                    $this->writeIndent(
-                        $output,
-                        sprintf(
-                            '%s%s',
-                            sprintf(
-                                'Table "%s" exists in database but not in schema',
-                                sprintf(
-                                    '<comment>%s</comment>',
-                                    $table->getName(),
-                                )
-                            ),
-                            ($table->getComment()
-                                ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
-                                : ''
-                            )
-                        ),
-                        mode: self::MODE_WARNING
-                    );
-                }
-            }
-
-            if ($containChange && !$isExecute) {
-                $output->writeln('');
-                $output->writeln(
-                    sprintf(
-                        '<info>%s</info>',
-                        $this->translateContext(
-                            'Contains changed database schema, you can execute command :',
-                            'console'
-                        )
-                    )
-                );
-                $output->writeln('');
-                $this->writeIndent(
-                    $output,
-                    sprintf(
-                        '<comment>%s %s %s --%s --%s</comment>',
-                        PHP_BINARY,
-                        $_SERVER['PHP_SELF'],
-                        $this->getName(),
-                        $this->schemaCommand,
-                        $this->executeCommand
-                    )
-                );
-                $output->writeln('');
-            }
-            if (!$isExecute && $containOptimize) {
-                $output->writeln('');
-                $output->writeln(
-                    sprintf(
-                        '<info>%s</info>',
-                        $this->translateContext(
-                            'Contains database table that can be optimized, you can execute command :',
-                            'console'
-                        )
-                    )
-                );
-                $output->writeln('');
-                $this->writeIndent(
-                    $output,
-                    sprintf(
-                        '<comment>%s %s %s --%s --%s</comment>',
-                        PHP_BINARY,
-                        $_SERVER['PHP_SELF'],
-                        $this->getName(),
-                        $this->schemaCommand,
-                        $this->optimizeCommand
-                    )
-                );
-                $output->writeln('');
-            }
-            if (!$isExecute) {
-                return Command::SUCCESS;
-            }
-        } else {
+        if ($optimize) {
             if (empty($optimizeArray)) {
                 $output->writeln(
                     sprintf(
@@ -1351,7 +603,786 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             );
             return Command::SUCCESS;
         }
+        $containOptimize = false;
+        foreach ($allMetadata as $meta) {
+            $tableName = $meta->getTableName();
+            $table = $schemaManager->tablesExist([$tableName])
+                ? $schemaManager->introspectTable($tableName)
+                : null;
+            if (!$table) {
+                $containChange = true;
+                if (!$isExecute) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            $this->translateContext('Table "%s" does not exist!', 'console'),
+                            sprintf(
+                                '<comment>%s</comment>',
+                                $tableName
+                            )
+                        ),
+                        mode: self::MODE_DANGER
+                    );
+                } else {
+                    $this->write(
+                        $output,
+                        sprintf(
+                            $this->translateContext(
+                                'Table "%s" does not exist!',
+                                'console'
+                            ),
+                            sprintf(
+                                '<comment>%s</comment>',
+                                $tableName
+                            )
+                        ),
+                        mode: self::MODE_DANGER
+                    );
+                }
+                continue;
+            }
+            $currentTable = $currentSchema->getTable($meta->getTableName());
+            $tableDiff = $comparator->compareTables($table, $currentTable);
+            $tableDiff = $this->compareSchemaTableFix($table, $currentTable, $tableDiff);
+            $isNeedOptimize = ($optimizeArray[strtolower($currentTable->getName())] ?? 0) > 0;
+            if ($isNeedOptimize) {
+                $containOptimize = true;
+            }
+            if ($tableDiff->isEmpty()) {
+                if (!$isExecute) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            $this->translateContext(
+                                'Table "%s" %s',
+                                'console'
+                            ),
+                            sprintf(
+                                '<comment>%s</comment>',
+                                $tableName
+                            ),
+                            sprintf(
+                                '%s%s%s',
+                                sprintf(
+                                    '<info>%s</info>',
+                                    $this->translateContext('no difference', 'console')
+                                ),
+                                $isNeedOptimize
+                                    ? sprintf(
+                                        ' <comment>[%s]</comment>',
+                                        $this->translateContext('NEED TO OPTIMIZE', 'console')
+                                    ) : '',
+                                ($currentTable->getComment()
+                                    ? sprintf(' <fg=gray>(%s)</>', $currentTable->getComment())
+                                    : ''
+                                )
+                            )
+                        ),
+                        mode: self::MODE_SUCCESS
+                    );
+                }
+                continue;
+            }
+            $containChange = true;
+            $message = sprintf(
+                '%s%s',
+                sprintf(
+                    $this->translateContext('Table "%s" need to be change', 'console'),
+                    sprintf(
+                        '<comment>%s</comment>',
+                        $tableName,
+                    )
+                ),
+                $isNeedOptimize ? sprintf(
+                    ' <comment>[%s]</comment>',
+                    $this->translateContext('NEED TO OPTIMIZE', 'console')
+                ) : '',
+            );
+            if (!$isExecute) {
+                $this->writeIndent(
+                    $output,
+                    $message,
+                    mode: self::MODE_WARNING
+                );
+            } else {
+                $this->write(
+                    $output,
+                    $message,
+                    mode: self::MODE_WARNING
+                );
+            }
 
+            $typeRegistry = Type::getTypeRegistry();
+
+            // COLUMNS
+            // modified
+            foreach ($tableDiff->getModifiedColumns() as $column) {
+                $oldColumn = $column->getOldColumn();
+                $newColumn = $column->getNewColumn();
+                if ($column->hasTypeChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            $this->translateContext('type', 'console'),
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $typeRegistry->lookupName($oldColumn->getType())
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $typeRegistry->lookupName($newColumn->getType())
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasDefaultChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            $this->translateContext('default value', 'console'),
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getDefault() ?? '<empty>'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getDefault() ?? '<empty>'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasFixedChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            'fixed',
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getFixed() ? 'YES' : 'NO'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getFixed() ? 'YES' : 'NO'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasAutoIncrementChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            'auto increment',
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getAutoincrement() ? 'YES' : 'NO'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getAutoincrement() ? 'YES' : 'NO'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasLengthChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            'length',
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getLength() ?? '<empty>'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getLength() ?? '<empty>'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasPrecisionChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            'precision',
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getPrecision() ?? '<empty>'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getPrecision() ?? '<empty>'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasNotNullChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            'not null',
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    !$oldColumn->getNotnull() ? 'YES' : 'NO'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    !$newColumn->getNotnull() ? 'YES' : 'NO'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasScaleChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            $this->translateContext('scale', 'console'),
+                            sprintf(
+                                $this->translateContext(
+                                    'change from: [%s] to [%s]',
+                                    'console'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getScale() ??'<empty>'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getScale() ??'<empty>'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasUnsignedChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            'unsigned',
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getUnsigned() ? 'YES' : 'NO'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getUnsigned() ? 'YES' : 'NO'
+                                )
+                            )
+                        )
+                    );
+                }
+                if ($column->hasCommentChanged()) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '<info>- %s</info> <comment>%s</comment> <info>%s</info> %s',
+                            $this->translateContext('Column', 'console'),
+                            $newColumn->getName(),
+                            $this->translateContext('comment', 'console'),
+                            sprintf(
+                                $this->translateContext('change from: [%s] to [%s]', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $oldColumn->getComment() ?? '<empty>'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $newColumn->getComment() ?? '<empty>'
+                                )
+                            )
+                        )
+                    );
+                }
+            }
+
+            // added
+            foreach ($tableDiff->getAddedColumns() as $column) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>]',
+                        $this->translateContext('Added Column', 'console'),
+                        $column->getName()
+                    )
+                );
+            }
+            // remove
+            foreach ($tableDiff->getDroppedColumns() as $column) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>]',
+                        $this->translateContext('Removed Column', 'console'),
+                        $column->getName()
+                    )
+                );
+            }
+            // rename
+            foreach ($tableDiff->getRenamedColumns() as $columnName => $column) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> %s',
+                        $this->translateContext('Renamed Column', 'console'),
+                        sprintf(
+                            $this->translateContext('from [%s] to [%s]', 'console'),
+                            sprintf(
+                                '<comment>%s</comment>',
+                                $columnName
+                            ),
+                            sprintf(
+                                '<comment>%s</comment>',
+                                $column->getName()
+                            )
+                        )
+                    )
+                );
+            }
+
+            // INDEXES
+            // added
+            foreach ($tableDiff->getModifiedIndexes() as $indexName => $index) {
+                $indexName = !is_string($indexName) ? $index->getName() : $indexName;
+                $oldIndex = $table->getIndex($indexName);
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> %s',
+                        $this->translateContext('Modify Index', 'console'),
+                        sprintf(
+                            $this->translateContext('from %s to %s', 'console'),
+                            sprintf(
+                                '[%s](%s)',
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $indexName
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    implode(', ', $oldIndex->getColumns())
+                                )
+                            ),
+                            sprintf(
+                                '[%s](%s)',
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $index->getName()
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    implode(', ', $index->getColumns())
+                                )
+                            )
+                        )
+                    )
+                );
+            }
+
+            foreach ($tableDiff->getAddedIndexes() as $index) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>] %s',
+                        $this->translateContext('Added Index', 'console'),
+                        $index->getName(),
+                        sprintf(
+                            'with columns [%s]',
+                            sprintf(
+                                '<comment>%s</comment>',
+                                implode(', ', $index->getColumns())
+                            )
+                        )
+                    )
+                );
+            }
+            // dropped
+            foreach ($tableDiff->getDroppedIndexes() as $index) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>] %s',
+                        $this->translateContext('Removed Index', 'console'),
+                        $index->getName(),
+                        sprintf(
+                            'contain columns [%s]',
+                            sprintf(
+                                '<comment>%s</comment>',
+                                implode(', ', $index->getColumns())
+                            )
+                        )
+                    )
+                );
+            }
+
+            // renamed
+            foreach ($tableDiff->getRenamedIndexes() as $indexName => $index) {
+                $indexName = !is_string($indexName) ? $index->getName() : $indexName;
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> %s',
+                        $this->translateContext('Renamed Index', 'console'),
+                        sprintf(
+                            'from [%s] to [%s]',
+                            sprintf('<comment>%s</comment>', $indexName),
+                            sprintf('<comment>%s</comment>', $index->getName())
+                        )
+                    )
+                );
+            }
+
+            // RELATIONS
+            // added
+            foreach ($tableDiff->getModifiedForeignKeys() as $foreignName => $foreignKey) {
+                $foreignName = !is_string($foreignName) ? $foreignKey->getName() : $foreignName;
+                $oldForeign = $table->getForeignKey($foreignName);
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>)'
+                        . ' -> (<comment>%s</comment>)'
+                        . ' [<comment>%s</comment>](<comment>%s</comment>) -> (<comment>%s</comment>)%s',
+                        $this->translateContext('Modify ForeignKey', 'console'),
+                        $foreignName,
+                        sprintf(
+                            '%s(%s)',
+                            $table->getName(),
+                            implode(', ', $oldForeign->getLocalColumns())
+                        ),
+                        sprintf(
+                            '%s(%s)',
+                            $oldForeign->getForeignTableName(),
+                            implode(', ', $oldForeign->getForeignColumns())
+                        ),
+                        $foreignKey->getName(),
+                        sprintf(
+                            '%s(%s)',
+                            $table->getName(),
+                            implode(', ', $foreignKey->getLocalColumns())
+                        ),
+                        sprintf(
+                            '%s(%s)',
+                            $foreignKey->getForeignTableName(),
+                            implode(', ', $foreignKey->getForeignColumns())
+                        ),
+                        (
+                        $foreignKey->onDelete() || $foreignKey->onUpdate() ? sprintf(
+                            '(<comment>%s%s</comment>)',
+                            $foreignKey->onUpdate() ? sprintf(
+                                'ON UPDATE %s',
+                                $foreignKey->onUpdate()
+                            ) : '',
+                            $foreignKey->onDelete() ? sprintf(
+                                ' ON DELETE %s',
+                                $foreignKey->onDelete()
+                            ) : ''
+                        ) : ''
+                        )
+                    )
+                );
+            }
+
+            foreach ($tableDiff->getAddedForeignKeys() as $foreignKey) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>) '
+                        . '-> (<comment>%s</comment>)',
+                        $this->translateContext('Added ForeignKey', 'console'),
+                        $foreignKey->getName(),
+                        sprintf(
+                            '%s(%s)',
+                            $table->getName(),
+                            implode(', ', $foreignKey->getLocalColumns())
+                        ),
+                        sprintf(
+                            '%s(%s)',
+                            $foreignKey->getForeignTableName(),
+                            implode(', ', $foreignKey->getForeignColumns())
+                        ),
+                    )
+                );
+            }
+            // drop
+            foreach ($tableDiff->getDroppedForeignKeys() as $foreignKey) {
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '<info>- %s</info> [<comment>%s</comment>](<comment>%s</comment>) '
+                        . '-> (<comment>%s</comment>)',
+                        $this->translateContext('Removed ForeignKey', 'console'),
+                        $foreignKey->getName(),
+                        sprintf(
+                            '%s(%s)',
+                            $table->getName(),
+                            implode(', ', $foreignKey->getLocalColumns())
+                        ),
+                        sprintf(
+                            '%s(%s)',
+                            $foreignKey->getForeignTableName(),
+                            implode(', ', $foreignKey->getForeignColumns())
+                        ),
+                    )
+                );
+            }
+        }
+        if (!$isExecute) {
+            foreach ($schemaManager->introspectSchema()->getTables() as $table) {
+                $tableName = $table->getName();
+                if ($currentSchema->hasTable($tableName)) {
+                    continue;
+                }
+                $lowerTableName = strtolower($tableName);
+                if (str_contains($lowerTableName, 'translation')
+                    && $table->hasColumn('domain')
+                    && $table->hasColumn('language')
+                    && $table->hasColumn('original')
+                    && $table->hasColumn('translation')
+                    && $table->hasColumn('plural_translation')
+                ) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '%s%s',
+                            sprintf(
+                                $this->translateContext(
+                                    'Table "%s" for %s & does not exist in schema',
+                                    'console'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $table->getName(),
+                                ),
+                                sprintf(
+                                    '<info>%s</info>',
+                                    'translations'
+                                )
+                            ),
+                            ($table->getComment()
+                                ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
+                                : ''
+                            )
+                        ),
+                        mode: self::MODE_WARNING
+                    );
+                    continue;
+                }
+                if (str_contains($lowerTableName, 'cache')
+                    && $table->hasColumn('item_id')
+                    && $table->hasColumn('item_data')
+                    && $table->hasColumn('item_lifetime')
+                    && $table->hasColumn('item_time')
+                ) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '%s%s',
+                            sprintf(
+                                $this->translateContext(
+                                    'Table "%s" for %s & does not exist in schema',
+                                    'console'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $table->getName(),
+                                ),
+                                sprintf(
+                                    '<info>%s</info>',
+                                    'cache'
+                                )
+                            ),
+                            ($table->getComment()
+                                ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
+                                : ''
+                            )
+                        ),
+                        mode: self::MODE_WARNING
+                    );
+                    continue;
+                }
+
+                if (str_contains($lowerTableName, 'log')
+                    && $table->hasColumn('id')
+                    && $table->hasColumn('channel')
+                    && $table->hasColumn('level')
+                    && $table->hasColumn('message')
+                ) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '%s%s',
+                            sprintf(
+                                $this->translateContext(
+                                    'Table "%s" for %s & does not exist in schema',
+                                    'console'
+                                ),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $table->getName(),
+                                ),
+                                sprintf(
+                                    '<info>%s</info>',
+                                    'logs'
+                                )
+                            ),
+                            ($table->getComment()
+                                ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
+                                : ''
+                            )
+                        ),
+                        mode: self::MODE_WARNING
+                    );
+                    continue;
+                }
+
+                if ($tableMigration === $lowerTableName) {
+                    $this->writeIndent(
+                        $output,
+                        sprintf(
+                            '%s%s',
+                            sprintf(
+                                $this->translateContext('Table "%s" for %s', 'console'),
+                                sprintf(
+                                    '<comment>%s</comment>',
+                                    $table->getName(),
+                                ),
+                                sprintf(
+                                    '<info>%s</info>',
+                                    'migrations'
+                                )
+                            ),
+                            ($table->getComment()
+                                ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
+                                : ''
+                            )
+                        ),
+                        mode: self::MODE_SUCCESS
+                    );
+                    continue;
+                }
+
+                $this->writeIndent(
+                    $output,
+                    sprintf(
+                        '%s%s',
+                        sprintf(
+                            'Table "%s" exists in database but not in schema',
+                            sprintf(
+                                '<comment>%s</comment>',
+                                $table->getName(),
+                            )
+                        ),
+                        ($table->getComment()
+                            ? sprintf(' <fg=gray>(%s)</>', $table->getComment())
+                            : ''
+                        )
+                    ),
+                    mode: self::MODE_WARNING
+                );
+            }
+        }
+        if ($containChange && !$isExecute) {
+            $output->writeln('');
+            $output->writeln(
+                sprintf(
+                    '<info>%s</info>',
+                    $this->translateContext(
+                        'Contains changed database schema, you can execute command :',
+                        'console'
+                    )
+                )
+            );
+            $output->writeln('');
+            $this->writeIndent(
+                $output,
+                sprintf(
+                    '<comment>%s %s %s --%s --%s</comment>',
+                    PHP_BINARY,
+                    $_SERVER['PHP_SELF'],
+                    $this->getName(),
+                    $this->schemaCommand,
+                    $this->executeCommand
+                )
+            );
+            $output->writeln('');
+        }
+        if (!$isExecute && $containOptimize) {
+            $output->writeln('');
+            $output->writeln(
+                sprintf(
+                    '<info>%s</info>',
+                    $this->translateContext(
+                        'Contains database table that can be optimized, you can execute command :',
+                        'console'
+                    )
+                )
+            );
+            $output->writeln('');
+            $this->writeIndent(
+                $output,
+                sprintf(
+                    '<comment>%s %s %s --%s --%s</comment>',
+                    PHP_BINARY,
+                    $_SERVER['PHP_SELF'],
+                    $this->getName(),
+                    $this->schemaCommand,
+                    $this->optimizeCommand
+                )
+            );
+            $output->writeln('');
+        }
+        if (!$isExecute) {
+            return Command::SUCCESS;
+        }
         $clonedSchema = clone $schemaManager->introspectSchema();
         foreach ($clonedSchema->getTables() as $table) {
             if (!$currentSchema->hasTable($table->getName())) {
@@ -1401,7 +1432,13 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 OutputInterface::OUTPUT_RAW
             );
         }
-
+        $output->writeln('');
+        $output->writeln(
+            $this->translateContext(
+                'Executing Schema',
+                'console'
+            )
+        );
         /** @noinspection DuplicatedCode */
         $answer = $interactive ? $io->ask(
             $this->translateContext(
@@ -1541,6 +1578,119 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
         return Command::SUCCESS;
     }
 
+    public function databaseSeedDump(InputInterface $input, OutputInterface $output) : int
+    {
+        $database = $this->databaseInit($output);
+        if (is_int($database)) {
+            return $database;
+        }
+        $seeders = ContainerHelper::getNull(Seeders::class, $this->getContainer());
+        if (!$seeders instanceof Seeders) {
+            $this->writeDanger(
+                $output,
+                $this->translateContext(
+                    'Seeders object is not valid object from container',
+                    'console'
+                ),
+            );
+            return self::FAILURE;
+        }
+
+        $output->writeln('');
+        $output->writeln(
+            $this->translateContext(
+                'Dumping seed data',
+                'console'
+            )
+        );
+        $io = new SymfonyStyle($input, $output);
+        $interactive = $input->isInteractive();
+        /** @noinspection DuplicatedCode */
+        $answer = $interactive ? $io->ask(
+            $this->translateContext(
+                'Are you sure to continue (Yes/No)?',
+                'console'
+            ),
+            null,
+            function ($e) {
+                $e = !is_string($e) ? '' : $e;
+                $e = strtolower(trim($e));
+                $ask = match ($e) {
+                    'yes' => true,
+                    'no' => false,
+                    default => null
+                };
+                if ($ask === null) {
+                    throw new InteractiveArgumentException(
+                        $this->translateContext(
+                            'Please enter valid answer! (Yes / No)',
+                            'console'
+                        )
+                    );
+                }
+                return $ask;
+            }
+        ) : true;
+
+        if (!$answer) {
+            $output->writeln(
+                sprintf(
+                    '<comment>%s</comment>',
+                    $this->translateContext(
+                        'Operation cancelled!',
+                        'console'
+                    )
+                )
+            );
+            return Command::SUCCESS;
+        }
+        $output->writeln('');
+        $output->writeln(
+            sprintf(
+                '<options=bold><comment>%s</comment></>',
+                $this->translateContext(
+                    'PLEASE DO NOT CANCEL OPERATION!',
+                    'console'
+                )
+            )
+        );
+
+        $output->writeln('');
+        $progressBar = !$output->isVerbose() ? $io->createProgressBar() : null;
+        $progressBar?->setMaxSteps(count($seeders->getFixtures()));
+        try {
+            $executor = new ORMExecutor($this->entityManager, new ORMPurger());
+            foreach ($seeders->getFixtures() as $fixture) {
+                $executor->execute([$fixture]);
+                $progressBar?->advance();
+            }
+            $progressBar?->finish();
+            $progressBar?->clear();
+        } catch (Throwable $e) {
+            $output->writeln(
+                sprintf(
+                    '<error>%s</error>',
+                    $this->translateContext('Failed to execute command', 'console')
+                )
+            );
+            $output->writeln(
+                sprintf(
+                    '<fg=red>%s</>',
+                    $e->getMessage()
+                )
+            );
+            return Command::FAILURE;
+        }
+
+        $output->writeln(
+            sprintf(
+                '<info>%s</info>',
+                $this->translateContext('ALL DONE!', 'console')
+            )
+        );
+        return Command::SUCCESS;
+    }
+
     /**
      * @throws Throwable
      */
@@ -1559,13 +1709,33 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             );
             return;
         }
-
+        if (!$container?->has(Seeders::class)) {
+            $this->writeDanger(
+                $output,
+                $this->translateContext(
+                    'Can not get seeders object from container',
+                    'console'
+                )
+            );
+            return;
+        }
         $database = ContainerHelper::getNull(Connection::class, $container);
         if (!$database instanceof Connection) {
             $this->writeDanger(
                 $output,
                 $this->translateContext(
                     'Database connection is not valid object from container',
+                    'console'
+                ),
+            );
+            return;
+        }
+        $seeders = ContainerHelper::getNull(Seeders::class, $container);
+        if (!$seeders instanceof Seeders) {
+            $this->writeDanger(
+                $output,
+                $this->translateContext(
+                    'Seeders object is not valid object from container',
                     'console'
                 ),
             );
@@ -1813,14 +1983,28 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
             $error ? self::MODE_DANGER : self::MODE_SUCCESS
         );
         if (!$skipChecking) {
-            $this->doCheckData($output, $error, $allMetadata, $database);
+            $this->doCheckSchemaData($output, $error, $allMetadata, $database);
+        }
+
+        $seederLists = $seeders->getFixtures();
+        $this->write(
+            $output,
+            sprintf(
+                '<info>%s (%d)</info>',
+                $this->translateContext('Registered Seeders', 'console'),
+                count($seederLists)
+            ),
+            self::MODE_SUCCESS
+        );
+        if (!$skipChecking) {
+            $this->doCheckSeederData($output, $seederLists);
         }
     }
-
+    
     /**
      * @throws Throwable
      */
-    protected function doCheckData(
+    protected function doCheckSchemaData(
         OutputInterface $output,
         $error,
         array $allMetadata,
@@ -1998,6 +2182,29 @@ class DatabaseChecker extends Command implements ContainerAllocatorInterface, Ma
                 )
             );
             $output->writeln('');
+        }
+    }
+
+    /**
+     * Check the seeders
+     *
+     * @param OutputInterface $output
+     * @param array<FixtureInterface> $fixtures
+     * @return void
+     */
+    protected function doCheckSeederData(
+        OutputInterface $output,
+        array $fixtures
+    ) : void {
+        foreach ($fixtures as $fixture) {
+            $this->writeIndent(
+                $output,
+                sprintf(
+                    '<info>- %s</info> [%s]',
+                    Consolidation::classShortName($fixture),
+                    $fixture::class
+                )
+            );
         }
     }
 

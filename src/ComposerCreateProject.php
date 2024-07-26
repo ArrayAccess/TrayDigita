@@ -217,6 +217,18 @@ php bin/tray-digita app:generate:scheduler
 ```
 
 MD,
+            'app/Seeders/README.md' => <<<MD
+## SEEDERS DIRECTORY
+
+Seeders directory contains various seeders object & will autoload.
+
+Can be generated with:
+
+```bash
+php bin/tray-digita app:generate:seeder
+```
+
+MD,
             'app/Views/README.md' => <<<MD
 ## VIEWS DIRECTORY
 

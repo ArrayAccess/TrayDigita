@@ -21,6 +21,7 @@ use ArrayAccess\TrayDigita\Console\Command\MiddlewareGenerator;
 use ArrayAccess\TrayDigita\Console\Command\ModuleGenerator;
 use ArrayAccess\TrayDigita\Console\Command\SchedulerAction;
 use ArrayAccess\TrayDigita\Console\Command\SchedulerGenerator;
+use ArrayAccess\TrayDigita\Console\Command\SeederGenerator;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerAllocatorInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
@@ -72,6 +73,7 @@ class Application extends SymfonyConsole implements
         ControllerGenerator::class,
         EntityGenerator::class,
         SchedulerGenerator::class,
+        SeederGenerator::class,
         MiddlewareGenerator::class,
         CommandGenerator::class,
         DatabaseEventGenerator::class,

@@ -17,6 +17,7 @@ use ArrayAccess\TrayDigita\HttpKernel\Helper\KernelDatabaseEventLoader;
 use ArrayAccess\TrayDigita\HttpKernel\Helper\KernelMiddlewareLoader;
 use ArrayAccess\TrayDigita\HttpKernel\Helper\KernelModuleLoader;
 use ArrayAccess\TrayDigita\HttpKernel\Helper\KernelSchedulerLoader;
+use ArrayAccess\TrayDigita\HttpKernel\Helper\KernelSeederLoader;
 use ArrayAccess\TrayDigita\HttpKernel\Interfaces\HttpKernelInterface;
 use ArrayAccess\TrayDigita\HttpKernel\Interfaces\TerminableInterface;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
@@ -378,6 +379,7 @@ abstract class BaseKernel implements
     protected ?string $databaseEventNameSpace = null;
     protected ?string $commandNameSpace = null;
     protected ?string $schedulerNamespace = null;
+    protected ?string $seederNamespace = null;
 
 
     /*! STATUS */
@@ -485,6 +487,7 @@ abstract class BaseKernel implements
             'databaseEvent' => $appDirectory . '/DatabaseEvents',
             'scheduler' => $appDirectory . '/Schedulers',
             'command' => $appDirectory . '/Commands',
+            'seeder' => $appDirectory . '/Seeders',
             'storage' => $root . '/storage',
             'data' => $root . '/data',
             'public' => $publicDirectory,
@@ -720,6 +723,7 @@ abstract class BaseKernel implements
             $container->setParameter('migrationsDirectory', $path->get('migration'));
             $container->setParameter('modulesDirectory', $path->get('module'));
             $container->setParameter('entitiesDirectory', $path->get('entity'));
+            $container->setParameter('seedersDirectory', $path->get('seeder'));
             // $container->setParameter('repositoriesDirectory', $path->get('repository'));
             $container->setParameter('databaseEventsDirectory', $path->get('databaseEvent'));
             $container->setParameter('schedulersDirectory', $path->get('scheduler'));
@@ -805,7 +809,7 @@ abstract class BaseKernel implements
             $namespace = dirname(str_replace('\\', '/', __NAMESPACE__));
             // app
             $this->appNameSpace = str_replace('/', '\\', $namespace) . '\\App';
-            $appNameSpace = $this->appNameSpace;
+            $appNameSpace = $this->getAppNameSpace();
 
             $this->controllerNameSpace = "$appNameSpace\\Controllers\\";
             $this->entityNamespace = "$appNameSpace\\Entities\\";
@@ -815,6 +819,7 @@ abstract class BaseKernel implements
             $this->databaseEventNameSpace = "$appNameSpace\\DatabaseEvents\\";
             $this->schedulerNamespace = "$appNameSpace\\Schedulers\\";
             $this->commandNameSpace = "$appNameSpace\\Commands\\";
+            $this->seederNamespace = "$appNameSpace\\Seeders\\";
             $this->registeredDirectories = [
                 $this->moduleNameSpace => $path->get('module') ?? $defaultPaths['module'],
                 $this->controllerNameSpace => $path->get('controller') ?? $defaultPaths['controller'],
@@ -824,6 +829,7 @@ abstract class BaseKernel implements
                 $this->migrationNameSpace => $path->get('migration') ?? $defaultPaths['migration'],
                 $this->databaseEventNameSpace => $path->get('databaseEvent') ?? $defaultPaths['databaseEvent'],
                 $this->commandNameSpace => $path->get('command') ?? $defaultPaths['command'],
+                $this->seederNamespace => $path->get('seeder') ?? $defaultPaths['seeder'],
             ];
 
             $routing = ContainerHelper::getNull(
@@ -883,7 +889,8 @@ abstract class BaseKernel implements
         KernelDatabaseEventLoader::register($this);
         // do register commands
         KernelCommandLoader::register($this);
-
+        // do register seeders
+        KernelSeederLoader::register($this);
         // registering debug middleware at the first middleware
         $httpKernel->addDeferredMiddleware($debugMiddleware);
         $httpKernel->addDeferredMiddleware($errorMiddleware);
@@ -981,6 +988,11 @@ abstract class BaseKernel implements
     public function getCommandNameSpace(): ?string
     {
         return $this->commandNameSpace;
+    }
+
+    public function getSeederNamespace(): ?string
+    {
+        return $this->seederNamespace;
     }
 
     public function getConfigError(): ?string

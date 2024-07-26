@@ -27,6 +27,7 @@ use ArrayAccess\TrayDigita\Container\Interfaces\SystemContainerInterface;
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerFactoryInterface;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Database\DatabaseEventsCollector;
+use ArrayAccess\TrayDigita\Database\Seeders;
 use ArrayAccess\TrayDigita\Event\Interfaces\ManagerInterface;
 use ArrayAccess\TrayDigita\Event\Manager;
 use ArrayAccess\TrayDigita\Handler\ErrorHandler;
@@ -66,6 +67,7 @@ use ArrayAccess\TrayDigita\Templates\Wrapper;
 use ArrayAccess\TrayDigita\Uploader\Chunk;
 use ArrayAccess\TrayDigita\View\Interfaces\ViewInterface;
 use ArrayAccess\TrayDigita\View\View;
+use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration as DoctrineConfiguration;
 use Doctrine\DBAL\Connection as DoctrineConnection;
@@ -158,6 +160,7 @@ class ContainerFactory implements ContainerFactoryInterface
         UserAuth::class => UserAuth::class,
         // Assets
         AssetsJsCssQueue::class => AssetsJsCssQueue::class,
+        Seeders::class => Seeders::class,
     ];
 
     /**
@@ -255,7 +258,11 @@ class ContainerFactory implements ContainerFactoryInterface
         // user auth
         'userAuth' => UserAuth::class,
         // assets
-        'assetsQueue' => AssetsJsCssQueue::class
+        'assetsQueue' => AssetsJsCssQueue::class,
+        // fixtures
+        Loader::class => Seeders::class,
+        'fixtures' => Seeders::class,
+        'seeders' => Seeders::class,
     ];
 
     /**
