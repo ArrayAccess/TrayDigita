@@ -63,5 +63,3 @@ Read the: **[Contribute](CONTRIBUTING.md)**
   - Change:
     - Update Doctrine ORM to 3.0
     - Update Compatibility
-
-- Posts Module [https://github.com/ArrayAccess/TrayDigita-Posts-Module](https://github.com/ArrayAccess/TrayDigita-Posts-Module)
