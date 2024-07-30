@@ -64,9 +64,4 @@ Read the: **[Contribute](CONTRIBUTING.md)**
     - Update Doctrine ORM to 3.0
     - Update Compatibility
 
-## Available Modules
-
-- Core Module [https://github.com/ArrayAccess/TrayDigita-Core-Module](https://github.com/ArrayAccess/TrayDigita-Core-Module)
-- Media Module [https://github.com/ArrayAccess/TrayDigita-Media-Module](https://github.com/ArrayAccess/TrayDigita-Media-Module)
-- Users Module [https://github.com/ArrayAccess/TrayDigita-Users-Module](https://github.com/ArrayAccess/TrayDigita-Users-Module)
 - Posts Module [https://github.com/ArrayAccess/TrayDigita-Posts-Module](https://github.com/ArrayAccess/TrayDigita-Posts-Module)
