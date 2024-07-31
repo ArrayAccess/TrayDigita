@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace ArrayAccess\TrayDigita\Database\Result;
 
-use ArrayAccess\TrayDigita\App\Modules\Users\Entities\Site;
 use ArrayAccess\TrayDigita\Database\Connection;
 use ArrayAccess\TrayDigita\Database\Entities\Abstracts\AbstractEntity;
 use ArrayAccess\TrayDigita\Database\Helper\Expression;
@@ -47,7 +46,6 @@ abstract class AbstractRepositoryFinder
 
     /**
      * @param string $searchQuery
-     * @param int|Site|null $site
      * @param int $limit
      * @param int $offset
      * @param array<string, string<Criteria::ASC|Criteria::DESC>> $orderBy
@@ -56,11 +54,9 @@ abstract class AbstractRepositoryFinder
      * @throws \Doctrine\DBAL\Exception
      * @throws \Doctrine\DBAL\Schema\SchemaException
      * @noinspection PhpFullyQualifiedNameUsageInspection
-     * @noinspection PhpUnusedParameterInspection
      */
     public function search(
         string $searchQuery,
-        int|Site|null $site = null,
         int $limit = 10,
         int $offset = 0,
         array $orderBy = [],
