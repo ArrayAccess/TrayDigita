@@ -133,7 +133,7 @@ final class Web
                 // check mimetypes
                 if (preg_match(
                     '~\.(?:
-                ics|ico|je|jpe?g|png|gif|webp|svg|tiff?|bmp      # image
+                ics|ico|je|jpe?g|avif|heic|png|gif|webp|svg|tiff?|bmp      # image
                 |css|jsx?|x?html?|xml|xsl|xsd|ja?son             # web assets
                 |te?xt|docx?|pptx?|xlsx?|csv|pdf|swf|pps|txt     # document
                 |mp[34]|og[gvpa]|mpe?g|3gp|avi|mov|flac|flv|webm|wmv # media
