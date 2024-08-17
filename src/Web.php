@@ -9,6 +9,7 @@ use ArrayAccess\TrayDigita\Http\ServerRequest;
 use ArrayAccess\TrayDigita\Kernel\Decorator;
 use ArrayAccess\TrayDigita\Kernel\Interfaces\KernelInterface;
 use ArrayAccess\TrayDigita\Util\Filter\ContainerHelper;
+use ArrayAccess\TrayDigita\Util\Filter\MimeType;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use RuntimeException;
@@ -42,9 +43,63 @@ use const TD_INDEX_FILE;
 
 final class Web
 {
+    /**
+     * @var string[] $blackListedExtensions List of blacklisted extensions
+     */
+    protected static array $blackListedExtensions = [
+        'php',
+        'cgi',
+        'pl',
+        'py',
+        'rb',
+        'sh',
+        'jsp',
+        'asp',
+        'aspx',
+        'cfm',
+    ];
+
     // no construct
     final private function __construct()
     {
+    }
+
+    /**
+     * Get the blacklisted extensions
+     *
+     * @return string[]
+     */
+    public static function getBlackListedExtensions(): array
+    {
+        return self::$blackListedExtensions;
+    }
+
+    /**
+     * Check if the extension is blacklisted
+     *
+     * @param string $extension
+     * @return bool
+     */
+    public static function isExtensionBlackListed(string $extension): bool
+    {
+        return in_array(strtolower($extension), self::getBlackListedExtensions(), true);
+    }
+
+    /**
+     * Set the blacklisted extensions
+     *
+     * @param array<string> $blackListedExtensions
+     */
+    public static function setBlackListedExtensions(array $blackListedExtensions): void
+    {
+        $blackListedExtensions = array_filter($blackListedExtensions, 'is_string');
+        $blackListedExtensions = array_map('strtolower', $blackListedExtensions);
+        $blackListedExtensions = array_values(array_filter(array_unique($blackListedExtensions)));
+        if (!in_array('php', $blackListedExtensions, true)) {
+            // always disallow php
+            $blackListedExtensions[] = 'php';
+        }
+        self::$blackListedExtensions = $blackListedExtensions;
     }
 
     /**
@@ -125,26 +180,53 @@ final class Web
 
                 $requestUri = $_SERVER['REQUEST_URI'];
                 $requestUriNoQuery = explode('?', $requestUri, 2)[0];
+                $originalScriptFileName = $_SERVER['SCRIPT_FILENAME'];
+                $originalScriptName = $_SERVER['SCRIPT_NAME']??$_SERVER['PHP_SELF']??null;
+                $isScriptFileNameMatch = $originalScriptFileName === __FILE__;
+                $baseName = basename($requestUriNoQuery);
+                $extension = str_contains('.', $baseName)
+                    ? pathinfo($baseName, PATHINFO_EXTENSION)
+                    : null;
+                $extension = $extension && preg_match('~^[a-zA-Z]+$~', $extension)
+                    ? strtolower($extension)
+                    : null;
 
                 /**
                  * If extension matches & exists return false
                  * that means the builtin web server will serve static assets
                  */
                 // check mimetypes
-                if (preg_match(
-                    '~\.(?:
-                ics|ico|je|jpe?g|avif|heic|png|gif|webp|svg|tiff?|bmp      # image
-                |css|jsx?|x?html?|xml|xsl|xsd|ja?son             # web assets
-                |te?xt|docx?|pptx?|xlsx?|csv|pdf|swf|pps|txt     # document
-                |mp[34]|og[gvpa]|mpe?g|3gp|avi|mov|flac|flv|webm|wmv # media
-            )$~ix',
-                    $requestUriNoQuery
-                ) && is_file($publicDirectory . '/' . $requestUriNoQuery)) {
+                if ($extension && self::isExtensionBlackListed($extension)
+                    && is_file($publicDirectory . '/' . $requestUriNoQuery)
+                    && is_readable($publicDirectory . '/' . $requestUriNoQuery)
+                ) {
+                    $realPath = realpath($publicDirectory . '/' . $requestUriNoQuery);
+                    $realPathOriginal = $originalScriptName
+                        ? realpath($publicDirectory . '/' . $originalScriptName)
+                        : null;
+                    if (!headers_sent()) {
+                        $mimeType = MimeType::extension($extension) ?: 'application/octet-stream';
+                        header('Content-Type: ' . $mimeType);
+                    }
+                    // if the script file name matches the original script file name
+                    if (!$isScriptFileNameMatch
+                        && $realPath
+                        && (
+                            $realPath === $originalScriptFileName
+                            || (
+                                // resolve the real path of the original script name
+                                $originalScriptName && $realPath === $realPathOriginal
+                            )
+                        )
+                    ) {
+                        readfile($realPath);
+                    }
+
                     // serve the static assets with return : false
                     return $lastResult = false;
                 }
 
-                $_SERVER['PHP_SELF'] = '/' . basename(__FILE__);
+                $_SERVER['PHP_SELF'] = DIRECTORY_SEPARATOR.  basename(__FILE__);
                 $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
             }
 
@@ -235,16 +317,16 @@ final class Web
             $config = ContainerHelper::use(Config::class, $kernel->getHttpKernel()->getContainer());
             $config = $config->get('environment');
             $enable = $config instanceof Config && (
-                $config->get('displayErrorDetails') === true
-                || $config->get('debug') === true
-            );
+                    $config->get('displayErrorDetails') === true
+                    || $config->get('debug') === true
+                );
         }
         $additionalText = ! $enable ? "<p><code>$message</code></p>" : <<<HTML
 <p><code>$message</code></p>
 <p><code>$file:($line)</code></p>
 <pre>$trace</pre>
 HTML;
-            echo <<<HTML
+        echo <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
