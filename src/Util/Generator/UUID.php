@@ -53,6 +53,12 @@ use const STR_PAD_LEFT;
  */
 class UUID implements Stringable
 {
+    public const UUID_VERSION_1 = 1;
+    public const UUID_VERSION_2 = 2;
+    public const UUID_VERSION_3 = 3;
+    public const UUID_VERSION_4 = 4;
+    public const UUID_VERSION_5 = 5;
+
     /* ----------------------------------------------------------------------
      * UUID Types
      * ----------------------------------------------------------------------
@@ -78,6 +84,12 @@ class UUID implements Stringable
     // RFC 4122, IETF is: 64 - 79 (0x40 - 0x4f)
     public const UUID_VARIANT_RFC4122 = 4;
 
+    public const VARIANT_NCS = 0x00;
+    public const VARIANT_DCE = 0x80;
+    public const VARIANT_MICROSOFT = 0xc0;
+    public const VARIANT_RESERVED_FUTURE = 0xe0;
+    public const VARIANT_RFC4122 = 0x40;
+
     /* ----------------------------------------------------------------------
      * UUID namespace constants for UUID::calculateNamespaceAndName()
      * ----------------------------------------------------------------------
@@ -102,11 +114,11 @@ class UUID implements Stringable
      * UUID variants for UUID::UUID_VARIANT_* constants
      */
     public const UUID_VARIANTS = [
-        self::UUID_VARIANT_NCS => 0x00,
-        self::UUID_VARIANT_DCE => 0x80,
-        self::UUID_VARIANT_RFC4122 => 0x80,
-        self::UUID_VARIANT_MICROSOFT => 0x40,
-        self::UUID_VARIANT_RESERVED_FUTURE => 0xe0,
+        self::UUID_VARIANT_NCS => self::VARIANT_NCS,
+        self::UUID_VARIANT_DCE => self::VARIANT_DCE,
+        self::UUID_VARIANT_RFC4122 => self::VARIANT_RFC4122,
+        self::UUID_VARIANT_MICROSOFT => self::VARIANT_MICROSOFT,
+        self::UUID_VARIANT_RESERVED_FUTURE => self::VARIANT_RESERVED_FUTURE,
     ];
 
     /**
@@ -395,6 +407,7 @@ class UUID implements Stringable
 
     /**
      * Generate a UUID.
+     *
      * @param int $version 1, 2, 3, 4, or 5
      * @param ?int $variant UUID variant to use UUID::UUID_VARIANT_* constants
      * @param ?int $type UUID type to use UUID::UUID_TYPE_* constants
@@ -574,8 +587,10 @@ class UUID implements Stringable
      * @return string
      * @link https://tools.ietf.org/html/rfc4122#section-4.3
      */
-    public static function v3(string $namespace, string $name): string
-    {
+    public static function v3(
+        string $namespace = self::NAMESPACE_DNS,
+        string $name = ''
+    ): string {
         $hash = self::calculateNamespaceAndName($namespace, $name, self::UUID_TYPE_MD5);
         return self::generate(3, self::UUID_VARIANT_RFC4122, self::UUID_TYPE_MD5, $hash);
     }
@@ -600,8 +615,10 @@ class UUID implements Stringable
      * @param string $name name to calculate
      * @return string UUID v5
      */
-    public static function v5(string $namespace, string $name): string
-    {
+    public static function v5(
+        string $namespace = self::NAMESPACE_DNS,
+        string $name = ''
+    ): string {
         $hash = self::calculateNamespaceAndName($namespace, $name, self::UUID_TYPE_SHA1);
         return self::generate(5, self::UUID_VARIANT_RFC4122, self::UUID_TYPE_SHA1, $hash);
     }
