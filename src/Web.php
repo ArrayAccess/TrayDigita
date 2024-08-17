@@ -205,7 +205,7 @@ final class Web
                         ? realpath($publicDirectory . '/' . $originalScriptName)
                         : null;
                     if (!headers_sent()) {
-                        $mimeType = MimeType::extension($extension) ?: 'application/octet-stream';
+                        $mimeType = MimeType::mime($extension) ?: 'application/octet-stream';
                         header('Content-Type: ' . $mimeType);
                     }
                     // if the script file name matches the original script file name
