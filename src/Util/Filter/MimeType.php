@@ -33,7 +33,10 @@ final class MimeType
     public const DEFAULT_MIME_TYPES_FILE =  __DIR__ . '/data/mime.types';
 
     /**
-     * @var ?array
+     * @var ?array<string, array{
+     *          main: bool,
+     *          extensions: array<string>
+     *      }>
      */
     protected static ?array $extensionMimeTypes = null;
 
@@ -45,7 +48,7 @@ final class MimeType
     /**
      * The extension prefill
      *
-     * @var string[]
+     * @var array<string, string>
      */
     private const EXTENSION_PREFILL = [
         'application/pdf' => 'pdf',
@@ -117,7 +120,10 @@ final class MimeType
     /**
      * Get Mime types List
      *
-     * @return array{string, array{main: bool, extensions: array<string>}}
+     * @return array<string, array{
+     *           main: bool,
+     *           extensions: array<string>
+     *       }>
      */
     public static function getExtensionMimeTypes(): array
     {
@@ -129,14 +135,21 @@ final class MimeType
                     E_COMPILE_ERROR
                 );
             }
+
             self::$extensionMimeTypes = [];
-            $sock = @fopen($mimeFile, 'r');
+            $sock = fopen($mimeFile, 'r');
+            if (!$sock) {
+                throw new RuntimeException(
+                    'Failed to open mime.types file',
+                    E_COMPILE_ERROR
+                );
+            }
             $data = '';
             while (!feof($sock)) {
                 $data .= fread($sock, 4096);
             }
             fclose($sock);
-            $data = trim(preg_replace('~^\s*#([^=]+)[^\n]+\r?\n~', '', $data));
+            $data = trim((string) preg_replace('~^\s*#([^=]+)[^\n]+\r?\n~', '', $data));
             $data = str_replace(["\r\n", "\n\n"], "\n", $data);
             preg_match_all(
                 '~
@@ -179,7 +192,9 @@ final class MimeType
                     $ext['extensions'] = [self::EXTENSION_PREFILL[$item]] + $ext['extensions'];
                     $ext['extensions'] = array_values(array_unique($ext['extensions']));
                 }
-                self::$extensionMimeTypes[$item] = $ext;
+                if (is_array($ext)) {
+                    self::$extensionMimeTypes[$item] = $ext;
+                }
             }
         }
         $registered = [];
@@ -201,7 +216,7 @@ final class MimeType
      *
      * @param string $mime
      *
-     * @return array[]|null
+     * @return array<string>|null
      */
     public static function fromMimeType(string $mime): ?array
     {
@@ -288,8 +303,16 @@ final class MimeType
         self::$extensionMimeTypes = null;
     }
 
+    /**
+     * @var array<string, string|false>
+     */
     private static array $uriMimeTypes = [];
 
+    /**
+     * The finfo object
+     *
+     * @var null|finfo|false
+     */
     private static null|finfo|false $finfoObjectExists = null;
 
     /**
@@ -310,25 +333,33 @@ final class MimeType
     {
         $uri = $stream->getMetadata('uri');
         if ($uri && isset(self::$uriMimeTypes[$uri])) {
-            return self::$uriMimeTypes[$uri];
+            return self::$uriMimeTypes[$uri]?:null;
         }
-
+        $uri = (string) $uri;
         $info = self::createFinfo();
         $mimeType = $info?->buffer((string) $stream)?:null;
         if ($mimeType && file_exists($uri)) {
             if ($mimeType === 'text/plain' && (
-                $ext = pathinfo($uri, PATHINFO_EXTENSION)
+                    $ext = pathinfo($uri, PATHINFO_EXTENSION)
                 ) && ($key = array_search($ext, self::EXTENSION_PREFILL))
             ) {
                 $mimeType = $key;
             }
-            self::$uriMimeTypes[$uri] = $mimeType;
+            if (!is_string($mimeType)) {
+                $mimeType = null;
+            }
+            /**
+             * @var ?string $mimeType
+             */
+            self::$uriMimeTypes[$uri] = $mimeType??false;
             return $mimeType;
         }
         return $mimeType;
     }
 
     /**
+     * Get Mime Type from File Path
+     *
      * @param string $filePath
      * @param ?UploadedFileInterface $uploadedFile
      * @return string|null
@@ -348,7 +379,9 @@ final class MimeType
 
         self::$uriMimeTypes[$filePath] = false;
         $finfo = self::createFinfo();
-        $mimeType = Consolidation::callbackReduceError(fn() => $finfo?->file($filePath))?:null;
+        set_error_handler(null);
+        $mimeType = $finfo?->file($filePath)?:null;
+        restore_error_handler();
         if (!$mimeType && $fn_exists === null) {
             $fn_exists = function_exists('mime_content_type');
         }
@@ -356,11 +389,13 @@ final class MimeType
             /**
              * @var ?string $mimeType
              */
-            $mimeType = Consolidation::callbackReduceError(fn () => mime_content_type($filePath))?:null;
+            set_error_handler(null);
+            $mimeType = mime_content_type($filePath);
+            restore_error_handler();
         }
         if ($mimeType) {
             if ($mimeType === 'text/plain' && (
-                    $ext = pathinfo($uploadedFile?->getClientFilename()??$filePath, PATHINFO_EXTENSION)
+                $ext = pathinfo($uploadedFile?->getClientFilename()??$filePath, PATHINFO_EXTENSION)
                 ) && ($key = array_search($ext, self::EXTENSION_PREFILL))
             ) {
                 $mimeType = $key;
@@ -381,6 +416,12 @@ final class MimeType
         return $mimeType;
     }
 
+    /**
+     * Get Mime Type from Uploaded File
+     *
+     * @param UploadedFileInterface $uploadedFile
+     * @return ?string
+     */
     public static function mimeTypeUploadedFile(UploadedFileInterface $uploadedFile): ?string
     {
         $uri = $uploadedFile->getStream()->getMetadata('uri');
@@ -390,16 +431,24 @@ final class MimeType
                 return null;
             }
             $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-            return is_string($extension)
-                ? MimeType::mime($extension)
-                : null;
+            if (!is_string($extension)) {
+                return null;
+            }
+            return MimeType::mime($extension);
         }
         return self::fileMimeType($uri, $uploadedFile);
     }
 
+    /**
+     * Resolve Media Type Uploaded Files
+     *
+     * @param UploadedFileInterface $uploadedFile
+     * @return UploadedFileInterface
+     * @noinspection PhpUnused
+     */
     public static function resolveMediaTypeUploadedFiles(
         UploadedFileInterface $uploadedFile
-    ): UploadedFile|UploadedFileInterface {
+    ): UploadedFileInterface {
         $mimeType = self::mimeTypeUploadedFile($uploadedFile);
         if (!$mimeType || $uploadedFile->getClientMediaType() === $mimeType) {
             return $uploadedFile;
