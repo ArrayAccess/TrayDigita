@@ -545,7 +545,7 @@ final class BuiltInWebServer extends Command
         ) {
             $command = sprintf(
                 'cd %s && %s > /dev/null 2>&1',
-                $docRoot,
+                escapeshellcmd($docRoot),
                 $command
             );
         }
