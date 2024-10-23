@@ -45,6 +45,7 @@ use function sleep;
 use function sprintf;
 use function strtolower;
 use function trim;
+use function var_dump;
 use const DIRECTORY_SEPARATOR;
 use const PHP_BINARY;
 use const TD_INDEX_FILE;
@@ -498,11 +499,14 @@ final class BuiltInWebServer extends Command
             )
         );
 
-        $path = escapeshellcmd($publicFile);
-
+        $docRoot = dirname($publicFile);
         $command = sprintf(
-            "%s -S $host:$port '$path'",
-            PHP_BINARY
+            '%s -t %s -S %s:%d %s',
+            PHP_BINARY,
+            escapeshellcmd($docRoot),
+            escapeshellcmd($host),
+            $port,
+            escapeshellcmd($publicFile),
         );
 
         $output->writeln('');
@@ -534,19 +538,22 @@ final class BuiltInWebServer extends Command
         $output->writeln('');
         if (Consolidation::isUnix()
             && (
-                !$output->isVeryVerbose()
+                ! $output->isVeryVerbose()
                 && ! $output->isDebug()
             )
             && file_exists('/dev/null')
         ) {
-            $command .= " 2>&1 & echo $!";
-            $command = "cd " . dirname($publicFile) . " && $command";
+            $command = sprintf(
+                'cd %s && %s > /dev/null 2>&1',
+                $docRoot,
+                $command
+            );
         }
-
         // point to public directory
         chdir(dirname($publicFile));
 
         exec($command, $array, $result_code);
+
         if ($result_code !== 0) {
             return self::FAILURE;
         } elseif (!empty($array[1])) {

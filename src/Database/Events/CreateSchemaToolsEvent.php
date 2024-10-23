@@ -325,6 +325,7 @@ class CreateSchemaToolsEvent extends DatabaseEvent implements EventSubscriber
         ) {
             $attribute = 'UNSIGNED ZEROFILL';
         }
+        $attribute = preg_replace('~\s+~', ' ', $attribute);
         $allowedAttributes = [
             'ON UPDATE CURRENT_TIMESTAMP' => [
                 DateTimeType::class,
