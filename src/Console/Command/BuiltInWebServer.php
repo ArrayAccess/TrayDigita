@@ -45,7 +45,6 @@ use function sleep;
 use function sprintf;
 use function strtolower;
 use function trim;
-use function var_dump;
 use const DIRECTORY_SEPARATOR;
 use const PHP_BINARY;
 use const TD_INDEX_FILE;
