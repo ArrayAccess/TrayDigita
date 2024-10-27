@@ -158,8 +158,10 @@ class Logger extends AbstractLogger implements ResettableInterface, ContainerInd
                         $port = !is_int($host) ? 6379 : $port;
                         $host = $adapterOptions['host'] ?? null;
                         $host = is_string($host) ? (trim($host)?:null) : null;
+                        $host = $host??'127.0.0.1';
+                        $port = $port??6379;
                         $adapterOptions['port'] = $port;
-                        $adapterOptions['host'] = $host??'127.0.0.1';
+                        $adapterOptions['host'] = $host;
                         $name = $adapterOptions['name']??'log';
                         $name = !is_string($name) ? 'log' : $name;
                         $timeout = $adapterOptions['timeout']??0;
