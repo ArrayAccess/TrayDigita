@@ -155,14 +155,22 @@ class Logger extends AbstractLogger implements ResettableInterface, ContainerInd
                     try {
                         $port = $adapterOptions['port'] ?? null;
                         $port = !is_int($port) ? null : $port;
+                        $port = !is_int($host) ? 6379 : $port;
                         $host = $adapterOptions['host'] ?? null;
-                        $host = !is_int($host) ? 6379 : $host;
+                        $host = is_string($host) ? (trim($host)?:null) : null;
                         $adapterOptions['port'] = $port;
                         $adapterOptions['host'] = $host??'127.0.0.1';
                         $name = $adapterOptions['name']??'log';
                         $name = !is_string($name) ? 'log' : $name;
                         $timeout = $adapterOptions['timeout']??0;
                         $timeout = !is_int($timeout) ? 0 : $timeout;
+                        if (isset($adapterOptions['connectTimeout'])) {
+                            if (!is_numeric($adapterOptions['connectTimeout'])) {
+                                unset($adapterOptions['connectTimeout']);
+                            } else {
+                                $adapterOptions = (float) $adapterOptions['connectTimeout'];
+                            }
+                        }
                         $redis = new Redis($adapterOptions);
                         if ($redis->connect($host, $port, $timeout)) {
                             $logger->pushHandler(
