@@ -219,7 +219,7 @@ class DatabaseHandler extends AbstractProcessingHandler
         return $this->createdTime;
     }
 
-    public function getConnection(): Connection
+    public function getConnection(): DoctrineConnection
     {
         return $this->connection;
     }
