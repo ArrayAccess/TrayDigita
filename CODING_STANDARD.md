@@ -43,7 +43,8 @@ Core translation always use `default` / `TranslatorInterface:DEFAULT_DOMAIN` or 
 
 ```php
 use ArrayAccess\TrayDigita\Container\Interfaces\ContainerIndicateInterface;
-use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;use Psr\Container\ContainerInterface;
+use ArrayAccess\TrayDigita\Traits\Service\TranslatorTrait;
+use Psr\Container\ContainerInterface;
 
 class someClass implements ContainerIndicateInterface
 {
