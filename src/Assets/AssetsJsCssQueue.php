@@ -324,7 +324,7 @@ final class AssetsJsCssQueue
             return;
         }
         foreach ($this->extended[$name]['js']??[] as $cssName => $inherit) {
-            $this->queue['js'][$cssName] ??= $inherit;
+            $this->queue['js_footer'][$cssName] ??= $inherit;
         }
     }
 
